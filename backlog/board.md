@@ -39,7 +39,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## In progress
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-247](./items/ITEM-247-song-sort-retained.md) | A new song resets the sidebar song order | Keep the chosen sort after every in-place list refresh, not only after a create | fix | P1 | S | [233](./../specs/233-song-sort-retained/spec.md) | `fix/233-song-sort-retained` | 2026-11-23 |
 
 ## In review
 

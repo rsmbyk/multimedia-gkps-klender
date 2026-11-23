@@ -1654,6 +1654,9 @@
     var freshSort = doc.querySelector('#songSort');
     if (freshSort) songSortBtn.hidden = freshSort.hidden;
     reconcileChildren(chList, doc.querySelector('#chList'));
+    /* A refreshed list arrives in the server's last-modified order. Re-apply the
+       operator's chosen order so a create, edit or delete cannot silently reset it. */
+    applySongOrder();
 
     /* state */
     activeSection = fresh.section || activeSection;
