@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-244](./items/ITEM-244-cue-verse-counter.md) | A passage cue does not say where it stands in the passage | Add a `current/end` verse counter after the reference for a service passage and a chapter Go To | feat | P2 | S | [229](../specs/229-cue-verse-counter/spec.md) | 2026-11-23 |
 
 ## Ready
 
@@ -46,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-244](./items/ITEM-244-cue-verse-counter.md) | A passage cue does not say where it stands in the passage | Add a `current/end` verse counter after the reference for a service passage and a chapter Go To | feat | P2 | S | [229](../specs/229-cue-verse-counter/spec.md) | [#600](https://github.com/rsmbyk/multimedia-gkps-klender/pull/600) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
