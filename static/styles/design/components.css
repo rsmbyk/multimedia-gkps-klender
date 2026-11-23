@@ -2520,6 +2520,23 @@ kbd {
   padding-bottom: 0;      /* nothing follows the empty block to hold a gap for */
   container-type: inline-size;   /* the tile row sizes against the column, not the window */
 }
+/* spec 224: an empty song takes the same quarter-band as an empty Tata Ibadah.
+   The song header is taller and its invitation shorter, so this band has no
+   12px floor — with one the title lands 9px below the reference instead of at it. */
+.read[data-kind="song"]:has(.entry__empty) { display: flex; flex-direction: column; min-height: 100%; }
+.read[data-kind="song"]:has(.entry__empty) .read__head { margin-bottom: 0; }
+.read[data-kind="song"] .read__body:has(> .entry__empty) {
+  display: grid;
+  grid-template-rows: minmax(min-content, 50%);
+  align-content: start;
+  align-items: center;
+  justify-items: center;
+  flex: 1;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  container-type: inline-size;
+}
 .entry__empty-title {
   margin: 0;
   font: 600 20px/1.3 ui-sans-serif, system-ui, sans-serif;

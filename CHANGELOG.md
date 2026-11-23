@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (spec 222).
 - **The focus ring on the first song row is drawn in full.** The list reserves 3px above its first
   row, so the browser's outline is no longer cut off by the edge of the scrollport (spec 223).
+- **An empty song offers `Add verse` once, at the same height as an empty Tata Ibadah.** The control
+  after the last verse is no longer drawn when there is no last verse, so the empty invitation's own
+  button is the only one; that invitation sits in the same quarter-band as the Tata Ibadah empty
+  state (spec 224).
 
 ## [1.36.6] - 2026-11-22
 

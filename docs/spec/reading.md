@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-23
-**slices**: `225-open-created-songbook-song`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1291,9 +1291,13 @@ written.
 ### R40 — A song's verses are added, edited, removed and reordered on its page
 
 The song page SHALL render verse controls only for ordinary (non-hymn) songbooks where editing is
-allowed: one add control after the last verse, and a grip and edit control per verse row painted only
-while the row is hovered or focused. With a single verse the grip SHALL render disabled — one verse
-has nowhere to move. A hymn song's page and a restricted reader's page SHALL render none.
+allowed: one add control after the last verse, drawn only when at least one live verse exists, and a
+grip and edit control per verse row painted only while the row is hovered or focused. A song with no
+live verses SHALL draw no after-the-last-verse row; its single add control sits inside the empty
+invitation that names the state. That invitation SHALL occupy the same quarter-band of the reading
+area as an empty Tata Ibadah's, so the two invitation titles share a vertical band (within 1px at
+1440×900 and 900×700). With a single verse the grip SHALL render disabled — one verse has nowhere to
+move. A hymn song's page and a restricted reader's page SHALL render none.
 A verse that any service entry references SHALL NOT be deletable. Entries name verses by ID and display
 the current numbers; reordering renumbers live rows 1…n and never moves a reference. Reordering is
 pointer-only drag: grabbing a grip collapses verses to 44px one-line rows for the gesture, a ghost copy
@@ -1305,6 +1309,14 @@ grab-frozen midpoints of the other verses, not from the origin slot.
 #### Scenario: adding a verse
 - WHEN the reader presses `Add verse` and saves a lyric on an ordinary song
 - THEN the verse is appended numbered one past the last, the stage shows it without reload
+
+#### Scenario: a song with no verses
+- WHEN an ordinary song with no live verses opens
+- THEN its stage draws exactly one `Add verse`, inside the empty invitation, and no after-the-last-verse row
+
+#### Scenario: the empty invitation's height
+- WHEN an empty song's page and an empty Tata Ibadah's page are opened at 1440×900 or 900×700
+- THEN the two invitation titles land in the same band, within 1px at both viewports
 
 #### Scenario: editing a lyric
 - WHEN the reader saves an edit

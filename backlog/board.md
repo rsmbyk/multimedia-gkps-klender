@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-220](./items/ITEM-220-chevron-e2e-pointer-race.md) | The chevron-eligibility E2E races the pointer on this machine | After the moving screen-row click the pointer can land on the live header, whose live-hover tone never equals the pure selected token the wait demands; base fails 4/5 alone, CI green through 206 | fix | P2 | S | — | 2026-11-20 |
 | [ITEM-224](./items/ITEM-224-token-only-line.md) | A speaker token alone on its line is not read as a speaker | `Paragenda:` / `P:` / `Bapa:` on one line is treated as ordinary text, so the line and its words lose the voice; 23 lines in the local snapshot use this shape | fix | P2 | S | — | 2026-11-21 |
+
 ## Speccing
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -51,6 +52,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-239](./items/ITEM-239-empty-song-add-verse-row.md) | An empty song paints Add verse twice | The after-the-last-verse row is drawn with no verse to follow, above the invitation that already offers the same control; gate it on `verse_rows` | fix | P2 | S | [224](../specs/224-empty-song-add-verse-row/spec.md) | develop via [#591](https://github.com/rsmbyk/multimedia-gkps-klender/pull/591) | 2026-11-23 |
 | [ITEM-238](./items/ITEM-238-songrow-focus-ring-clip.md) | The song-row focus ring is clipped at the top of the list | The first focused row sat flush with `#chBody`, so the browser's outline was cut at the scrollport edge; the list itself was not scrolled | fix | P2 | S | [223](../specs/223-songrow-focus-ring-clip/spec.md) | develop via [#588](https://github.com/rsmbyk/multimedia-gkps-klender/pull/588) | 2026-11-22 |
 | [ITEM-236](./items/ITEM-236-deleted-record-empty-stage.md) | Deleting the open song or service falls back to the search page | Keep the reading stage with a centred nothing-open message when the open record is deleted | fix | P2 | S | [221](../specs/221-empty-reading-stage/spec.md) | develop via [#585](https://github.com/rsmbyk/multimedia-gkps-klender/pull/585) | 2026-11-22 |
 | [ITEM-235](./items/ITEM-235-search-landing-focus.md) | The search landing opens without its input focused | Focus only the empty search landing; keep the results-state field out of automatic focus | fix | P2 | S | [220](../specs/220-initial-search-focus/spec.md) |develop via [#579](https://github.com/rsmbyk/multimedia-gkps-klender/pull/579)| 2026-11-22 |
