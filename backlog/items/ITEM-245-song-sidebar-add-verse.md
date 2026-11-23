@@ -1,6 +1,6 @@
 ---
 id: ITEM-245
-status: in-progress
+status: in-review
 title: 'Add verse is dead on a song opened from the sidebar'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 230-song-verse-script-boot
 branch: fix/230-song-verse-script-boot
-pr:
+pr: 602
 issue: 601
 closed_at:
 closed_reason:

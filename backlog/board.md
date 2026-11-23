@@ -39,13 +39,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## In progress
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | `fix/230-song-verse-script-boot` | 2026-11-23 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | [#602](https://github.com/rsmbyk/multimedia-gkps-klender/pull/602) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
