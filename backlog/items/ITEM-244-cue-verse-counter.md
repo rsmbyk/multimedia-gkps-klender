@@ -1,6 +1,6 @@
 ---
 id: ITEM-244
-status: in-review
+status: done
 title: 'A passage cue does not say where it stands in the passage'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: 229-cue-verse-counter
 branch: feat/229-cue-verse-counter
 pr: 600
 issue: 599
-closed_at:
-closed_reason:
+closed_at: 2026-11-23
+closed_reason: merged into develop (PR #600)
 bump: patch
 release_version:
 ---
