@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verse counter after the reference, before the TB/SIM flip: a service passage counts its own verses
   and a chapter Go To counts against the chapter it loaded (spec 229).
 
+### Changed
+
+- **Add verse now sits beside Project in the song header.** A song with verses offers the control
+  in the header, immediately left of Project; an empty song keeps only its centred invitation (spec 231).
+
 ### Fixed
 
 - **Add verse works on a song opened from the sidebar without a refresh.** The reading shell boots the verse script at page load instead of relying on a script tag inside the swapped-in song fragment, so Add verse and Edit are bound on the first click (spec 230).
