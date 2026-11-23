@@ -1,15 +1,15 @@
 ---
 id: ITEM-241
-status: in-progress
+status: in-review
 title: 'The verse modal header paints two rules'
 type: fix
 priority: P2
 effort: S
 created: 2026-11-23
 updated: 2026-11-23
-spec: 226
+spec: 226-verse-modal-header-rule
 branch: fix/226-verse-modal-header-rule
-pr:
+pr: 594
 issue: 593
 closed_at:
 closed_reason:

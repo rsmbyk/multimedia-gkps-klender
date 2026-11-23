@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-241](./items/ITEM-241-verse-modal-header-rule.md) | The verse modal header paints two rules | The large-editor title rule outranks the header's reset, so `New verse` and `Edit verse n` draw a short line above the header divider | fix | P2 | S | [226](../specs/226-verse-modal-header-rule/spec.md) | `fix/226-verse-modal-header-rule` | 2026-11-23 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-241](./items/ITEM-241-verse-modal-header-rule.md) | The verse modal header paints two rules | The large-editor title rule outranks the header's reset, so `New verse` and `Edit verse n` draw a short line above the header divider | fix | P2 | S | [226](../specs/226-verse-modal-header-rule/spec.md) | [#594](https://github.com/rsmbyk/multimedia-gkps-klender/pull/594) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
