@@ -39,7 +39,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## In progress
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-247](./items/ITEM-247-verse-reference-notice.md) | The referenced-verse notice is missed below the action row | Move the reason into the action row beside the disabled Delete, which turns neutral; wrap the note above the buttons at narrow widths | fix | P2 | S | [232](../specs/232-verse-reference-notice/spec.md) | `feat/232-verse-reference-notice` | 2026-11-23 |
 
 ## In review
 
