@@ -35,6 +35,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-249](./items/ITEM-249-created-template-opens.md) | A newly created Template does not open on the reading stage | A template create only refreshes the sidebar; it should open the saved template like a dated service does | fix | P1 | S | [234](../specs/234-open-created-template/spec.md) | 2026-11-23 |
 
 ## In progress
 
