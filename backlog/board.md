@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-241](./items/ITEM-241-verse-modal-header-rule.md) | The verse modal header paints two rules | The large-editor title rule outranks the header's reset, so `New verse` and `Edit verse n` draw a short line above the header divider | fix | P2 | S | [226](../specs/226-verse-modal-header-rule/spec.md) | `fix/226-verse-modal-header-rule` | 2026-11-23 |
 
 ## In review
 
