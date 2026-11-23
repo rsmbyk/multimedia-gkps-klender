@@ -1,0 +1,45 @@
+/* Preview scaffolding only: puts the real dialogs in normal flow so both states
+   can be measured side by side. It changes no modal box beyond `position`. */
+body {
+  margin: 0;
+  display: block; /* the app's body is a flex row; this page stacks its own chrome */
+  background: var(--canvas);
+  color: var(--ink);
+  /* the modal inherits the app's body type, so the preview keeps it verbatim */
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.pv-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+  padding: 18px 22px; border-bottom: 1px solid var(--divider);
+}
+.pv-head h1 { margin: 0 0 4px; font-size: 18px; }
+.pv-head p { margin: 0; color: var(--head-ink); font-size: 13px; }
+.pv-head code, .pv-note code { font: 500 12px/1.4 ui-monospace, monospace; }
+.pv-theme {
+  flex: none; padding: 8px 12px; border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--rail-bg); color: var(--ink); cursor: pointer;
+}
+.pv-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;
+  padding: 20px 22px 40px; align-items: start;
+}
+.pv-col > h2 { margin: 0 0 4px; font-size: 15px; }
+.pv-note { margin: 0 0 14px; color: var(--head-ink); font-size: 12px; }
+.pv-panel {
+  padding: 16px; margin-bottom: 18px; border: 1px solid var(--divider);
+  border-radius: 12px; background: var(--rail-bg);
+}
+.pv-panel h3 { margin: 0 0 12px; font-size: 13px; }
+.pv-stage { min-height: 280px; }
+/* The product's dialog is fixed so it centres over the app; here it is laid out
+   in the column so both columns can be seen at once. Box internals untouched. */
+.pv-stage .editor { position: relative; inset: auto; margin: 0; }
+/* The before column scopes the single declaration back to the base value;
+   every other rule comes from the unmodified develop copy of components.css. */
+.pv-col--before .editor { overflow: auto; }
+.pv-readout {
+  margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--divider);
+  color: var(--head-ink); font: 500 12px/1.5 ui-monospace, monospace;
+}
+@media (max-width: 820px) { .pv-grid { grid-template-columns: 1fr; } }

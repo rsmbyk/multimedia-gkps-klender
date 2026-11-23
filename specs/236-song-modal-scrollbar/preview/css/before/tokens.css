@@ -1,0 +1,117 @@
+/*
+ * Design tokens — Multimedia GKPS Klender
+ *
+ * Values pinned by spec 004 (the accepted mockup): a warm paper canvas, a
+ * tinted rail surface, and two state accents — GKPS forest green in light
+ * mode, lifted royal blue in dark. Contrast is not a preference here:
+ * tests/test_design_tokens.py asserts every listed pair meets WCAG AA in
+ * both modes, so edit palette values only with that suite in reach.
+ *
+ * Layout widths are the accepted mockup's metrics; the state-derived width
+ * rules (open / mini / song-list modes) live in components.css.
+ */
+
+:root {
+  --rail-w: 80px;              /* matches the reference rail */
+  --logo: 40px;
+  --btn: 44px;                 /* hit target, larger than the artwork */
+  --r-btn: 8px;
+
+  /* light */
+  --canvas: #F7F5F1;
+  --rail-bg: #EDEAE3;
+  --ink: #1F1F1D;
+  --icon: #222220;
+  --icon-hover-bg: rgba(31, 31, 29, .08);
+  --active-bg: #1C5C3C;        /* GKPS forest green in place of the reference red */
+  --active-ink: #FFFFFF;
+  --sidebar-selected-bg: #B9D7C9; /* selected rows only; keep action accents */
+  --divider: #D9D6CD;
+  --scroll-thumb: #B4B0A6;
+  --scroll-thumb-hover: #948F85;
+  --tip-bg: #1F1F1D;
+  --tip-ink: #FFFFFF;
+  --head-ink: #646357;           /* group headers + meta on canvas */
+  --danger: #B3261E;             /* destructive actions, invalid fields */
+  --link: #1C5C3C;               /* link colour: media library "used by" links */
+  /* liturgy voices (spec 059): quieter than --ink, leader quietest */
+  --speaker-join: #2B5A64;
+  --speaker-leader: #866B50;
+  --focus: #1C5C3C;
+  --active-flash: rgba(28, 92, 60, .16);
+  --shadow: 0 6px 18px -10px rgba(20,20,18,.5);
+  /* A modal has to read as a sheet lifted off the page, not as a slightly-grey
+     panel sitting in it (spec 086): a deep scrim behind, its own lift, a hairline edge. */
+  --backdrop: rgba(20, 20, 18, .52);
+  --shadow-dialog: 0 18px 48px -20px rgba(20, 20, 18, .55), 0 2px 8px -4px rgba(20, 20, 18, .3);
+
+  --ease: 200ms cubic-bezier(.32, .72, .28, 1);
+  /* The same curve WITHOUT the duration. `--ease` is a whole shorthand value on purpose --
+     most rules write `transition: color var(--ease)` and want the duration with it -- but a
+     rule that names its own duration must use this one: two time values in a transition or
+     animation shorthand are duration and DELAY, so `transition: transform 60ms var(--ease)`
+     waited 200ms before every morph, and no amount of shortening the duration could be felt. */
+  --ease-timing: cubic-bezier(.32, .72, .28, 1);
+  --nav-w: 18.5rem;                /* books panel, expanded: widest row
+                                      (Kisah Para Rasul / Lahoan Ni Apostel)
+                                      measures 281px incl. chrome */
+  --mini-w: var(--rail-w);         /* collapsed panel mirrors the main rail */
+  --ch-w: var(--rail-w);           /* chapters rail: always rail-width, like mini */
+  /* song list: a full-width panel beside the books, not a tile rail (there is
+     nothing to abbreviate a song to). The books panel clamps against a STATIC
+     reserve so panel-w -> reserve-ch, sp-w -> panel-w stays a one-way chain. */
+  --songsp-w: min(26rem, calc(100vw - var(--rail-w) - var(--books-w) - 20rem));
+  --songlist-reserve: 18rem;
+  --pad-top: 40px;                 /* page top padding; verses echo it at the bottom */
+
+  /* tooltip starts 10px outside the RAIL edge: half the gap between rail and
+     button widths, plus the gap. Recalculates when the rail narrows at 560px. */
+  --tip-x: calc((var(--rail-w) - var(--btn)) / 2 + 10px);
+
+  /* resolved width of the nested panel; shared by its clip-wiped box and
+     the stage/second-column layout. Reserve chapter space only while open. */
+  --reserve-ch: 0px;
+  --panel-w: min(var(--nav-w), calc(100vw - var(--rail-w) - var(--reserve-ch) - 2rem));
+
+  /* live widths of the two nested columns; 0 while hidden. The stage margin
+     and the chapters rail's left both derive from these, so everything
+     pushes/pulls in one coordinated motion. */
+  --books-w: 0px;
+  --ch-w-shown: 0px;
+
+    /* Type */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-serif: ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+:root[data-theme="dark"] {
+  --canvas: #14130F;
+  --rail-bg: #232019;
+  --ink: #F5F3EE;
+  --icon: #E8E6E0;
+  --icon-hover-bg: rgba(255, 255, 255, .09);
+  --active-bg: #7C9CF0;         /* GKPS royal blue (#143792), lifted for dark surfaces */
+  --active-ink: #0D1838;
+  --sidebar-selected-bg: #393F4F;
+  --active-flash: rgba(124, 156, 240, .22);
+  --divider: #3A362F;
+  --scroll-thumb: #45413A;
+  --scroll-thumb-hover: #65615A;
+  --tip-bg: #EDEBE5;
+  --tip-ink: #16150F;
+  --head-ink: #9C9A91;
+  --danger: #FF9E9A;            /* lifted for dark surfaces */
+  --link: #7C9CF0;              /* link colour: media library "used by" links */
+  --speaker-join: #8EC2CC;      /* liturgy voices (spec 059), also the projector's */
+  --speaker-leader: #9C8463;
+  --focus: #7C9CF0;
+  --shadow: 0 6px 18px -10px rgba(0,0,0,.9);
+  /* A modal has to read as a sheet lifted off the page, not as a slightly-grey
+     panel sitting in it (spec 086): a deep scrim behind, its own lift, a hairline edge. */
+  --backdrop: rgba(0, 0, 0, .68);
+  --shadow-dialog: 0 20px 52px -22px rgba(0, 0, 0, .9), 0 2px 8px -4px rgba(0, 0, 0, .7);
+}
+
+@media (max-width: 560px) {
+    :root { --rail-w: 64px; --btn: 40px; --logo: 34px;}
+}
