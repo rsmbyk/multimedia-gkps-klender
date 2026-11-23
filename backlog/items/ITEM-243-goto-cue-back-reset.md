@@ -1,6 +1,6 @@
 ---
 id: ITEM-243
-status: in-review
+status: done
 title: 'Back leaves the Go To information in the cue over an empty stage'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: 228-goto-cue-back-reset
 branch: fix/228-goto-cue-back-reset
 pr: 598
 issue: 597
-closed_at:
-closed_reason:
+closed_at: 2026-11-23
+closed_reason: merged into develop (PR #598)
 bump: patch
 release_version:
 ---
