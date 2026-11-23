@@ -5,7 +5,7 @@
 **Created**: 2026-11-23
 **Status**: Accepted (Gate 1 2026-11-23; Gate 2 2026-11-23)
 **Input**: "i wanna revamp the warning/notice in edit song verse modal when the verse is being used in a service"
-**Demand**: `ITEM-247` (new card)
+**Demand**: `ITEM-248` (new card)
 **Capability**: modifies `reading/R40` (the referenced-verse scenario)
 **Preview**: `specs/232-verse-reference-notice/preview/index.html` — owner chose **B · Inline** on 2026-11-23
 
@@ -128,7 +128,7 @@ Measured on `preview/index.html` with the product's inlined `tokens.css` and edi
 - The neutral disabled treatment applies only to the verse editor's `Delete verse`; other dialogs keep
   the shared `.editor__danger:disabled` fade because this slice was asked about one modal.
 - Wrapping, not shortening the copy, is the narrow-width answer: the reason stays complete at 420px.
-- Card `ITEM-247` is created for this request; the number is checked against `develop` and the other
+- Card `ITEM-248` is created for this request; the number is checked against `develop` and the other
   worktrees before it is written.
 
 ## Clarifications

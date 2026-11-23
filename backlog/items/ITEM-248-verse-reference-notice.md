@@ -1,5 +1,5 @@
 ---
-id: ITEM-247
+id: ITEM-248
 status: done
 title: 'The referenced-verse notice is missed below the action row'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-247: The referenced-verse notice is missed below the action row
+# ITEM-248: The referenced-verse notice is missed below the action row
 
 ## Summary
 

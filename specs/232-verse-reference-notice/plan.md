@@ -2,7 +2,7 @@
 
 **Spec**: `specs/232-verse-reference-notice/spec.md`
 **Branch**: `feat/232-verse-reference-notice`
-**Bump**: `patch` — 1.36.17 → 1.36.18 (re-check against `develop` at merge)
+**Bump**: `patch` — 1.36.18 → 1.36.19 (re-check against `develop` at merge)
 **Preview**: `specs/232-verse-reference-notice/preview/`
 
 ## Technical Context
