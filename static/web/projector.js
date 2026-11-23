@@ -907,9 +907,12 @@
   }
 
   function renderCue() {
-    if (!cue || !entries.length) return;
+    if (!cue) return;
     clearRunningCueLabels();
+    /* A go to has its own cue even with no service under it, or a service with no
+       entries: check the detour before the empty stage can return (spec 227). */
     if (detour) { renderDetourCue(); return; }
+    if (!entries.length) return;
     var entry = entryAt(current);
     if (!entry) return;
     var data = screenData[current] || {};

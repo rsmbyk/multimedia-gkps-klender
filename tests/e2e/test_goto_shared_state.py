@@ -9,9 +9,11 @@ import io
 import json
 import unittest
 import wave
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.db import connection as django_connection
 from django.test import override_settings, tag
 
 from multimedia.bible import models as bible
@@ -487,4 +489,78 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
         state = self._state(dock)
         self.assertIsNone(state['service'])
         self.assertFalse(state['on'], 'Back left something on air')
+        context.close()
+
+    # ---------- spec 227: the cue of a go to with nothing underneath it -------
+
+    def _open_goto_on(self, page, query):
+        page.bring_to_front()
+        page.keyboard.press('g')
+        page.wait_for_selector('#projectorFind:not([hidden])')
+        page.fill('#projectorFindInput', query)
+        page.wait_for_timeout(400)
+        page.keyboard.press('Enter')
+        page.wait_for_function(
+            "() => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
+            " return !!(s && s.goto); }")
+
+    def _cue(self, page):
+        return page.evaluate("""() => ({
+          label: (document.querySelector('#cue-prefix span') || {}).textContent || '',
+          flip: (document.querySelector('#cue-prefix .cue-translation') || {}).textContent || '',
+          baits: document.querySelectorAll('#cue-baits .cue-bait').length,
+          back: (document.querySelector('#cue-next-name') || {}).textContent || ''
+        })""")
+
+    def test_cue_carries_a_passage_and_its_controls_with_no_service(self):
+        """A projector opened with no service still names the passage in its cue and
+        offers its translation flip and Back while the go to is on the stage."""
+        context = self._context()
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector')
+        projector.wait_for_function("() => window.GKPSProjectorLibrary"
+                                    " && window.GKPSProjectorLibrary.ready()")
+        self.assertIsNone((self._state(projector) or {}).get('service'))
+
+        self._open_goto_on(projector, 'Matius 5:3')
+        projector.wait_for_function(
+            "() => { const s = document.querySelector('.projector-detour.is-active');"
+            " return !!s && s.textContent.includes('Matius'); }")
+        cue = self._cue(projector)
+        self.assertIn('Matius 5', cue['label'])
+        self.assertEqual(cue['flip'], 'TB')
+        self.assertEqual(cue['back'], 'back to service')
+        context.close()
+
+    def test_cue_carries_a_song_and_its_baits_when_the_service_has_no_entries(self):
+        """A projector opened for a service with no items still names the song in
+        its cue and offers its bait keys and Back while the go to is on the stage."""
+        # Playwright's sync driver owns the thread's event loop after setUp, so the
+        # database write goes through a worker thread (setUp's own writes are earlier).
+        def make_empty_service():
+            made = tatib.TataIbadah.objects.create(
+                name='Empty service', date=date(2026, 11, 15), is_active=True)
+            django_connection.close()
+            return made
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            empty = pool.submit(make_empty_service).result()
+        context = self._context()
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector?service=' + str(empty.pk))
+        projector.wait_for_function("() => window.GKPSProjectorLibrary"
+                                    " && window.GKPSProjectorLibrary.ready()")
+        self.assertEqual(projector.evaluate(
+            "() => document.querySelectorAll('.screen[data-screen]').length"), 0)
+
+        self._open_goto_on(projector, 'NKB 43')
+        projector.wait_for_function(
+            "() => { const s = document.querySelector('.projector-detour.is-active');"
+            " return !!s && s.textContent.includes('Sinar'); }")
+        cue = self._cue(projector)
+        self.assertIn('NKB 43', cue['label'])
+        self.assertEqual(cue['baits'], 2)
+        self.assertEqual(cue['back'], 'back to service')
         context.close()

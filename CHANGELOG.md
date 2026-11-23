@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The corner cue keeps naming a Go To when there is nothing underneath it.** A projector with no
+  service, or on a service with no entries, still shows the passage or song label, its translation
+  flip or bait keys, and Back while the Go To is on air (spec 227).
 - **The verse editor's header draws one rule.** `New verse` and `Edit verse n` no longer paint a short line above the header divider; the title sits 16.5px above the single rule, matching the other editors (spec 226).
 - **A newly added songbook or song opens as soon as it is created.** The new songbook is selected
   with its song list open; the new song opens on the reading stage with its title in the header.

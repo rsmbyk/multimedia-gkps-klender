@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-242](./items/ITEM-242-goto-cue-empty-service.md) | A Go To with no service under it has no cue | `renderCue()` returned on an empty entry list before its detour branch, so the passage or song label, its flip or baits and Back never reached the cue | fix | P1 | S | [227](../specs/227-goto-cue-empty-service/spec.md) | fix/227-goto-cue-empty-service | 2026-11-23 |
 
 ## In review
 

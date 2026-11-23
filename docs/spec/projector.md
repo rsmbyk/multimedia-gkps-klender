@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-11-22
-**slices**: `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-23
+**slices**: `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -84,6 +84,13 @@ room in the stage's layout, so the detour is laid out in the full stage; closing
 bring the notice back when the service still holds nothing. A re-read that ends with screens SHALL
 hide the notice in that same render, and one that ends with none SHALL leave it visible.
 
+The corner cue SHALL name the Go To and offer its controls even when the stage holds no screens —
+no service open, or a service with no entries. It SHALL show the passage or song label, a passage's
+translation flip, a song's bait buttons, the screen progress and a Back control naming the service.
+An empty service SHALL NOT suppress these just because its entry list is empty; the check for a
+detour SHALL run before any early return caused by that empty list. Closing the Go To over an empty
+service SHALL restore the notice and leave no Go To controls in the cue.
+
 #### Scenario: a service with items
 - WHEN the projector opens for a service
 - THEN its screens are the response's, and no other store is read
@@ -95,7 +102,12 @@ hide the notice in that same render, and one that ends with none SHALL leave it 
 #### Scenario: a Go To passage or song over an empty service
 - WHEN a Go To detour paints over a service with no items
 - THEN the empty notice is not painted, takes no room, and the detour is fitted to the full stage
+- AND the cue names the passage or song and offers its translation flip or bait keys and Back
 - AND closing the detour brings the notice back
+
+#### Scenario: a Go To with no service open
+- WHEN a projector that holds no service paints a Go To detour
+- THEN its cue names the passage or song and offers the same controls as over an empty service
 
 #### Scenario: a re-read that brings the first screens
 - WHEN the page re-reads its service and the response carries screens
