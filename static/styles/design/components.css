@@ -2741,6 +2741,15 @@ kbd {
   color: var(--ink);
 }
 .editor__verse-summary[data-invalid="true"] { color: var(--danger); }
+/* A picked song with no live verses keeps the section and shows only its summary row
+   (spec 235): no helper/All-Clear row, no tiles, no readout, and no rule left dangling
+   under the one line that is drawn. */
+.editor__verse-panel[data-empty="true"] .editor__verse-quick,
+.editor__verse-panel[data-empty="true"] .editor__verses,
+.editor__verse-panel[data-empty="true"] .editor__verse-readout { display: none; }
+.editor__verse-panel[data-empty="true"] .editor__verse-summary {
+  margin: 0; padding: 0; border-bottom: 0;
+}
 .editor__verses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
 .editor__verses > div { display: flex; min-width: 0; }
 .editor__verses label {

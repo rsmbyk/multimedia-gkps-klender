@@ -198,7 +198,7 @@
   </div>
   <div class="editor__field{% if form.verses.errors %} is-invalid{% endif %}" data-verse-field>
     <label id="entry-verses-label">Verses</label>
-    <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel{% if not form.song.value or form.song_has_no_verses %} hidden{% else %} data-settled="true"{% endif %}>
+    <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel{% if not form.song.value %} hidden{% else %} data-settled="true"{% endif %}{% if form.song_has_no_verses %} data-empty="true"{% endif %}>
       <div class="editor__verse-panel-inner">
         <p class="editor__verse-summary" data-verses-summary{% if form.verses.errors %} data-invalid="true"{% endif %}>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</p>
         <div class="editor__verse-quick">

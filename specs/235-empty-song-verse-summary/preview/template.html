@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empty song names itself in the Verses section — preview</title>
+<style>
+/*__TOKENS__*/
+/*__EDITOR_CSS__*/
+
+/* ---- preview chrome (not part of the product) ---- */
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+.stage {
+  position: relative; min-height: calc(100vh - 150px); display: flex;
+  align-items: center; justify-content: center; padding: 90px 16px 70px;
+  background: color-mix(in srgb, var(--canvas) 62%, var(--backdrop));
+}
+.pv-dialog { position: relative !important; top: auto !important; left: auto !important; margin: 0 !important; }
+.toolbar, .readout {
+  position: fixed; left: 0; right: 0; z-index: 10; display: flex; gap: 8px;
+  align-items: center; flex-wrap: wrap; padding: 10px 16px;
+  background: var(--rail-bg); border-bottom: 1px solid var(--divider);
+  color: var(--ink); font: 500 12px/1.3 var(--font-sans);
+}
+.toolbar { top: 0; }
+.readout { bottom: 0; border-bottom: 0; border-top: 1px solid var(--divider); font-family: ui-monospace, monospace; color: var(--head-ink); }
+.toolbar strong { font-weight: 700; margin-right: 4px; }
+.toolbar button {
+  height: 30px; padding: 0 11px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--divider); background: var(--canvas); color: var(--ink);
+  font: 600 12px/1 var(--font-sans);
+}
+.toolbar button.on { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.toolbar .sep { width: 1px; height: 22px; background: var(--divider); margin: 0 4px; }
+
+/* ---- preview-only: settle the collapsed state at once so a static measurement
+       reads the product's 0px rather than the middle of its 200ms transition ---- */
+.editor__verse-panel[hidden] { transition: none !important; }
+
+/* ---- the proposed state: the section stays, collapsed to its summary row ---- */
+.editor__verse-panel[data-empty="true"] .editor__verse-quick,
+.editor__verse-panel[data-empty="true"] .editor__verses,
+.editor__verse-panel[data-empty="true"] .editor__verse-readout { display: none; }
+.editor__verse-panel[data-empty="true"] .editor__verse-summary {
+  margin: 0; padding: 0; border-bottom: 0;
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <strong>Song entry state</strong>
+  <button type="button" data-state="none">No song</button>
+  <button type="button" data-state="empty-before">Empty song · before</button>
+  <button type="button" data-state="empty-proposed" class="on">Empty song · proposed</button>
+  <button type="button" data-state="verses">Song with verses</button>
+  <button type="button" data-state="single">One verse</button>
+  <span class="sep"></span>
+  <button type="button" data-theme>T</button>
+</div>
+
+<div class="stage">
+  <dialog class="editor pv-dialog" open aria-labelledby="editorTitle">
+    <div class="editor__content">
+      <div class="editor__body" data-kind="song">
+        <h2 class="editor__title" id="editorTitle">Add song</h2>
+        <form class="editor__form" data-entry-form="song">
+          <div class="editor__field">
+            <label id="entry-song-label" for="entry-song-search">Song</label>
+            <div class="editor__picker" data-entry-picker="song">
+              <input type="search" id="entry-song-search" class="editor__songsearch"
+                     placeholder="Search songs..." aria-label="Search songs" autocomplete="off"
+                     value="Kosong · 901">
+            </div>
+          </div>
+          <div class="editor__field" data-verse-field>
+            <label id="entry-verses-label">Verses</label>
+            <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel data-settled="true">
+              <div class="editor__verse-panel-inner">
+                <p class="editor__verse-summary" data-verses-summary>This song has no verses</p>
+                <div class="editor__verse-quick">
+                  <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
+                  <span class="editor__verse-actions">
+                    <button type="button" data-verse-all>All</button>
+                    <button type="button" data-verse-clear>Clear</button>
+                  </span>
+                </div>
+                <div class="editor__verses" id="entry-verses" data-verse-tiles></div>
+                <p class="editor__verse-readout sr" data-verse-readout aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<div class="readout" id="readout"></div>
+<script>
+(function () {
+  var panel = document.querySelector('[data-verse-panel]');
+  var label = document.getElementById('entry-verses-label');
+  var search = document.getElementById('entry-song-search');
+  var summary = document.querySelector('[data-verses-summary]');
+  var box = document.getElementById('entry-verses');
+  var readout = document.getElementById('readout');
+  var state = 'empty-proposed';
+  var states = {
+    'none': { song: '', text: 'Pick a song first', hide: true, empty: false, tiles: [] },
+    'empty-before': { song: 'Kosong · 901', text: 'This song has no verses', hide: true, empty: true, tiles: [] },
+    'empty-proposed': { song: 'Kosong · 901', text: 'This song has no verses', hide: false, empty: true, tiles: [] },
+    'verses': { song: 'Kidung · 12', text: 'Bait 1', hide: false, empty: false, tiles: [1,2,3,4,5,6,7,8,9,10] },
+    'single': { song: 'Bait Tunggal · 90', text: 'Bait 1', hide: false, empty: false, tiles: [1] }
+  };
+  function apply(next) {
+    state = next;
+    var s = states[next];
+    search.value = s.song;
+    summary.textContent = s.text;
+    panel.hidden = s.hide;
+    panel.dataset.settled = s.hide ? 'false' : 'true';
+    if (s.empty) panel.dataset.empty = 'true'; else delete panel.dataset.empty;
+    box.innerHTML = s.tiles.map(function (n) {
+      return '<div><label class="editor__verse-tile"><input type="checkbox" checked data-number="' + n + '"> <span>' + n + '</span></label></div>';
+    }).join('');
+    box.dataset.muted = s.tiles.length === 1 ? 'true' : 'false';
+    [].forEach.call(document.querySelectorAll('[data-state]'), function (b) {
+      b.classList.toggle('on', b.dataset.state === next);
+    });
+    /* the panel animates its grid row over 200ms — measure after it settles */
+    window.clearTimeout(measure.timer);
+    measure.timer = window.setTimeout(measure, 280);
+  }
+  function measure() {
+    var pr = panel.getBoundingClientRect();
+    var bodyVisible = !panel.hidden && getComputedStyle(quick()).display !== 'none';
+    readout.textContent =
+      'state=' + state +
+      ' · panel=' + pr.width.toFixed(1) + '×' + pr.height.toFixed(1) + 'px' +
+      ' · label=' + getComputedStyle(label).display +
+      ' · summary=' + summary.textContent +
+      ' · body=' + (bodyVisible ? 'visible' : 'hidden') +
+      ' · rule=' + getComputedStyle(summary).borderBottomWidth;
+  }
+  function quick() { return document.querySelector('.editor__verse-quick'); }
+  [].forEach.call(document.querySelectorAll('[data-state]'), function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.state); });
+  });
+  document.querySelector('[data-theme]').addEventListener('click', function () {
+    var root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+    measure();
+  });
+  window.addEventListener('resize', measure);
+  apply(state);
+})();
+</script>
+</body>
+</html>
