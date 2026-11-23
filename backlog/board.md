@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-244](./items/ITEM-244-cue-verse-counter.md) | A passage cue does not say where it stands in the passage | Add a `current/end` verse counter after the reference for a service passage and a chapter Go To | feat | P2 | S | [229](../specs/229-cue-verse-counter/spec.md) | 2026-11-23 |
 
 ## Ready
 

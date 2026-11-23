@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-11-23
-**slices**: `228-goto-cue-back-reset`, `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `229-cue-verse-counter`, `228-goto-cue-back-reset`, `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -468,3 +468,37 @@ as the moves stop. (spec 219)
 #### Scenario: two moves in quick succession
 - WHEN a second move arrives before the first has finished morphing
 - THEN the second cuts, and the first screen it replaced is not left part-faded behind it
+
+### R16 — A passage cue carries its current and end verse
+
+The projector's corner cue SHALL place a `current/end` verse counter after a passage reference and
+before the translation flip, separated by centre dots, whenever a Bible passage is displayed. For a
+service scripture entry the current number SHALL be the verse on the active screen and the end
+number the entry's end verse, or its start verse when no end is stored; stepping through the passage
+SHALL move the current number and keep the end. For a passage Go To the current number SHALL be the
+verse painted and the end number the last verse of the chapter currently loaded in the edition in
+use; a verse step, a chapter crossing and an edition flip SHALL all keep the counter derived from
+that chapter. A single-verse passage SHALL read `n/n`. A song, text, break or media cue SHALL carry
+no counter, and a chapter with no verses SHALL carry none rather than `n/0`. The counter SHALL be
+text inside the existing cue label — no new control, token, size or colour — so the 24px band, the
+centre alignment and the translation flip are unchanged. (spec 229)
+
+#### Scenario: a service passage steps
+- WHEN a service passage spanning verses 3–5 shows verse 3
+- THEN the cue reads `Matius 5:3-5 · 3/5 · TB`, then `4/5`, then `5/5`, with the reference held
+
+#### Scenario: a single verse
+- WHEN a passage with no stored end verse shows its only verse
+- THEN the cue reads `Matius 5:3 · 3/3 · TB`
+
+#### Scenario: a chapter Go To
+- WHEN a Go To chapter of three verses shows verse 1
+- THEN its cue reads `Matius 5:1 · 1/3 · TB`, and stepping gives `2/3` and `3/3`
+
+#### Scenario: the chapter changes
+- WHEN the Go To crosses into the next chapter
+- THEN the end number is that chapter's last verse, and an edition flip leaves the counter alone
+
+#### Scenario: another kind of cue
+- WHEN a song, text, break or media screen is showing
+- THEN the cue has no verse counter at all
