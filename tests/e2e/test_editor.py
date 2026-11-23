@@ -721,15 +721,35 @@ class EditorE2ETests(StaticLiveServerTestCase):
     def _stage(self, page):
         return page.evaluate("""() => ({
           url: location.pathname,
+          search: location.search,
           name: document.getElementById('readName')?.textContent || '',
           current: document.querySelector('#panelBody a.book[aria-current="true"]')
             ?.getAttribute('data-name') || null,
           nav: document.documentElement.dataset.nav,
           ch: document.documentElement.dataset.ch,
-          marker: window.__gkps209 || null,
+          mode: document.getElementById('tatibMode')?.getAttribute('aria-pressed') || '',
+          focus_name: document.activeElement?.getAttribute('data-name') || null,
+          focus_class: document.activeElement?.className || '',
+          marker: window.__gkps209 || window.__gkps234 || null,
           timeOrigin: performance.timeOrigin,
           empty: !!document.querySelector('.entry__empty-title')
         })""")
+
+    def _create_template_from_sidebar(self, page, name, start='/tatib/', marker=None):
+        page.goto(self.live_server_url + start)
+        page.wait_for_load_state('networkidle')
+        before = None
+        if marker:
+            page.evaluate("(key) => { window[key] = 'alive'; }", marker)
+            before = self._stage(page)
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent .editor__form')
+        page.click('#editorContent [data-tatib-kind="1"]')
+        page.wait_for_function(
+            "document.querySelector('#editorContent .editor__date-field')?.hidden === true")
+        self._save(page, name=name)
+        page.wait_for_timeout(800)
+        return before
 
     def _create_from_sidebar(self, page, name, date_value='2026-11-22'):
         page.click('#panelAdd')
@@ -777,17 +797,66 @@ class EditorE2ETests(StaticLiveServerTestCase):
         state = self._stage(page)
         assert state['nav'] == 'mini', state
 
-    def test_a_template_create_keeps_the_stage(self):
+    # --- spec 234: a created Template opens on the stage -------------------------
+
+    def test_a_created_template_opens_on_the_stage(self):
         page = self._page(reverse('web-tatib'))
-        page.click('#panelAdd')
-        page.click('#editorContent [data-tatib-kind="1"]')
-        self._save(page, name='Skeleton 209')
-        page.wait_for_timeout(800)
+        self._create_template_from_sidebar(page, 'Skeleton 234')
         state = self._stage(page)
-        assert state['url'] == '/tatib/', state
         self._close_browser()
-        created = tatib.TataIbadah.objects.get(name='Skeleton 209')
+        created = tatib.TataIbadah.objects.get(name='Skeleton 234')
         self.assertEqual(created.kind, tatib.TataIbadahKind.TEMPLATE)
+        self.assertEqual(state['url'], f'/tatib/{created.pk}/', state)
+        self.assertEqual(state['search'], '?mode=template', state)
+        self.assertEqual(state['name'], 'Skeleton 234', state)
+        self.assertEqual(state['current'], str(created.pk), state)
+
+    def test_an_empty_created_template_shows_its_add_actions(self):
+        page = self._page(reverse('web-tatib'))
+        self._create_template_from_sidebar(page, 'Empty Skeleton 234')
+        state = self._stage(page)
+        self.assertTrue(state['empty'], state)
+        expect(page.locator('.entry__empty-title')).to_be_visible()
+        expect(page.locator('[data-entry-open="scripture"]')).to_be_visible()
+        self._close_browser()
+        self.assertTrue(tatib.TataIbadah.objects.filter(name='Empty Skeleton 234').exists())
+
+    def test_a_created_template_open_does_not_reload_the_document(self):
+        page = self._page(reverse('web-tatib'))
+        before = self._create_template_from_sidebar(
+            page, 'Unreloaded Skeleton 234', marker='__gkps234')
+        after = self._stage(page)
+        self.assertEqual(after['marker'], 'alive', after)
+        self.assertEqual(after['timeOrigin'], before['timeOrigin'], (before, after))
+        self.assertEqual(after['nav'], before['nav'], (before, after))
+
+    def test_a_created_template_restores_focus_to_its_row(self):
+        page = self._page(reverse('web-tatib'))
+        self._create_template_from_sidebar(page, 'Focused Skeleton 234')
+        state = self._stage(page)
+        self._close_browser()
+        created = tatib.TataIbadah.objects.get(name='Focused Skeleton 234')
+        self.assertEqual(state['current'], str(created.pk), state)
+        self.assertEqual(state['focus_name'], str(created.pk), state)
+        self.assertIn('row-flash', state['focus_class'], state)
+
+    def test_a_created_template_opens_its_contents_pane(self):
+        page = self._page(reverse('web-tatib'))
+        self._create_template_from_sidebar(page, 'Contents Skeleton 234')
+        state = self._stage(page)
+        self.assertEqual(state['ch'], 'open', state)
+        self.assertEqual(state['mode'], 'true', state)
+
+    def test_a_created_template_from_template_list_opens_on_the_stage(self):
+        page = self._page(reverse('web-tatib') + '?mode=template')
+        self._create_template_from_sidebar(
+            page, 'List Skeleton 234', start='/tatib/?mode=template')
+        state = self._stage(page)
+        self._close_browser()
+        created = tatib.TataIbadah.objects.get(name='List Skeleton 234')
+        self.assertEqual(state['url'], f'/tatib/{created.pk}/', state)
+        self.assertEqual(state['search'], '?mode=template', state)
+        self.assertEqual(state['mode'], 'true', state)
 
     def test_an_edit_keeps_the_stage(self):
         page = self._page(reverse('web-tatib'))
