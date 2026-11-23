@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-250](./items/ITEM-250-empty-song-verse-summary.md) | An empty song hides the whole Verses section instead of naming itself | Show the Verses section with only the `This song has no verses` summary row when the picked song has no verses; no song still collapses it | fix | P2 | S | [235](../specs/235-empty-song-verse-summary/spec.md) | fix/235-empty-song-verse-summary | 2026-11-24 |
 
 ## In review
 

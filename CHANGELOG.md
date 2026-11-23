@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **An empty song now names itself in the song entry's Verses section.** Picking a song with no
+  live verses no longer hides the field: the label and panel stay, collapsed to the single line
+  `This song has no verses`, with no tiles, helper row or separator. No song still hides the field,
+  and songs with verses keep the full picker (spec 235).
 - **Add verse now sits beside Project in the song header.** A song with verses offers the control
   in the header, immediately left of Project; an empty song keeps only its centred invitation (spec 231).
 

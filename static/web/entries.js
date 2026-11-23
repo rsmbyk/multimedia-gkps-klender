@@ -729,7 +729,11 @@
     if (all) all.disabled = !boxes.length || checked.length === boxes.length;
     if (clear) clear.disabled = !checked.length;
     if (panel) {
-      var shouldHide = !songPicked || !boxes.length;
+      /* A picked song with no verses keeps the section and shows only its summary row
+         (spec 235); only "no song at all" collapses the whole field. */
+      if (songPicked && !boxes.length) panel.dataset.empty = 'true';
+      else delete panel.dataset.empty;
+      var shouldHide = !songPicked;
       if (shouldHide) {
         panel.dataset.settled = 'false';
         panel.hidden = true;
