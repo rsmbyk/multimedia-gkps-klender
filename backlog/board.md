@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | 2026-11-24 |
 
 ## Ready
 
@@ -46,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | [#614](https://github.com/rsmbyk/multimedia-gkps-klender/pull/614) | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
