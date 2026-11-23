@@ -45,13 +45,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | [#602](https://github.com/rsmbyk/multimedia-gkps-klender/pull/602) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | develop via [#602](https://github.com/rsmbyk/multimedia-gkps-klender/pull/602) | 2026-11-23 |
 | [ITEM-244](./items/ITEM-244-cue-verse-counter.md) | A passage cue does not say where it stands in the passage | Add a `current/end` verse counter after the reference for a service passage and a chapter Go To | feat | P2 | S | [229](../specs/229-cue-verse-counter/spec.md) | develop via [#600](https://github.com/rsmbyk/multimedia-gkps-klender/pull/600) | 2026-11-23 |
 | [ITEM-242](./items/ITEM-242-goto-cue-empty-service.md) | A Go To with no service under it has no cue | `renderCue()` returned on an empty entry list before its detour branch, so the passage or song label, its flip or baits and Back never reached the cue | fix | P1 | S | [227](../specs/227-goto-cue-empty-service/spec.md) | develop via [#596](https://github.com/rsmbyk/multimedia-gkps-klender/pull/596) | 2026-11-23 |
 | [ITEM-243](./items/ITEM-243-goto-cue-back-reset.md) | Back leaves the Go To information in the cue over an empty stage | The empty-stage return left the detour's label, baits and Back painted; the idle stage also kept a stray centre dot and phantom mouse zones, now hidden while fullscreen and the cue's own controls stay | fix | P1 | S | [228](../specs/228-goto-cue-back-reset/spec.md) | develop via [#598](https://github.com/rsmbyk/multimedia-gkps-klender/pull/598) | 2026-11-23 |

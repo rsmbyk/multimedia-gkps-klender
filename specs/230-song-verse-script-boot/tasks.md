@@ -64,7 +64,7 @@ editor exactly as they do on a direct load.
 
 ## Phase 6 — Delivery (after Fold)
 
-- [ ] T015 Apply `bump: patch` (VERSION 1.36.15 → 1.36.16) and the changelog line immediately
+- [X] T015 Apply `bump: patch` (VERSION 1.36.15 → 1.36.16) and the changelog line immediately
   before the merge, with `ITEM-245` moved to Done in the same commit.
 
 ## Phase 7 — Convergence
