@@ -96,7 +96,8 @@ class SongModalScrollbarE2ETests(StaticLiveServerTestCase):
         row.locator('[data-entry-edit]').first.dispatch_event('click')
         page.wait_for_selector('#editorModal[open] .editor__form[data-entry-mode="edit"]')
         if empty:
-            page.wait_for_selector('#editorModal [data-verse-panel][hidden]', state='attached')
+            # spec 235 keeps the panel open with a single "no verses" summary line
+            page.wait_for_selector('#editorModal [data-verse-panel][data-empty="true"]')
         else:
             page.wait_for_selector('#editorModal [data-verse-panel][data-settled="true"]')
 

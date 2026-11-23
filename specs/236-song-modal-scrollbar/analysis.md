@@ -17,7 +17,7 @@
 | A1 | LOW | board | `tasks.md` | `ITEM-251` is reserved in the spec but not yet opened on the board; gate 1 was accepted on the spec directly. | T011 opens it in `Speccing` with the spec and branch fields in this slice's PR; the owner's `Ready` promotion is untouched. No intent change. |
 | A2 | LOW | version | `plan.md` | `develop` moved from `1.36.19` to `1.36.20` while the slice was being specified. | The plan declares only the level (`patch`); the number is re-checked at delivery (T013) and stamped pre-merge (T014), per VER-04. No plan change. |
 | A3 | LOW | preview | `preview/README.md` | The sandboxed chat frame reads a 0px gutter in the before state where a browser tab reads 5px — the frame uses overlay scrollbars. | The spec's numbers are browser-tab measurements; the frame's role is to prove the page is styled and laid out, not to supply geometry. Recorded in the preview README and Research D004; no spec change. |
-| A4 | INFO | overlap | `spec.md` | Spec 235 (empty-song verse summary) is in flight in another worktree and touches the same collapsed panel. | Recorded as an assumption: this rule governs which element scrolls, not what the panel shows. No scope change. |
+| A4 | INFO | overlap | `spec.md` | Spec 235 (empty-song verse summary) touched the same panel and merged on develop during delivery. | The rule governs which element scrolls, not what the panel shows; the empty-song test selector follows the merged `data-empty` state. No scope change. |
 | A5 | LOW | collision | `tasks.md` | Spec 234 holds `ITEM-249` and spec 235 holds `ITEM-250` unmerged; both can advance before delivery. | T013 re-checks spec number, card ID, `R58` and patch level against `develop` and all unmerged branches before delivery. |
 
 ## Coverage
@@ -58,13 +58,13 @@ decision before gate 2.
 
 ## Artifact SHAs read (sha256, first 12)
 
-- `spec.md` `722dd7d229ec`
+- `spec.md` `57e0d71cfe08`
 - `plan.md` `9ceae0248323`
 - `research.md` `f83c8e29dafa`
 - `data-model.md` `6c3d28c00233`
 - `contracts/README.md` `3d5e8d69b96c`
 - `quickstart.md` `a24bb5edd194`
-- `tasks.md` `90a996f60201`
+- `tasks.md` `4982063f39b2`
 - `checklists/requirements.md` `8efb20771fcf`
 - `checklists/checklist.md` `d5cb0bd7009f`
 - `preview/README.md` `595151db6af4`
@@ -73,3 +73,4 @@ decision before gate 2.
 ## History
 
 - 2026-11-24 — first analysis: zero CRITICAL, 100% coverage, five recorded findings (one INFO).
+- 2026-11-24 — post-merge delta after spec 235 landed: selector and assumption updated, coverage unchanged.

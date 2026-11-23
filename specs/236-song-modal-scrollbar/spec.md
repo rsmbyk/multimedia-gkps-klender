@@ -148,8 +148,8 @@ dialog's `86vh` cap engages.
 - The fix is one declaration on `.editor`; no template, script or endpoint changes.
 - The collapsed verse panel keeps its `grid-template-rows: 0fr` animation — its
   overflow is clipped by the dialog, not removed by hiding the panel outright.
-- Spec 235 (empty-song verse summary, in flight in another slice) may change what the
-  panel shows; this rule only governs which element scrolls, so the two are independent.
+- Spec 235 (empty-song verse summary) is merged on develop; it changes what the panel shows,
+  not which element scrolls. The new/edit scrollbar rule applies to both panel states.
 - `bump: patch` is expected for a user-visible fix; the level is declared at Plan and
   reviewed at gate 2, not fixed here.
 - The card is new (`ITEM-251`); the owner promotes it to `Ready` after gate 1.

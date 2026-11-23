@@ -45,6 +45,13 @@ approved task text, and the test module documents the fixture. No change.
 **Outcome**: converged — zero CRITICAL, zero typed gaps, 16/16 rows checked. Unchecked tasks
 T013/T014 belong to delivery after the push, not to Convergence.
 
+## Post-merge delta
+
+Spec 235 landed on develop while the slice was local. The rebase was resolved by hand: the
+capability header keeps both slice names, `R58` stayed free, and the empty-song test now waits on
+the merged `data-empty="true"` panel instead of the former `hidden` state. No requirement changed.
+
 ## History
 
 - 2026-11-24 — pass 1: 16/16 rows checked, no typed findings, one INFO wording record.
+- 2026-11-24 — post-merge delta: spec 235 folded before delivery; 16/16 unchanged.

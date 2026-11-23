@@ -40,7 +40,7 @@ Every `test` row in the plan is a red task and a green task. Inspection rows pro
 **Independent test**: edit an empty-song entry, then a song with verses, read 0px gutter in both.
 
 - [X] T005 [P] [US2] Write failing E2E tests for US2/AC1, US2/AC2 and SC-002:
-      `test_edit_song_collapsed_verses_has_no_scrollbar` (song with no verses; panel hidden,
+      `test_edit_song_collapsed_verses_has_no_scrollbar` (song with no verses; spec 235 empty-summary state,
       gutter 0px, wheel does nothing) and `test_edit_song_with_verses_keeps_its_box` (song with
       verses; 410/410px, gutter 0px). Run them red.
 - [X] T006 [US2] Make the T005 tests green with the same one-line rule; add no per-mode CSS and no
