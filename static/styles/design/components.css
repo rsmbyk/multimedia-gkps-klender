@@ -3101,6 +3101,9 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .verse-add__btn:hover { color: var(--ink); border-color: var(--focus); }
 .verse-add__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .verse-add__btn svg { width: 15px; height: 15px; }
+/* In the header the Add verse control keeps its dashed identity but matches the
+   Project button's height so the two read as one set (spec 231). */
+.read__project .verse-add__btn--head { height: 34px; padding: 0 12px; }
 @media (max-width: 480px) {
   .v__acts { width: 1.7rem; }
   .v__grip svg, .v__edit svg { width: 15px; height: 15px; }
