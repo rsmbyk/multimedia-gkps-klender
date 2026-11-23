@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The reason a referenced verse cannot be deleted now sits beside the button.** The verse editor's
+  action row leads with `Used in <count> Tata Ibadah — delete unavailable`, the disabled Delete reads
+  neutral instead of faded red, and at narrow widths the note drops above the buttons (spec 232).
 - **The song list keeps its chosen order after a refresh.** Creating, editing or deleting a song, opening a row or returning to Kidung no longer resets an alphabetical sort to last-modified order, and the sort control keeps agreeing with the rows (spec 233).
 - **Add verse works on a song opened from the sidebar without a refresh.** The reading shell boots the verse script at page load instead of relying on a script tag inside the swapped-in song fragment, so Add verse and Edit are bound on the first click (spec 230).
 - **Back clears the Go To from the projector cue when nothing is underneath it.** With no service,
