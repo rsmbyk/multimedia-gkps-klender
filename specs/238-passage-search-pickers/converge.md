@@ -61,6 +61,10 @@
   by `test_enter_in_a_numeric_filter_selects_without_submitting`; live probe: Chapter and From
   verse both kept `dialog[open]` at 1 with hidden values `12` and `3` and their menus closed.
   17 passage tests pass.
+- **One Tab to To verse**: `tabToNextField` skips `.editor__end-wrap` when its trigger is enabled,
+  so the tooltip container is no longer an extra stop after From verse. Pinned by
+  `test_tab_from_from_verse_reaches_to_verse_in_one_press`; live probe: one Tab moved focus from
+  the From verse filter to `#entry-verse_end-trigger`. 18 passage tests pass.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
@@ -71,6 +75,6 @@
 | US1…US4 | each has an independent test in the new module |
 | SC-001…SC-004 | passed: field/menu parity, unchanged payload, no endpoint, song path unchanged |
 | Edge cases | disabled options and empty hints inspected in `wireSearchCombo` and covered by tests |
-| Plan traceability | 19 test · 12 inspection · 0 manual, all rows resolved |
+| Plan traceability | 20 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.

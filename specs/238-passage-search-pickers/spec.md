@@ -120,6 +120,9 @@ and compare the POSTed payload and rendered stage reference with a baseline.
   follows Arrow keys over visible options, and is what Tab commits.
 - Enter in a numeric popover filter commits the highlight and closes only the menu: the filter sits
   inside the entry form, so without `preventDefault` the dialog would submit and close.
+- Tab out of From verse lands directly on the To verse trigger. The tabbable `.editor__end-wrap`
+  is only there to expose the disabled control's hover note, so it is skipped while its trigger
+  is enabled.
 
 ## UI/UX
 

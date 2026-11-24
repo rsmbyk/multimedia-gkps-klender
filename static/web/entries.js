@@ -321,7 +321,15 @@
       next = event.shiftKey ? focusable[following - 1] : focusable[following];
     }
     event.preventDefault();
-    if (next && next.focus) next.focus();
+    if (next && next.focus) {
+      /* The optional-verse wrapper is tabbable only to expose its hover note.
+         Once its trigger is enabled, one Tab should land on the control itself. */
+      if (next.classList && next.classList.contains('editor__end-wrap')) {
+        var inner = next.querySelector('[data-picker-trigger], input, button');
+        if (inner && !inner.disabled) next = inner;
+      }
+      next.focus();
+    }
   }
 
   /* Keep the keyboard's active option inside the menu's own scroll box, without
