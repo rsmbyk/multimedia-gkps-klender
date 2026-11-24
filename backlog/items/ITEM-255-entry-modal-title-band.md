@@ -1,6 +1,6 @@
 ---
 id: ITEM-255
-status: in review
+status: done
 title: 'Large entry dialogs lost their title band'
 type: fix
 priority: P1
@@ -9,10 +9,10 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 240-entry-modal-title
 branch: fix/240-entry-modal-title
-pr:
+pr: 617
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-24
+closed_reason: merged into develop (PR #617)
 bump: patch
 release_version:
 ---

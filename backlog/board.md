@@ -45,13 +45,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-255](./items/ITEM-255-entry-modal-title-band.md) | Large entry dialogs lost their title band | The headerless entry form lost the inset and divider spec 226 moved to the head; scoped rule restores them for text Create/Edit and media Create | fix | P1 | S | [240](../specs/240-entry-modal-title/spec.md) | pending | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-255](./items/ITEM-255-entry-modal-title-band.md) | Large entry dialogs lost their title band | The headerless entry form lost the inset and divider spec 226 moved to the head; scoped rule restores them for text Create/Edit and media Create | fix | P1 | S | [240](../specs/240-entry-modal-title/spec.md) | develop via [#617](https://github.com/rsmbyk/multimedia-gkps-klender/pull/617) | 2026-11-24 |
 | [ITEM-254](./items/ITEM-254-media-filter-pill-hover.md) | Media Library filter pills have no hover feedback | Six type/Unused pills keep their rest border and fill under the pointer while neighbouring controls change | feat | P2 | S | [239](../specs/239-media-filter-pill-hover/spec.md) | develop via [#616](https://github.com/rsmbyk/multimedia-gkps-klender/pull/616) | 2026-11-24 |
 | [ITEM-252](./items/ITEM-252-sidebar-mark-centering.md) | The service entry kind mark sits above the row centre | The contents row centres its number but the icon stays on the label's baseline, 11.5px high on a two-line song row | fix | P2 | S | [237](../specs/237-sidebar-mark-centering/spec.md) | develop via [#615](https://github.com/rsmbyk/multimedia-gkps-klender/pull/615) | 2026-11-24 |
 | [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | develop via [#614](https://github.com/rsmbyk/multimedia-gkps-klender/pull/614) | 2026-11-24 |

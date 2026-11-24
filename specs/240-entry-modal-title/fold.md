@@ -34,9 +34,8 @@ Nothing was added as a new `R<n>`, removed or renamed. No behaviour change outsi
 ## Not folded
 
 None. The VERSION bump, changelog line and card/board close are delivery bookkeeping,
-not capability operations. The card sits in `In review` with `pr:` empty; its `Done`
-move, `closed_reason`, `closed_at` and board row gain the PR number when the push is
-authorised, on the same PR — no follow-up board PR.
+not capability operations. The card's `Done` close (`closed_at`, `closed_reason`) and
+board row were made on the same PR, #617, with no follow-up board PR.
 
 ## Evidence
 
@@ -54,4 +53,4 @@ authorised, on the same PR — no follow-up board PR.
 | Version | `1.36.26` (was `1.36.25` on `origin/develop`; spec 238 still holds `1.36.24` unmerged) |
 | Card | `ITEM-255` — `ITEM-253` was taken by spec 238 mid-flight |
 | Branch | `fix/240-entry-modal-title`, based on `origin/develop` at `3aa1810e` after merging spec 239 |
-| Push / PR | not authorised yet; no push has been made |
+| Push / PR | pushed as PR [#617](https://github.com/rsmbyk/multimedia-gkps-klender/pull/617); the card's `Done` close and board row carry the same PR number |
