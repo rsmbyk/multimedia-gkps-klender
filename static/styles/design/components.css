@@ -2714,6 +2714,7 @@ kbd {
   font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   background: transparent; border: 0; cursor: pointer;
 }
+.editor__picker-option[hidden] { display: none; }    /* author display beats [hidden] */
 .editor__songoption--book {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
@@ -2721,9 +2722,14 @@ kbd {
 .editor__songoption--book .book__n { flex: 1; }
 .editor__songoption--book .book__s[hidden] { display: none; }
 .editor__picker-option:hover, .editor__picker-option:focus-visible,
-.editor__songoption:hover, .editor__songoption:focus-visible {
+.editor__songoption:hover, .editor__songoption:focus-visible,
+.editor__picker-option.is-active, .editor__songoption.is-active {
   background: var(--icon-hover-bg); outline: none;
 }
+/* The passage fields wear the song search's chrome; a disabled one keeps the
+   select-like muted tone instead of looking editable. */
+.editor__songsearch:disabled { color: var(--head-ink); cursor: default; }
+.editor__songsearch:disabled:hover { border-color: var(--divider); }
 .editor__songsearch { width: 100%; }
 /* The song results keep the product's fixed, viewport-capped menu (spec 040), but the
    anchor is the live search field and the cap is the window, not the dialog. */

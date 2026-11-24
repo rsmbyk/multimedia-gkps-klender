@@ -60,16 +60,14 @@
                 title="Simalungun translation">SIM</button>
       </div>
     </div>
-    <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <label id="entry-book-label" for="entry-book-search">Book</label>
     <div class="editor__picker" data-entry-picker="book">
-      <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
-              data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
-              aria-controls="entry-book-menu"{% if form.book_translation.errors %} aria-invalid="true"{% endif %}>
-        <span data-picker-label>Choose a book</span>
-      </button>
+      <input type="search" id="entry-book-search" class="editor__songsearch" data-menu-anchor
+             placeholder="Search books..." aria-label="Book" autocomplete="off"
+             aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-book-menu"
+             {% if form.book_translation.errors %}aria-invalid="true"{% endif %}>
       <div class="editor__picker-menu" id="entry-book-menu" hidden>
-        <input type="search" placeholder="Filter books..." aria-label="Filter books" autocomplete="off">
-        <div class="editor__picker-options" data-picker-options role="listbox" aria-label="Books">
+        <div class="editor__picker-options" id="entry-book-options" data-picker-options role="listbox" aria-label="Books">
           {% regroup books by testament_label as testaments %}
           {% for testament in testaments %}
           <div class="editor__picker-group" data-picker-group
@@ -130,8 +128,10 @@
           <span data-picker-label>Choose a chapter</span>
         </button>
         <div class="editor__picker-menu" id="entry-chapter-menu" hidden>
+          <input type="search" placeholder="Filter chapters..." aria-label="Filter chapters" autocomplete="off">
           <div class="editor__picker-options" id="entry-chapter-options" data-picker-options
                role="listbox" aria-label="Chapters"></div>
+          <p class="editor__hint" data-picker-empty hidden>No matching chapters.</p>
         </div>
         <select name="chapter" id="id_chapter" hidden disabled
                 data-initial="{{ form.chapter.value|default:1 }}"></select>
@@ -150,8 +150,10 @@
           <span data-picker-label>Choose a verse</span>
         </button>
         <div class="editor__picker-menu" id="entry-verse_start-menu" hidden>
+          <input type="search" placeholder="Filter verses..." aria-label="Filter from verses" autocomplete="off">
           <div class="editor__picker-options" id="entry-verse_start-options" data-picker-options
                role="listbox" aria-label="From verses"></div>
+          <p class="editor__hint" data-picker-empty hidden>No matching verses.</p>
         </div>
         <select name="verse_start" id="id_verse_start" hidden disabled
                 data-initial="{{ form.verse_start.value|default:1 }}"></select>
@@ -169,8 +171,10 @@
             <span data-picker-label>No ending verse</span>
           </button>
           <div class="editor__picker-menu" id="entry-verse_end-menu" hidden>
+            <input type="search" placeholder="Filter verses..." aria-label="Filter to verses" autocomplete="off">
             <div class="editor__picker-options" id="entry-verse_end-options" data-picker-options
                  role="listbox" aria-label="To verses"></div>
+            <p class="editor__hint" data-picker-empty hidden>No matching verses.</p>
           </div>
           <select name="verse_end" id="id_verse_end" hidden disabled
                   data-initial="{{ form.verse_end.value|default_if_none:'' }}"></select>
