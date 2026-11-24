@@ -1910,7 +1910,7 @@ those three menus SHALL carry a `type="search"` filter above its options that hi
 number does not contain the query, with an empty hint when none match. Opening a popover SHALL
 focus its filter. The hidden selects SHALL remain the posted values, so the book → chapter →
 verse cascade, the translation toggle, stored edit values and the original button geometry and
-hover note SHALL be unchanged. Only one picker menu SHALL be open in the modal at a time. Tab in any search dropdown SHALL commit the highlighted option, or the first visible match, then move focus to the next field. Arrow-led highlights SHALL scroll the option list itself to keep the highlighted row visible. (spec 238)
+hover note SHALL be unchanged. Only one picker menu SHALL be open in the modal at a time. Tab in any search dropdown SHALL commit the highlighted option, or the first visible match, then move focus to the next field. Arrow-led highlights SHALL scroll the option list itself to keep the highlighted row visible. Chapter and verse popovers SHALL open with the stored option highlighted. (spec 238)
 
 #### Scenario: Book is searched
 - WHEN the operator focuses Book and types `mat`

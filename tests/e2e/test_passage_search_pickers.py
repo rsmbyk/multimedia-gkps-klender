@@ -54,6 +54,10 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
                 bible.Verse.objects.create(
                     book_translation=translation, chapter=12, verse=verse,
                     text=f'chapter twelve verse {verse}')
+            for verse in range(1, 6):
+                bible.Verse.objects.create(
+                    book_translation=translation, chapter=2, verse=verse,
+                    text=f'chapter two verse {verse}')
         for translation in (self.kej_tb, self.kej_sim):
             bible.Verse.objects.create(
                 book_translation=translation, chapter=1, verse=1, text='first verse')
@@ -278,6 +282,52 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         assert_one('entry-verse_start-menu')
         self.assertEqual(
             page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
+
+    def test_numeric_popovers_open_with_a_highlight_and_follow_arrows(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        page.locator('#entry-chapter-trigger').dispatch_event('click')
+        page.wait_for_timeout(150)
+        chapter_list = page.locator('#entry-chapter-options')
+        expect(chapter_list.locator('[data-picker-option].is-active')).to_have_count(1)
+        self.assertEqual(
+            chapter_list.locator('[data-picker-option].is-active').get_attribute('data-value'), '1')
+        filter_box = page.locator('#entry-chapter-menu input[type="search"]')
+        filter_box.press('ArrowDown')
+        page.wait_for_timeout(80)
+        self.assertEqual(
+            chapter_list.locator('[data-picker-option].is-active').get_attribute('data-value'), '2')
+        filter_box.press('Tab')
+        page.wait_for_timeout(250)
+        self.assertEqual(page.locator('#id_chapter').input_value(), '2')
+
+        expect(page.locator('#entry-verse_start-trigger')).to_be_enabled()
+        expect(page.locator('#entry-verse_start-options [data-picker-option]')).not_to_have_count(0)
+        page.locator('#entry-verse_start-trigger').dispatch_event('click')
+        page.wait_for_timeout(150)
+        start_list = page.locator('#entry-verse_start-options')
+        expect(start_list.locator('[data-picker-option].is-active')).to_have_count(1)
+
+    def test_numeric_popover_scrolls_with_the_highlight(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        page.locator('#entry-chapter-trigger').click()
+        page.wait_for_timeout(150)
+        filter_box = page.locator('#entry-chapter-menu input[type="search"]')
+        for _ in range(20):
+            filter_box.press('ArrowDown')
+        page.wait_for_timeout(120)
+        state = page.evaluate("""() => {
+          const list = document.querySelector('#entry-chapter-options');
+          const active = list.querySelector('.is-active');
+          const view = list.getBoundingClientRect(), row = active.getBoundingClientRect();
+          return {top: list.scrollTop,
+                  inView: row.top >= view.top - 1 && row.bottom <= view.bottom + 1};
+        }""")
+        self.assertGreater(state['top'], 0)
+        self.assertTrue(state['inView'])
 
     def test_book_menu_scrolls_with_the_highlight(self):
         page = self._page()

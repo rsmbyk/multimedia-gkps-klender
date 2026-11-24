@@ -61,6 +61,9 @@ options; repeat for From verse and To verse; choose one and check the hidden sel
    only later verse numbers containing the query remain and choosing one sets `verse_end`.
 4. **Given** an empty filter **When** it is cleared **Then** every option in that popover returns
    and its empty hint is hidden.
+5. **Given** a numeric popover is opened **When** its options arrive **Then** the stored option —
+   or the first one when nothing is stored — carries the active tint; ArrowDown/ArrowUp moves that
+   highlight and scrolls the option list to keep it visible.
 
 ### US3 — The cascade, translation toggle and sibling controls are untouched (P1)
 
@@ -113,6 +116,8 @@ and compare the POSTed payload and rendered stage reference with a baseline.
 - The next focus target is read *after* the choice, because a field such as Chapter only becomes
   enabled by choosing Book; option buttons inside a closing menu are never the next target.
 - Scrolling is limited to `.editor__picker-options`; the dialog content must not move with it.
+- The numeric popovers share the active-option helper: the highlight starts on the stored value,
+  follows Arrow keys over visible options, and is what Tab commits.
 
 ## UI/UX
 

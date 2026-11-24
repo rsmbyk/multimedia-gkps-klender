@@ -333,6 +333,27 @@
     else if (row.bottom > view.bottom) viewport.scrollTop += row.bottom - view.bottom;
   }
 
+  function visibleOptions(list) {
+    return [].slice.call(list.querySelectorAll('[data-picker-option]')).filter(function (option) {
+      return !option.hidden && !option.disabled;
+    });
+  }
+  function activeOptionIndex(list) {
+    var index = Number(list.dataset.activeIndex);
+    return isNaN(index) || index < 0 ? 0 : index;
+  }
+  function setActiveOption(list, index) {
+    var visible = visibleOptions(list);
+    [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
+      option.classList.remove('is-active');
+    });
+    if (!visible.length) { list.dataset.activeIndex = '-1'; return; }
+    index = Math.max(0, Math.min(visible.length - 1, index));
+    list.dataset.activeIndex = String(index);
+    visible[index].classList.add('is-active');
+    scrollOptionIntoView(visible[index], list);
+  }
+
   function pickerOf(scope, name) {
     return scope.querySelector('[data-entry-picker="' + name + '"]');
   }
@@ -580,6 +601,10 @@
       var label = trigger.querySelector('[data-picker-label]');
       if (label) label.textContent = text;
       trigger.disabled = control.disabled;
+      var selectedIndex = [].slice.call(list.querySelectorAll('[data-picker-option]'))
+        .map(function (option) { return option.getAttribute('aria-selected'); })
+        .indexOf('true');
+      setActiveOption(list, selectedIndex >= 0 ? selectedIndex : 0);
       var filter = picker.querySelector('.editor__picker-menu input[type="search"]');
       if (filter) filter.value = '';
       var hint = picker.querySelector('[data-picker-empty]');
@@ -620,14 +645,19 @@
           if (hit) visible += 1;
         });
         if (hint) hint.hidden = visible > 0;
+        setActiveOption(list, 0);
       });
       filter.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          setActiveOption(list, activeOptionIndex(list) + (event.key === 'ArrowDown' ? 1 : -1));
+          return;
+        }
         if (event.key !== 'Tab') return;
-        var first = [].slice.call(list.querySelectorAll('[data-picker-option]'))
-          .filter(function (option) { return !option.hidden && !option.disabled; })[0];
+        var chosen = visibleOptions(list)[activeOptionIndex(list)];
         tabToNextField(event, filter, function () {
-          if (!first) return;
-          control.value = first.dataset.value;
+          if (!chosen) return;
+          control.value = chosen.dataset.value;
           control.dispatchEvent(new window.Event('change', { bubbles: true }));
           var menu = picker.querySelector('.editor__picker-menu');
           if (menu) menu.hidden = true;

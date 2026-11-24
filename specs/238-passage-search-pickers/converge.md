@@ -51,6 +51,11 @@
   `scrollTop` when Arrow keys move `.is-active`, so the row stays visible without moving the
   dialog. Pinned by two new tests; live probe: Book `scrollTop` 0 → 205 after 15 downs and back
   to 181/142 as the highlight moves up, Song `scrollTop` 67 with the active row in view.
+- **Numeric popover highlight**: shared `visibleOptions`/`setActiveOption` helpers mark the stored
+  (or first) option on open, move it with Arrow keys, scroll it into view and make Tab commit that
+  row. Two new pins; live probe: Chapter opened with `1` active, five downs reached `6`, twenty
+  downs reached `21` at `scrollTop` 389 with the row in view. 16 passage tests pass, 12 song tests
+  with only the known-red base failure.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
@@ -61,6 +66,6 @@
 | US1…US4 | each has an independent test in the new module |
 | SC-001…SC-004 | passed: field/menu parity, unchanged payload, no endpoint, song path unchanged |
 | Edge cases | disabled options and empty hints inspected in `wireSearchCombo` and covered by tests |
-| Plan traceability | 16 test · 12 inspection · 0 manual, all rows resolved |
+| Plan traceability | 18 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.
