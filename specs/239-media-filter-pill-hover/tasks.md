@@ -83,7 +83,7 @@ rule from `components.css` before restoring it.
       full browser suite to the push step and report what the narrower run proves.
 - [X] T018 Re-check the next spec number, `ITEM-254`, `media-library/R6` and the patch
       level against `develop` and every unmerged branch before delivery.
-- [ ] T019 At delivery only, after Converge and on your word: write the `VERSION` bump,
+- [X] T019 At delivery only, after Converge and on your word: write the `VERSION` bump,
       the `## [Unreleased]` changelog line, the `backlog/board.md` `In review`/`Done` moves,
       and the `media-library.md` R6 Fold.
 

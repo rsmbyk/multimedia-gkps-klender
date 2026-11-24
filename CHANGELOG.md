@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Media Library filter pills now answer the pointer.** Unpressed type and Unused pills take the app's focus-border and hover-fill treatment; a pressed pill keeps its accent fill (spec 239).
 - **An empty song now names itself in the song entry's Verses section.** Picking a song with no
   live verses no longer hides the field: the label and panel stay, collapsed to the single line
   `This song has no verses`, with no tiles, helper row or separator. No song still hides the field,
