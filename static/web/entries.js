@@ -308,7 +308,7 @@
     [].slice.call(scope.querySelectorAll('.editor__picker-menu')).forEach(function (menu) {
       menu.hidden = true;
     });
-    triggers(scope).forEach(function (trigger) {
+    [].slice.call(scope.querySelectorAll('[data-picker-trigger], [data-menu-anchor]')).forEach(function (trigger) {
       trigger.setAttribute('aria-expanded', 'false');
     });
   }
@@ -403,6 +403,84 @@
     closeMenus(content);
   });
 
+  /* A search combobox: the field is the trigger and the filter is typed into it.
+     The song picker drives the same contract from wireSongPicker; this helper gives
+     the passage fields the same focus/type/Arrow/Enter/Escape behaviour over options
+     that are already in the modal, so no extra endpoint is needed. */
+  function wireSearchCombo(config) {
+    var input = config.input;
+    var menu = config.menu;
+    var list = config.list;
+    var options = [], active = -1;
+
+    function markActive() {
+      [].slice.call(list.querySelectorAll(config.optionSelector)).forEach(function (option) {
+        option.classList.remove('is-active');
+      });
+      options.forEach(function (option, index) {
+        if (index === active) option.classList.add('is-active');
+      });
+    }
+    function showMenu() {
+      menu.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      placeMenu(menu);
+    }
+    function hideMenu() {
+      menu.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    }
+    function refresh() {
+      options = [].slice.call(list.querySelectorAll(config.optionSelector)).filter(function (option) {
+        return !option.hidden && !option.disabled;
+      });
+      if (active >= options.length) active = options.length - 1;
+      if (active < 0 && options.length) active = 0;
+      markActive();
+    }
+    function runQuery() {
+      config.query(input.value.trim(), refresh, showMenu);
+    }
+
+    input.addEventListener('focus', function () {
+      /* Selecting the whole label means typing starts a fresh query. */
+      window.setTimeout(function () {
+        if (document.activeElement === input) input.select();
+      }, 0);
+      runQuery();
+    });
+    input.addEventListener('input', function () {
+      window.clearTimeout(input.dataset.comboTimer);
+      input.dataset.comboTimer = window.setTimeout(runQuery, 140);
+    });
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (menu.hidden) { runQuery(); return; }
+        event.preventDefault();
+        active = Math.max(0, Math.min(options.length - 1,
+          active + (event.key === 'ArrowDown' ? 1 : -1)));
+        markActive();
+      } else if (event.key === 'Enter' && !menu.hidden && active >= 0 && options[active]) {
+        event.preventDefault();
+        config.choose(options[active]);
+      } else if (event.key === 'Escape' && !menu.hidden) {
+        /* Escape closes the menu; it must not clear the chosen label the way a
+           bare search field's native Escape would. */
+        event.preventDefault();
+        event.stopPropagation();
+        hideMenu();
+      }
+    });
+    list.addEventListener('click', function (event) {
+      var option = event.target.closest(config.optionSelector);
+      if (option && !option.disabled && !option.hidden && list.contains(option)) {
+        config.choose(option);
+      }
+    });
+
+    return { refresh: refresh, show: showMenu, hide: hideMenu };
+  }
+
   /* ---------- the scripture cascade -----------------------------------------
      Book -> chapter -> verse. The to-verse list keeps only the numbers that can
      still end a range, and turns the control off (with its hover note) when the
@@ -416,8 +494,12 @@
     var from = scope.querySelector('[name=verse_start]');
     var to = scope.querySelector('[name=verse_end]');
     var wrap = scope.querySelector('[data-end-wrap]');
-    var label = picker.querySelector('[data-picker-label]');
-    var filter = picker.querySelector('input[type="search"]');
+    var bookSearch = scope.querySelector('#entry-book-search');
+    var bookList = scope.querySelector('#entry-book-options');
+    var chapterSearch = scope.querySelector('#entry-chapter-search');
+    var chapterList = scope.querySelector('#entry-chapter-options');
+    var fromSearch = scope.querySelector('#entry-verse_start-search');
+    var fromList = scope.querySelector('#entry-verse_start-options');
     var groups = [].slice.call(picker.querySelectorAll('[data-picker-group]'));
     var options = [].slice.call(picker.querySelectorAll('[data-book]'));
     var empty = picker.querySelector('[data-picker-empty]');
@@ -425,14 +507,14 @@
     var editionButtons = translationToggle
       ? [].slice.call(translationToggle.querySelectorAll('[data-edition-option]')) : [];
     if (!select || !chapter || !from || !to) return;
+    if (!bookSearch || !bookList || !chapterSearch || !chapterList || !fromSearch || !fromList) return;
 
     var verses = [];
 
     function renderRangeControl(control) {
       var picker = control.closest('.editor__picker');
-      var trigger = picker && picker.querySelector('[data-picker-trigger]');
       var list = picker && picker.querySelector('[data-picker-options]');
-      if (!trigger || !list) return;
+      if (!picker || !list) return;
       list.innerHTML = '';
       [].slice.call(control.options).forEach(function (option) {
         var item = document.createElement('button');
@@ -447,14 +529,24 @@
         list.appendChild(item);
       });
       var selected = control.options[control.selectedIndex];
-      var placeholder = trigger.dataset.placeholder || 'Choose an option';
       var text = selected
         ? (control.name === 'verse_end' && selected.value === ''
           ? 'No ending verse' : selected.textContent.trim())
-        : placeholder;
-      var label = trigger.querySelector('[data-picker-label]');
-      if (label) label.textContent = text;
-      trigger.disabled = control.disabled;
+        : '';
+      var search = picker.querySelector('input[type="search"]');
+      if (search) {
+        search.value = text;
+        search.disabled = !!control.disabled;
+        var hint = picker.querySelector('[data-picker-empty]');
+        if (hint) hint.hidden = true;
+      } else {
+        var trigger = picker.querySelector('[data-picker-trigger]');
+        if (!trigger) return;
+        var label = trigger.querySelector('[data-picker-label]');
+        var placeholder = trigger.dataset.placeholder || 'Choose an option';
+        if (label) label.textContent = text || placeholder;
+        trigger.disabled = control.disabled;
+      }
     }
 
     function wireRangeControl(control) {
@@ -472,7 +564,19 @@
       });
     }
 
-    [chapter, from, to].forEach(wireRangeControl);
+    /* To verse keeps its button menu; chapter and from verse are search combos below. */
+    [to].forEach(wireRangeControl);
+
+    function filterByNumber(list, hint, query) {
+      var text = (query || '').trim();
+      var visible = 0;
+      [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
+        var hit = !text || option.dataset.value.indexOf(text) !== -1;
+        option.hidden = !hit;
+        if (hit) visible += 1;
+      });
+      if (hint) hint.hidden = visible > 0;
+    }
 
     function numbers(count) {
       var out = '';
@@ -606,21 +710,21 @@
           selected = null;
         }
       }
-      if (selected) label.textContent = bookName(selected, edition) || (chosenBook().textContent || '').trim();
-      else if (updateSelection) label.textContent = 'Choose a book';
+      if (selected) bookSearch.value = bookName(selected, edition) || (chosenBook().textContent || '').trim();
+      else if (updateSelection) bookSearch.value = '';
     }
     function setEdition(edition) {
       if (!translationToggle || edition === activeEdition()) return;
       renderEdition(edition, true);
-      filterBooks();
+      filterBooks(bookSearch.value);
     }
-    function filterBooks() {
-      var query = (filter.value || '').trim().toLowerCase();
+    function filterBooks(query) {
+      var text = (query || '').trim().toLowerCase();
       var visible = 0;
       options.forEach(function (option) {
         var names = [option.dataset.bookNameTb, option.dataset.bookNameSim,
           option.dataset.bookCodeTb, option.dataset.bookCodeSim].join(' ');
-        var hit = !query || names.toLowerCase().indexOf(query) !== -1;
+        var hit = !text || names.toLowerCase().indexOf(text) !== -1;
         option.hidden = !hit;
         if (hit) visible += 1;
       });
@@ -636,9 +740,8 @@
       options.forEach(function (option) {
         option.setAttribute('aria-selected', option === button ? 'true' : 'false');
       });
-      label.textContent = bookName(button, activeEdition()) || button.textContent.trim();
-      filter.value = '';
-      filterBooks();
+      bookSearch.value = bookName(button, activeEdition()) || button.textContent.trim();
+      filterBooks('');
       fillChapters(1);
       loadVerses(select.value, Number(chapter.value) || 1);
     }
@@ -653,9 +756,61 @@
       });
     }
 
+    function setChapterValue(value) {
+      chapter.value = value;
+      chapter.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    function setFromValue(value) {
+      from.value = value;
+      from.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    function numberHint(list) {
+      return list.parentElement.querySelector('[data-picker-empty]');
+    }
+
+    var bookCombo = wireSearchCombo({
+      input: bookSearch, menu: scope.querySelector('#entry-book-menu'), list: bookList,
+      optionSelector: '[data-book]',
+      query: function (value, refresh, show) {
+        filterBooks(value);
+        refresh();
+        show();
+      },
+      choose: function (option) {
+        pickBook(option);
+        bookCombo.hide();
+      }
+    });
+    var chapterCombo = wireSearchCombo({
+      input: chapterSearch, menu: scope.querySelector('#entry-chapter-menu'), list: chapterList,
+      optionSelector: '[data-picker-option]',
+      query: function (value, refresh, show) {
+        filterByNumber(chapterList, numberHint(chapterList), value);
+        refresh();
+        show();
+      },
+      choose: function (option) {
+        setChapterValue(option.dataset.value);
+        chapterCombo.hide();
+      }
+    });
+    var fromCombo = wireSearchCombo({
+      input: fromSearch, menu: scope.querySelector('#entry-verse_start-menu'), list: fromList,
+      optionSelector: '[data-picker-option]',
+      query: function (value, refresh, show) {
+        filterByNumber(fromList, numberHint(fromList), value);
+        refresh();
+        show();
+      },
+      choose: function (option) {
+        setFromValue(option.dataset.value);
+        fromCombo.hide();
+      }
+    });
+
     /* First paint: what the form already held, else a blank cascade to fill in. */
     if (select.value) {
-      label.textContent = (chosenBook().textContent || '').trim();
+      bookSearch.value = (chosenBook().textContent || '').trim();
       fillChapters(chapter.dataset.initial);
       loadVerses(select.value, Number(chapter.value) || 1,
                  from.dataset.initial, to.dataset.initial);
@@ -664,12 +819,9 @@
       from.disabled = true;
       to.disabled = true;
       [chapter, from, to].forEach(renderRangeControl);
+      filterBooks('');
     }
 
-    filter.addEventListener('input', filterBooks);
-    options.forEach(function (option) {
-      option.addEventListener('click', function () { pickBook(option); closeMenus(scope); });
-    });
     chapter.addEventListener('change', function () {
       renderRangeControl(chapter);
       loadVerses(select.value, Number(chapter.value) || 1);

@@ -60,16 +60,14 @@
                 title="Simalungun translation">SIM</button>
       </div>
     </div>
-    <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <label id="entry-book-label" for="entry-book-search">Book</label>
     <div class="editor__picker" data-entry-picker="book">
-      <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
-              data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
-              aria-controls="entry-book-menu"{% if form.book_translation.errors %} aria-invalid="true"{% endif %}>
-        <span data-picker-label>Choose a book</span>
-      </button>
+      <input type="search" id="entry-book-search" class="editor__songsearch" data-menu-anchor
+             placeholder="Search books..." aria-label="Book" autocomplete="off"
+             aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-book-menu"
+             {% if form.book_translation.errors %}aria-invalid="true"{% endif %}>
       <div class="editor__picker-menu" id="entry-book-menu" hidden>
-        <input type="search" placeholder="Filter books..." aria-label="Filter books" autocomplete="off">
-        <div class="editor__picker-options" data-picker-options role="listbox" aria-label="Books">
+        <div class="editor__picker-options" id="entry-book-options" data-picker-options role="listbox" aria-label="Books">
           {% regroup books by testament_label as testaments %}
           {% for testament in testaments %}
           <div class="editor__picker-group" data-picker-group
@@ -121,17 +119,16 @@
   </div>
   <div class="editor__row editor__row--chapter">
     <div class="editor__field{% if form.chapter.errors %} is-invalid{% endif %}">
-      <label id="entry-chapter-label" for="entry-chapter-trigger">Chapter</label>
+      <label id="entry-chapter-label" for="entry-chapter-search">Chapter</label>
       <div class="editor__picker" data-entry-picker="chapter">
-        <button type="button" class="editor__picker-trigger" id="entry-chapter-trigger"
-                data-picker-trigger data-placeholder="Choose a chapter" aria-label="Chapter"
-                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-chapter-menu"
-                disabled {% if form.chapter.errors %}aria-invalid="true"{% endif %}>
-          <span data-picker-label>Choose a chapter</span>
-        </button>
+        <input type="search" id="entry-chapter-search" class="editor__songsearch" data-menu-anchor
+               placeholder="Search chapters..." aria-label="Chapter" autocomplete="off"
+               aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-chapter-menu"
+               disabled {% if form.chapter.errors %}aria-invalid="true"{% endif %}>
         <div class="editor__picker-menu" id="entry-chapter-menu" hidden>
           <div class="editor__picker-options" id="entry-chapter-options" data-picker-options
                role="listbox" aria-label="Chapters"></div>
+          <p class="editor__hint" data-picker-empty hidden>No matching chapters.</p>
         </div>
         <select name="chapter" id="id_chapter" hidden disabled
                 data-initial="{{ form.chapter.value|default:1 }}"></select>
@@ -141,17 +138,16 @@
   </div>
   <div class="editor__row editor__row--range">
     <div class="editor__field{% if form.verse_start.errors %} is-invalid{% endif %}">
-      <label id="entry-verse_start-label" for="entry-verse_start-trigger">From verse</label>
+      <label id="entry-verse_start-label" for="entry-verse_start-search">From verse</label>
       <div class="editor__picker" data-entry-picker="verse_start">
-        <button type="button" class="editor__picker-trigger" id="entry-verse_start-trigger"
-                data-picker-trigger data-placeholder="Choose a verse" aria-label="From verse"
-                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_start-menu"
-                disabled {% if form.verse_start.errors %}aria-invalid="true"{% endif %}>
-          <span data-picker-label>Choose a verse</span>
-        </button>
+        <input type="search" id="entry-verse_start-search" class="editor__songsearch" data-menu-anchor
+               placeholder="Search verses..." aria-label="From verse" autocomplete="off"
+               aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_start-menu"
+               disabled {% if form.verse_start.errors %}aria-invalid="true"{% endif %}>
         <div class="editor__picker-menu" id="entry-verse_start-menu" hidden>
           <div class="editor__picker-options" id="entry-verse_start-options" data-picker-options
                role="listbox" aria-label="From verses"></div>
+          <p class="editor__hint" data-picker-empty hidden>No matching verses.</p>
         </div>
         <select name="verse_start" id="id_verse_start" hidden disabled
                 data-initial="{{ form.verse_start.value|default:1 }}"></select>
