@@ -102,16 +102,20 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("document.querySelector('#id_book_translation').value !== ''")
         return search
 
-    def _choose_chapter(self, page, number='1'):
-        search = page.locator('#entry-chapter-search')
-        search.focus()
+    def _open_range(self, page, name):
+        page.locator(f'#entry-{name}-trigger').click()
+        page.wait_for_timeout(120)
+        menu = page.locator(f'#entry-{name}-menu')
+        expect(menu).to_be_visible()
+        return menu.locator('input[type="search"]')
+
+    def _choose_range(self, page, name, value):
+        filter_box = self._open_range(page, name)
+        filter_box.fill(value)
         page.wait_for_timeout(160)
-        search.fill(number)
-        page.wait_for_timeout(220)
         page.locator(
-            f'#entry-chapter-options [data-picker-option][data-value="{number}"]:not([hidden])'
+            f'#entry-{name}-options [data-picker-option][data-value="{value}"]:not([hidden])'
         ).first.click()
-        page.wait_for_function("document.querySelector('#id_verse_start').disabled === false")
 
     def test_book_field_is_a_search_combo(self):
         page = self._page()
@@ -129,7 +133,7 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(
             page.locator('#id_book_translation').input_value(),
             str(self.mat_tb.pk))
-        expect(page.locator('#entry-chapter-search')).to_be_enabled()
+        expect(page.locator('#entry-chapter-trigger')).to_be_enabled()
 
     def test_book_filter_matches_names_and_codes(self):
         page = self._page()
@@ -153,38 +157,37 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         book = self._choose_book(page, 'Matius')
         self.assertEqual(book.input_value(), 'Matius')
         self.assertEqual(page.locator('#id_book_translation').input_value(), str(self.mat_tb.pk))
-        expect(page.locator('#entry-chapter-search')).to_be_enabled()
+        expect(page.locator('#entry-chapter-trigger')).to_be_enabled()
         expect(page.locator('#entry-chapter-options [data-picker-option]')).to_have_count(28)
 
     def test_chapter_filter_and_choice_reload_verses(self):
         page = self._page()
         self._open(page)
         self._choose_book(page)
-        chapter = page.locator('#entry-chapter-search')
-        chapter.focus()
-        chapter.fill('12')
-        page.wait_for_timeout(220)
+        expect(page.locator('#entry-chapter-trigger')).to_be_enabled()
+        filter_box = self._open_range(page, 'chapter')
+        filter_box.fill('12')
+        page.wait_for_timeout(160)
         expect(page.locator('#entry-chapter-options [data-picker-option]:not([hidden])')).to_have_count(1)
         expect(page.locator('#entry-chapter-options [data-picker-option]:visible')).to_have_count(1)
-        self._choose_chapter(page, '12')
+        page.locator('#entry-chapter-options [data-picker-option][data-value="12"]:not([hidden])').click()
         self.assertEqual(page.locator('#id_chapter').input_value(), '12')
-        expect(page.locator('#entry-verse_start-search')).to_be_enabled()
+        expect(page.locator('#entry-verse_start-trigger')).to_be_enabled()
         expect(page.locator('#entry-verse_start-options [data-picker-option]')).to_have_count(15)
 
     def test_from_verse_filter_and_choice(self):
         page = self._page()
         self._open(page)
         self._choose_book(page)
-        self._choose_chapter(page, '12')
-        start = page.locator('#entry-verse_start-search')
-        start.focus()
-        start.fill('1')
-        page.wait_for_timeout(220)
+        self._choose_range(page, 'chapter', '12')
+        filter_box = self._open_range(page, 'verse_start')
+        filter_box.fill('1')
+        page.wait_for_timeout(160)
         visible = page.locator('#entry-verse_start-options [data-picker-option]:not([hidden])')
         expect(visible).to_have_count(7)  # 1, 10..15
         expect(page.locator('#entry-verse_start-options [data-picker-option]:visible')).to_have_count(7)
-        start.fill('')
-        page.wait_for_timeout(220)
+        filter_box.fill('')
+        page.wait_for_timeout(160)
         page.locator(
             '#entry-verse_start-options [data-picker-option][data-value="3"]:not([hidden])'
         ).click()
@@ -192,15 +195,31 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#id_verse_start').input_value(), '3')
         expect(page.locator('#entry-verse_end-trigger')).to_be_enabled()
 
+    def test_to_verse_popover_filters_its_own_options(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        self._choose_range(page, 'chapter', '12')
+        self._choose_range(page, 'verse_start', '3')
+        expect(page.locator('#entry-verse_end-trigger')).to_be_enabled()
+        filter_box = self._open_range(page, 'verse_end')
+        filter_box.fill('1')
+        page.wait_for_timeout(160)
+        expect(page.locator('#entry-verse_end-options [data-picker-option]:visible')).to_have_count(6)
+        page.locator('#entry-verse_end-options [data-picker-option][data-value="10"]:not([hidden])').click()
+        self.assertEqual(page.locator('#id_verse_end').input_value(), '10')
+
     def test_empty_query_restores_all_options(self):
         page = self._page()
         self._open(page)
         self._choose_book(page)
-        chapter = page.locator('#entry-chapter-search')
-        chapter.focus()
+        filter_box = self._open_range(page, 'chapter')
+        filter_box.fill('7')
         page.wait_for_timeout(160)
-        chapter.fill('')
-        page.wait_for_timeout(220)
+        expect(page.locator('#entry-chapter-options [data-picker-option]:not([hidden])')).to_have_count(3)
+        expect(page.locator('#entry-chapter-options [data-picker-empty]')).to_be_hidden()
+        filter_box.fill('')
+        page.wait_for_timeout(160)
         expect(page.locator('#entry-chapter-options [data-picker-option]:not([hidden])')).to_have_count(28)
         expect(page.locator('#entry-chapter-options [data-picker-empty]')).to_be_hidden()
 
@@ -210,8 +229,8 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         page.wait_for_selector('dialog[open] #entry-book-search')
         page.wait_for_timeout(300)
         self.assertEqual(page.locator('#entry-book-search').input_value(), 'Mateus')
-        self.assertEqual(page.locator('#entry-chapter-search').input_value(), '1')
-        self.assertEqual(page.locator('#entry-verse_start-search').input_value(), '2')
+        self.assertEqual(page.locator('#entry-chapter-trigger [data-picker-label]').inner_text(), '1')
+        self.assertEqual(page.locator('#entry-verse_start-trigger [data-picker-label]').inner_text(), '2')
         self.assertEqual(page.locator('#id_book_translation').input_value(), str(self.mat_sim.pk))
         self.assertEqual(page.locator('#id_chapter').input_value(), '1')
         self.assertEqual(page.locator('#id_verse_start').input_value(), '2')
@@ -240,12 +259,15 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
 
         page.locator('#entry-book-search').focus()
         assert_one('entry-book-menu')
-        page.locator('#entry-chapter-search').focus()
+        page.locator('#entry-chapter-trigger').dispatch_event('click')
         assert_one('entry-chapter-menu')
-        # the translated button picker closes a search combo when it opens
+        chapter_filter = page.locator('#entry-chapter-menu input[type="search"]')
+        chapter_filter.fill('1')
+        page.wait_for_timeout(160)
+        page.locator('#entry-chapter-options [data-picker-option][data-value="1"]:not([hidden])').click()
         page.locator('#entry-verse_end-trigger').dispatch_event('click')
         assert_one('entry-verse_end-menu')
-        page.locator('#entry-verse_start-search').focus()
+        page.locator('#entry-verse_start-trigger').dispatch_event('click')
         assert_one('entry-verse_start-menu')
         self.assertEqual(
             page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
@@ -264,21 +286,22 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#entry-book-menu')).to_be_hidden()
         expect(page.locator('dialog[open]')).to_have_count(1)
 
-        chapter = page.locator('#entry-chapter-search')
-        chapter.focus()
-        page.wait_for_timeout(160)
-        before = chapter.input_value()
-        chapter.press('Escape')
+        page.locator('#editorTitle').click()   # take focus off the field
+        book.focus()
+        page.wait_for_timeout(120)
+        expect(page.locator('#entry-book-menu')).to_be_visible()
+        before = book.input_value()
+        book.press('Escape')
         page.wait_for_timeout(80)
-        expect(page.locator('#entry-chapter-menu')).to_be_hidden()
-        self.assertEqual(chapter.input_value(), before)
+        expect(page.locator('#entry-book-menu')).to_be_hidden()
+        self.assertEqual(book.input_value(), before)
         expect(page.locator('dialog[open]')).to_have_count(1)
 
-        start = page.locator('#entry-verse_start-search')
-        start.focus()
-        page.wait_for_timeout(160)
+        self._choose_range(page, 'chapter', '1')
+        page.locator('#entry-verse_start-trigger').click()
+        page.wait_for_timeout(120)
         expect(page.locator('#entry-verse_start-menu')).to_be_visible()
         page.locator('#editorTitle').click()
         page.wait_for_timeout(80)
         expect(page.locator('#entry-verse_start-menu')).to_be_hidden()
-        self.assertEqual(start.get_attribute('aria-expanded'), 'false')
+        self.assertEqual(page.locator('#entry-verse_start-trigger').get_attribute('aria-expanded'), 'false')

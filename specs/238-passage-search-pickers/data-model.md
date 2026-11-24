@@ -18,7 +18,7 @@ JavaScript file and one stylesheet.
 | End verse | hidden `<select name="verse_end">` | unchanged button picker, refreshed by `syncTo()` |
 | Translation edition | `[data-entry-translation-toggle]` `data-edition` | TB/SIM labels and book ids; unchanged |
 | Book options | `[data-book]` buttons with `data-book-name-tb/sim`, `data-book-code-tb/sim`, `data-chapters` | the local filter source for Book |
-| Chapter / verse options | `[data-picker-option]` with `data-value` | the local filter source for Chapter and From verse |
+| Chapter / verse options | `[data-picker-option]` with `data-value` | the local filter source for Chapter, From verse and To verse |
 | Menu visibility | `.editor__picker-menu[hidden]` | opened/closed by the combos and `closeMenus()` |
 | Active option | `.is-active` on a visible option | keyboard cue, now tinted by one shared CSS rule |
 

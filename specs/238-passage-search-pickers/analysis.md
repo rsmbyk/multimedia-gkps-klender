@@ -11,7 +11,7 @@ no persisted, contractual or runtime change beyond the picker behaviour.
 ## Complexity gate
 
 - **CRITICAL**: none. The change adds no new dependency, endpoint, interface or entity.
-- **Complexity**: acceptable and minimal — one new internal helper (`wireSearchCombo`) and one
+- **Complexity**: acceptable and minimal — one new internal helper (`wireSearchCombo`) plus an in-menu filter helper (`wireRangeFilter`) and one
   CSS rule.
 
 ## Coverage gate

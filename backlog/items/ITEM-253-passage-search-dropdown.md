@@ -22,10 +22,9 @@ release_version:
 ## Summary
 
 The song entry's picker is a search field — type to filter, Arrow/Enter to choose, Escape to
-dismiss — while Add Passage's Book, Chapter and From verse are chevron buttons, with the book
-filter hidden inside its menu and no filter at all on chapter or verse. Make those three fields
-the same search combobox as the song picker, without changing the saved value, the cascade or
-the To verse control.
+dismiss — while Add Passage's Book was a chevron button with a filter hidden inside its menu and
+chapter/verse had no filter. Make Book the same search field; keep Chapter, From verse and To
+verse as button popovers, but give each popover its own in-menu filter like the old book picker.
 
 ## Notes
 

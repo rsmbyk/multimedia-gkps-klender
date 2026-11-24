@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Add Passage now uses the song search dropdown for Book, Chapter and From verse.** The passage entry modal's book, chapter and verse fields became the same type-to-filter search combobox as the song picker: the field is the trigger, typing filters, Arrow/Enter selects, Escape closes the menu, and the menu stays viewport-capped; To verse, the translation toggle and the saved value stay unchanged (ITEM-253, spec 238).
+- **Add Passage now uses the song search field for Book, and the chapter and verse popovers can be filtered.** Book became the same type-to-filter search combobox as the song picker; Chapter, From verse and To verse keep their button popovers but each menu gained a filter field above its options. The cascade, translation toggle, saved values and To verse's optional state are unchanged (ITEM-253, spec 238).
 - **An empty song now names itself in the song entry's Verses section.** Picking a song with no
   live verses no longer hides the field: the label and panel stay, collapsed to the single line
   `This song has no verses`, with no tiles, helper row or separator. No song still hides the field,

@@ -1901,29 +1901,28 @@ overflow still counts — so the observable is the missing gutter, not a smaller
 - WHEN the Song field is typed into and its results list runs past the dialog
 - THEN the menu is still fixed to the window and the dialog's height and width do not change
 
-### R59 — The passage entry's Book, Chapter and From verse use the song search combobox
+### R59 — Book is a search field; chapter and verse popovers filter inside the menu
 
-The passage-entry modal SHALL present Book, Chapter and From verse as `INPUT[type=search]` fields
-with the same chrome, type-to-filter, keyboard selection and viewport-capped menu as the song
-entry's Song field. Focus SHALL select the stored label; typing SHALL filter the options already
-in the modal after 140ms; Arrow Down/Up SHALL move one visible active option and Enter SHALL choose
-it; Escape SHALL close only the menu without clearing the chosen label. Book SHALL filter by TB/SIM
-name and code, Chapter and From verse by number substring, with an empty hint when nothing
-matches. The hidden selects SHALL remain the posted values, so the book → chapter → verse cascade,
-the translation toggle, stored edit values and the optional To verse button picker SHALL be
-unchanged. (spec 238)
+The passage-entry modal SHALL present Book as an `INPUT[type=search]` with the same chrome,
+type-to-filter, keyboard selection and viewport-capped menu as the song entry's Song field.
+Chapter, From verse and To verse SHALL keep their button triggers and popout menus, and each of
+those three menus SHALL carry a `type="search"` filter above its options that hides options whose
+number does not contain the query, with an empty hint when none match. Opening a popover SHALL
+focus its filter. The hidden selects SHALL remain the posted values, so the book → chapter →
+verse cascade, the translation toggle, stored edit values and the original button geometry and
+hover note SHALL be unchanged. Only one picker menu SHALL be open in the modal at a time. (spec 238)
 
 #### Scenario: Book is searched
 - WHEN the operator focuses Book and types `mat`
 - THEN only matching books remain, grouped by Testament, and choosing one shows its name in the
   active translation and enables Chapter
 
-#### Scenario: Chapter and From verse are searched
-- WHEN a book and chapter are chosen and the operator types into Chapter or From verse
+#### Scenario: Chapter and verse popovers filter
+- WHEN a chapter or verse popover is opened and a number is typed into its filter
 - THEN only numbers containing the query remain and choosing one updates the hidden select and
   reloads the next list
 
 #### Scenario: Dismissal keeps the saved value
 - WHEN Escape or an outside click closes an open menu
-- THEN the field keeps its chosen label, the hidden selects keep their values and the dialog stays open
+- THEN the field and hidden selects keep their values and the dialog stays open
 

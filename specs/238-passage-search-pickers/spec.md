@@ -1,25 +1,24 @@
-# Feature Specification: passage entry's book, chapter and from-verse use the song search dropdown
+# Feature Specification: passage entry's Book uses the song search field, Chapter and verse popovers gain in-menu filters
 
 **Slice**: `specs/238-passage-search-pickers`
 **Branch**: `feat/238-passage-search-pickers`
 **Created**: 2026-11-24
-**Status**: Draft — Gate 1 pending
-**Input**: "can you make the book, chapter and from verse dropdowns in passage entry modal to use the same dropdown as the song picker dropdown in song entry modal"
+**Status**: Draft → accepted at Gate 1; scope revised in review
+**Input**: "can you make the book, chapter and from verse dropdowns in passage entry modal to use the same dropdown as the song picker dropdown in song entry modal" — revised in review to: "turn the chapter and from/to verse dropdown back to their previous version, but add a search filter inside the popout dropdown (just like the previous songbook dropdown)"
 **Demand**: `ITEM-253` (new card)
 **Capability**: `reading/R59` (new)
-**Preview**: live preview at `http://127.0.0.1:8792/tatib/<service>/` — from `/`, click the Tata Ibadah rail, then `Add Passage`; run `python <worktree>/run.py runserver 0.0.0.0:8792 --noreload` from the slice worktree if the server is down.
+**Preview**: live preview at `http://127.0.0.1:8792/tatib/151/` — from `/`, click the Tata Ibadah rail, then the service `111ojo`; run `python specs/238-passage-search-pickers/preview/run.py runserver 0.0.0.0:8792 --noreload` from the slice worktree if the server is down.
 
 The song entry's picker is a search field: its trigger is an `<input type="search">`, typing
-replaces the query and filters results, Arrow Up/Down moves the active option, Enter chooses it,
-Escape closes the menu, and the menu is anchored to the field and capped to the viewport. The
-passage entry's book, chapter and from-verse pickers are buttons with a chevron; the book hides
-its filter *inside* the menu and chapter/verse have no filter at all. The three controls therefore
-read, behave and are driven differently from the song picker in the same family of dialogs.
+replaces the query and filters results, Arrow Up/Down moves the active option, Enter chooses it
+and Escape closes the menu. The passage entry's book, chapter and verse pickers were buttons with
+a chevron; only the book had a filter, and that filter sat inside its popout menu.
 
-This slice makes book, chapter and from-verse **the same search combobox as the song picker** —
-same field chrome, type-to-filter, keyboard selection and viewport-capped menu — while keeping
-the existing book → chapter → verse cascade, the translation toggle, the hidden form values, and
-the optional "To verse" control exactly as they are.
+**Scope as finally delivered**: Book became the search field (the song picker's combobox).
+Chapter, From verse and To verse kept their original button triggers and popout menus; each of
+those three menus gained a `type="search"` filter field above its options, matching the book
+picker's original in-menu filter. The book → chapter → verse cascade, the translation toggle,
+the hidden form values and the verse checklist are unchanged.
 
 ## User Scenarios & Testing
 
@@ -37,161 +36,152 @@ translation, and check that only matching options remain and choosing one fills 
 1. **Given** an open passage modal **When** Book is focused **Then** the field's text is selected
    and its menu is open with the full book list, grouped by Testament.
 2. **Given** "mat" is typed **When** the debounce settles **Then** the visible options are the
-   books whose TB or SIM name or code contains "mat", in both translations where present, and
-   the empty hint appears when none match.
+   books whose TB or SIM name or code contains "mat", and the empty hint appears when none match.
 3. **Given** a visible book option **When** Enter is pressed or the option is clicked **Then** the
    field shows that book's name in the active translation, the menu closes, and the hidden
-   `book_translation` value is the id for that translation.
+   translation-aware id is set.
 
-### US2 — Chapter and from verse take the same combobox (P1)
+### US2 — Chapter and verse popovers filter inside the menu (P1)
 
-**Why this priority**: these are the other two controls named in the request, and the chapter
-and verse lists are generated locally rather than supplied by the server, so they must filter
-over those same lists without changing the cascade that produces them.
+**Why this priority**: the owner's revised decision — keep the button popovers for the numeric
+controls, but make their long lists searchable without converting their triggers.
 
-**Independent Test**: pick a book, type into Chapter and From verse, and check the filtered
-options, keyboard selection and resulting form values.
+**Independent Test**: choose a book, open Chapter's popover, type a number and check the visible
+options; repeat for From verse and To verse; choose one and check the hidden select and cascade.
 
 **Acceptance scenarios**
 
-1. **Given** a book with 28 chapters **When** "12" is typed into Chapter **Then** only chapter 12
-   remains and choosing it sets `chapter=12`, keeps the book, and reloads that chapter's verses.
-2. **Given** a chapter's verses **When** "7" is typed into From verse **Then** only verses whose
-   number contains 7 remain and choosing one sets `verse_start` and refreshes the To verse list.
-3. **Given** an empty query **When** either field gains focus **Then** every option appears again.
+1. **Given** a book with 28 chapters **When** Chapter's popover is opened and `12` is typed into
+   its filter **Then** only chapter 12 is visible and choosing it sets `chapter=12` and reloads
+   that chapter's verses.
+2. **Given** a chapter's verses **When** `1` is typed into From verse's filter **Then** only
+   verses whose number contains 1 are visible, and choosing one sets `verse_start` and refreshes
+   the To verse list.
+3. **Given** a start verse with verses after it **When** To verse's filter is typed into **Then**
+   only later verse numbers containing the query remain and choosing one sets `verse_end`.
+4. **Given** an empty filter **When** it is cleared **Then** every option in that popover returns
+   and its empty hint is hidden.
 
 ### US3 — The cascade, translation toggle and sibling controls are untouched (P1)
-
-**Why this priority**: these pickers are the front end of a value cascade; changing their trigger
-must not change what is saved or what happens when a book, chapter or translation changes.
 
 **Independent Test**: create and edit a passage in TB and SIM, switching translation and chapter,
 and compare the POSTed payload and rendered stage reference with a baseline.
 
 **Acceptance scenarios**
 
-1. **Given** a stored SIM passage **When** its Edit modal opens **Then** all three fields show the
-   stored values in SIM, and the hidden selects hold the same ids as before this slice.
-2. **Given** a chosen book **When** the TB/SIM toggle is used **Then** the Book field's label and
-   the book list re-render in the new translation and the cascade reloads exactly as before.
-3. **Given** any state **When** the pointer is away **Then** To verse remains a button picker with
-   its "No ending verse" state and hover note, unchanged.
+1. **Given** a stored SIM passage **When** its Edit modal opens **Then** Book's field shows the
+   stored name and Chapter/From verse's button labels show the stored numbers, with the hidden
+   selects holding the same ids as before this slice.
+2. **Given** a chosen book **When** the TB/SIM toggle is used **Then** Book's label and options
+   re-render in the new translation and the cascade reloads exactly as before.
+3. **Given** any state **When** the chapter or verse popover is opened **Then** it keeps the
+   original button geometry, chevron, disabled state and hover note.
 
-### US4 — Keyboard and dismissal match the song picker (P2)
-
-**Why this priority**: the shared dropdown's promise includes its keyboard contract; a field that
-looks right but does not answer Arrow/Enter/Escape is not the same dropdown.
-
-**Independent Test**: drive a field with ArrowDown, ArrowUp, Enter and Escape and check the active
-option, the chosen value and the menu's visibility.
+### US4 — Keyboard, dismissal and single-menu rule (P2)
 
 **Acceptance scenarios**
 
-1. **Given** an open menu **When** ArrowDown/ArrowUp are pressed **Then** exactly one visible
-   option carries the active tint and Enter chooses it.
+1. **Given** Book's menu is open **When** ArrowDown/ArrowUp are pressed **Then** exactly one
+   visible option carries the active tint and Enter chooses it.
 2. **Given** an open menu **When** Escape is pressed **Then** only that menu closes and the dialog
-   stays open; a click outside the picker also closes it.
-3. **Given** one picker's menu is open **When** any other picker in the modal is focused or its
-   button is clicked **Then** the first menu closes and only the newly opened one is visible.
-4. **Given** a chosen value **When** the field is focused again **Then** its text is selected so
-   typing starts a new query instead of appending to the chosen label.
+   stays open; a click outside the picker also closes it. Escape in Book does not clear the
+   chosen label.
+3. **Given** one picker's menu is open **When** any other picker in the modal is opened **Then**
+   the first menu closes and only the newly opened one is visible.
 
 ### Edge Cases
 
 - A book with no translation in the active edition is disabled and cannot be chosen.
-- No matching options leaves the menu open with the same hint the book filter already used;
-  chapter/verse state their own "No matching chapters." / "No matching verses." hint.
+- A filter with no matches leaves the popover open with a "No matching chapters/verses" hint.
 - A chapter with no verses, or a start verse that is the chapter's last, keeps From verse / To
   verse disabled as today.
 - Editing keeps the stored values; focus does not reset the cascade to chapter 1.
-- The menu stays anchored to the field while the dialog scrolls and flips up near the viewport
+- The menu stays anchored to its trigger while the dialog scrolls and flips up near the viewport
   bottom, as every picker does today.
-- Only one menu may be open in the modal: opening a search combo closes any other picker's menu,
-  and opening the To verse button picker closes a search combo.
+- Filtered-out options must actually be hidden: the author `display` rule on
+  `.editor__picker-option` needs an explicit `[hidden]` rule, or they stay painted but unclickable.
+- Opening the numeric popovers via a button click focuses their in-menu filter, so typing filters
+  immediately.
 
 ## UI/UX
 
-Measured on the live preview at 1440×900, light theme, with the passage modal open.
-`parity.py` measures the same properties on `#entry-song-search` in the song modal:
+Measured on the live preview at 1440×900, light theme (numbers frozen from the Gate 1 probe,
+revised for the button popovers in review):
 
-| Measurement | Song picker | Book / Chapter / From verse |
+| Measurement | Song / Book search field | Chapter / From / To button trigger |
 | --- | --- | --- |
-| Trigger element | `INPUT[type=search]` | `INPUT[type=search]` (all three) |
+| Trigger | `INPUT[type=search]` | `BUTTON.editor__picker-trigger` with chevron |
 | Field height | 38px | 38px |
-| Field width in a single-field row | 436px | 436px (Book, Chapter); 213px (From verse, half of a two-field row, as before) |
 | Corner radius | 9px | 9px |
-| Font | `500 14px/18.9px ui-sans-serif, system-ui, sans-serif` | identical |
-| Border / background at rest | `--divider` (`rgb(217,214,205)`) / `--rail-bg` (`rgb(237,234,227)`) | identical |
-| Border on focus | `--focus` (`rgb(28,92,60)`) | identical |
-| Menu width / radius / surface | 436px / 10px / `--canvas` on `--divider` | identical |
-| Menu gap below anchor | 6px | 6px |
-| Menu cap | viewport-capped, flips up near the bottom | identical |
-| Chevron glyph | none (search field) | none — the down-chevron is gone from all three |
+| Font | `500 14px/18.9px ui-sans-serif, system-ui, sans-serif` | same chrome family |
+| Border / background at rest | `--divider` / `--rail-bg` | unchanged from before the slice |
+| Menu width / radius / surface | 436px / 10px / `--canvas` on `--divider` | unchanged |
+| Menu gap / cap | 6px below anchor, viewport-capped, flips up | unchanged |
+| Filter location | in the trigger (Book and Song) | inside the popout menu, above the options |
 
 The Book menu held 66 book buttons in two Testament groups at 462.13px tall in this window;
 the Song menu held its fetched results at 419.88px. Both are capped to the room below the
-field rather than to the dialog. Filtering "mat" left 2 books (Imamat, Matius); filtering
-"1" in Imamat left 12 chapters and 11 verses. One option at a time carried the active tint
-after ArrowDown, and focus selected the whole stored label (6 of 6 characters).
+anchor rather than to the dialog. Filtering "mat" left 2 books (Imamat, Matius). Book focus
+selected the whole stored label (6 of 6 characters). After the review revision, typing `12` in
+Chapter's in-menu filter left 1 visible option and chose hidden chapter `12` on the live page.
 
-*(Numbers came from `preview/probe.py` and `preview/parity.py` against the live slice.)*
+*(Numbers came from `preview/probe.py`, `preview/parity.py` and the live page.)*
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001** The Book control SHALL be an `<input type="search">` using the song picker's
-  `.editor__songsearch` chrome, with no filter input inside its menu.
-- **FR-002** Typing in any of the three fields SHALL filter its options locally after a 140ms
-  debounce, by TB/SIM name or code for Book and by number substring for Chapter/From verse.
-- **FR-003** Focus SHALL select the field's existing text; ArrowDown/ArrowUp SHALL move an active
-  option, Enter SHALL choose it, Escape SHALL close only that menu.
-- **FR-004** Choosing a book SHALL keep the existing translation-aware id lookup, group labels,
-  chapter fill and verse load.
-- **FR-005** Choosing a chapter or from verse SHALL keep the existing hidden `<select>` values,
-  verse reload and To verse refresh.
+- **FR-001** Book SHALL be an `<input type="search">` using the song picker's `.editor__songsearch`
+  chrome, with no filter input inside its menu.
+- **FR-002** Typing in Book SHALL filter its options locally after a 140ms debounce by TB/SIM name
+  or code; the Chapter, From verse and To verse menus SHALL each carry a `type="search"` filter
+  that hides options whose `data-value` does not contain the query.
+- **FR-003** Book's focus SHALL select the field's text; ArrowDown/ArrowUp SHALL move an active
+  option and Enter SHALL choose it; Escape SHALL close only that menu without clearing the label.
+- **FR-004** Choosing a book SHALL keep the translation-aware id lookup, group labels, chapter fill
+  and verse load.
+- **FR-005** Choosing a numeric option SHALL keep the existing hidden `<select>` values, verse
+  reload and To verse refresh.
 - **FR-006** The hidden selects SHALL remain the form's value carriers, so the POSTed payload and
-  all server validation are unchanged.
-- **FR-007** To verse, the translation toggle and every other modal control SHALL be unchanged.
-- **FR-008** The menu SHALL remain viewport-capped and anchored to the field, and stay attached
-  while the dialog scrolls.
+  server validation are unchanged.
+- **FR-007** Chapter, From verse and To verse SHALL keep their original button triggers, popout
+  menus, disabled states and hover notes; only the in-menu filter is added.
+- **FR-008** Menus SHALL remain viewport-capped and anchored to their trigger, and only one SHALL
+  be open in the modal at a time.
 
 ### Success Criteria
 
-- **SC-001** All three fields answer focus, type-to-filter, keyboard selection and Escape the way
-  `#entry-song-search` does.
+- **SC-001** Book behaves like `#entry-song-search`; the three numeric popovers offer an in-menu
+  filter over the same options they always showed.
 - **SC-002** Create and edit of a passage in either translation post the same values as before.
 - **SC-003** No new endpoint is added; filtering uses option data already in the modal.
-- **SC-004** The song entry's picker and its verse checklist remain byte-identical in behaviour.
+- **SC-004** The song entry's picker and its verse checklist remain unchanged in behaviour.
 
 ## Assumptions
 
-- "Same dropdown" means the full search-combobox interaction and field styling, confirmed by the
-  owner at the start of the slice.
-- "To verse" is deliberately out of scope: the request named exactly Book, Chapter and From verse,
-  and To verse keeps its button picker, optional state and hover note.
+- "Same dropdown" was first confirmed as the full search-combobox interaction, then revised in
+  review: only Book keeps that interaction; Chapter/From/To return to button popovers with an
+  in-menu filter. Both decisions are recorded in this spec's Input line.
+- "Previous songbook dropdown" means the filter-inside-the-popout pattern the book picker used
+  before this slice — a search field above the options, no new keyboard contract.
 - Filtering is client-side because the book list and generated chapter/verse lists are already in
   the modal; no server search endpoint is introduced.
-- A typed query that is not chosen is left in the field on blur, matching the song picker's
-  behaviour; the hidden select remains the saved value.
-- The keyboard highlight needs an `.is-active` tint; the class was already applied by the song
-  picker but had no rule, so one shared rule is added and both pickers gain the visible cue.
-- Escape calls `preventDefault()` in the new combos so it closes the menu without the native
-  search-field clearing of the chosen label. The song picker's own Escape handler is untouched.
-- The passage modal does not grab focus for Book on open, unlike the song modal's spec-220
-  behaviour; auto-focusing a field before the translation toggle is a separate change.
-- The song picker's own code is not refactored: it is green and pinned by spec 210, so the shared
-  interaction is mirrored in a helper for the passage fields rather than rewiring a passing path.
+- A typed Book query that is not chosen is left in the field on blur, matching the song picker;
+  the hidden select remains the saved value.
+- The keyboard highlight needs an `.is-active` tint; one shared rule now serves Book and Song.
+- Escape in Book calls `preventDefault()` so it closes the menu without the native search-field
+  clearing of a chosen label. The song picker's own handler is untouched.
+- The song picker's own code is not refactored: it is green and pinned by spec 210.
 
 ## Known impact
 
-`tests/e2e/test_entry_pickers.py` still clicks `#entry-book-trigger`, `#entry-chapter-trigger`
-and `#entry-verse_start-trigger`, which no longer exist, and uses `[data-picker-trigger]` on
-those three pickers. Those selectors must be migrated to the new search fields. That module is
-already pinned on the board as red on develop (`ITEM-174` backdrop race), so its pass rate is
-not a regression signal on its own; the spec-210 song module is the green regression check.
+`tests/e2e/test_entry_pickers.py` had its Book selectors migrated to the search field; the
+Chapter and From verse selectors stay on their button triggers, with a shared
+`[data-menu-anchor], [data-picker-trigger]` locator where a picker could be either. The module is
+already red on develop (`ITEM-174` backdrop race), so its pass rate is not a regression signal;
+the spec-210 song module is the green regression check.
 
 ## Open items
 
-None. The one ambiguity (what "same dropdown" means) was answered before this spec was written;
-the scope choices above are recorded as assumptions.
+None. Both scope decisions (initial "same dropdown" answer and the review revision) are recorded;
+the remaining choices are assumptions above.

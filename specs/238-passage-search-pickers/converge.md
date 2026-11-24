@@ -5,7 +5,7 @@
 
 ## Convergence results
 
-- **New acceptance module** — `tests.e2e.test_passage_search_pickers`: 10 tests, **10 pass**.
+- **New acceptance module** — `tests.e2e.test_passage_search_pickers`: 11 tests, **11 pass**.
   Covers Book focus/filter/choice, Chapter and From verse filtering and cascade, empty query,
   stored edit values, translation toggle, keyboard and dismissal, and the one-menu-at-a-time rule.
 - **Song-picker regression** — `tests.e2e.test_song_entry_pickers`: 10 tests, **9 pass, 1 fail**.
@@ -34,12 +34,18 @@
   `closeMenus(scope)` first; `test_only_one_picker_menu_is_open_at_a_time` pins the rule across
   both search combos and the To verse button picker. Live preview confirmed one open menu at a
   time. The spec gained US4/AC3 and an edge case for this.
-- A fourth defect was reported from the live preview: chapter and verse numbers filtered out by
+- Review of the live preview found a fourth defect: chapter and verse numbers filtered out by
   the query stayed painted but could not be clicked. `.editor__picker-option { display: block }`
   overrode the UA `[hidden]` rule; the missing `.editor__picker-option[hidden] { display: none }`
   author rule was added, matching the book options' existing rule. The two filtering tests now
-  assert `:visible` counts, not only the `hidden` attribute. Live preview measured the filtered
-  options at `display: none` and 0px height, with only the matching numbers clickable.
+  assert `:visible` counts, not only the `hidden` attribute.
+- **Scope revised after review**: Chapter, From verse and To verse were returned to their
+  original button triggers and popout menus, and each menu gained a `type="search"` filter above
+  its options (`wireRangeFilter`). Book alone keeps the search combobox. The acceptance module
+  was rewritten for the button popovers and gained a To verse filter test: 11 tests, **11 pass**.
+  Live preview confirmed `button` triggers, one filter per numeric menu, `12` → 1 chapter and
+  hidden chapter `12`. The spec, R59, changelog, data model, contracts and preview notes carry
+  the revised scope.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage

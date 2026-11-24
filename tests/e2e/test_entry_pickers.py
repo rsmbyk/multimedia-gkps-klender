@@ -213,9 +213,9 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                         "document.documentElement.dataset.nav === 'closed'")
                     self._open_modal(page, 'scripture')
 
-                    for name in ('Book', 'Chapter', 'From verse'):
-                        expect(page.get_by_role('searchbox', name=name)).to_be_visible()
-                    expect(page.get_by_role('button', name='To verse')).to_be_visible()
+                    expect(page.get_by_role('searchbox', name='Book')).to_be_visible()
+                    for name in ('Chapter', 'From verse', 'To verse'):
+                        expect(page.get_by_role('button', name=name)).to_be_visible()
 
                     layout = page.evaluate("""() => {
                       const rect = element => {
@@ -245,10 +245,10 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                         bookLabel: byId('entry-book-label'),
                         bookTrigger: byId('entry-book-search'),
                         chapterLabel: byId('entry-chapter-label'),
-                        chapterTrigger: byId('entry-chapter-search'),
+                        chapterTrigger: byId('entry-chapter-trigger'),
                         chapterField: rect(document.querySelector('.editor__row .editor__field')),
                         fromLabel: byId('entry-verse_start-label'),
-                        fromTrigger: byId('entry-verse_start-search'),
+                        fromTrigger: byId('entry-verse_start-trigger'),
                         toLabel: byId('entry-verse_end-label'),
                         toTrigger: byId('entry-verse_end-trigger')
                       };
@@ -312,7 +312,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         options = picker.locator('[data-picker-options] [data-book]')
         expect(options).to_have_count(2)
         matius_option = picker.locator('[data-book-name-tb="Matius"]')
@@ -343,7 +343,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         old_group = picker.locator('[data-picker-group][data-testament="old"]')
         new_group = picker.locator('[data-picker-group][data-testament="new"]')
         option = picker.locator('[data-book-name-tb="Kejadian"]')
@@ -359,7 +359,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(old_group.locator('[data-testament-label]')).to_have_text('Padan na Basaia')
         expect(new_group.locator('[data-testament-label]')).to_have_text('Padan na Baru')
         expect(option.locator('.book__n')).to_have_text('1 Musa')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         expect(filter_box).to_be_visible()
         filter_box.fill('Kej')
         expect(option).to_be_visible()
@@ -373,7 +373,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         edit.click()
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         option = picker.locator(f'[data-book-tb="{self.kej_tb.pk}"]')
         filter_box = picker.locator('input[type="search"]')
         old_group = picker.locator('[data-picker-group][data-testament="old"]')
@@ -383,7 +383,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(option).to_be_visible()
         page.locator('[data-entry-translation-toggle] [data-edition-option="tb"]').click()
         expect(old_group.locator('[data-testament-label]')).to_have_text('Perjanjian Lama')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         expect(filter_box).to_be_visible()
         filter_box.fill('Kej')
         expect(option).to_be_visible()
@@ -394,7 +394,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
 
         options = picker.locator('[data-picker-options] [data-book]')
         expect(options).to_have_count(1)
@@ -531,7 +531,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(toggle).to_have_attribute('data-edition', 'sim')
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         option = picker.locator('[data-book-name-sim="Mateus"]')
         expect(option.locator('.book__n')).to_have_text('Mateus')
         expect(option.locator('.book__s')).to_have_text('Matius')
@@ -554,7 +554,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self._open_modal(page, 'scripture')
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         option = picker.locator(f'[data-book="{translation.pk}"]')
         expect(option).to_be_enabled()
         expect(option.locator('.book__n')).to_have_text('Lukas Alternatif')
@@ -568,7 +568,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'song')
         picker = page.locator('[data-entry-picker="song"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         options = page.locator('#entry-song-options [data-song]')
         expect(options).to_have_count(11)
         groups = page.locator('#entry-song-options .editor__songgroup-label')
@@ -584,7 +584,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         options.first.click()
         self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'KJ 2 Number Two')
 
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         page.fill('#entry-song-search', 'Alpha Song')
         page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 1")
         non_hymn = page.locator('#entry-song-options [data-song]')
@@ -596,7 +596,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'song')
         picker = page.locator('[data-entry-picker="song"]')
-        picker.locator('[data-picker-trigger], input[type="search"]').click()
+        picker.locator('[data-menu-anchor], [data-picker-trigger]').click()
         page.fill('#entry-song-search', 'kj')
         page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 6",
                                timeout=5000)

@@ -498,10 +498,6 @@
     var wrap = scope.querySelector('[data-end-wrap]');
     var bookSearch = scope.querySelector('#entry-book-search');
     var bookList = scope.querySelector('#entry-book-options');
-    var chapterSearch = scope.querySelector('#entry-chapter-search');
-    var chapterList = scope.querySelector('#entry-chapter-options');
-    var fromSearch = scope.querySelector('#entry-verse_start-search');
-    var fromList = scope.querySelector('#entry-verse_start-options');
     var groups = [].slice.call(picker.querySelectorAll('[data-picker-group]'));
     var options = [].slice.call(picker.querySelectorAll('[data-book]'));
     var empty = picker.querySelector('[data-picker-empty]');
@@ -509,14 +505,15 @@
     var editionButtons = translationToggle
       ? [].slice.call(translationToggle.querySelectorAll('[data-edition-option]')) : [];
     if (!select || !chapter || !from || !to) return;
-    if (!bookSearch || !bookList || !chapterSearch || !chapterList || !fromSearch || !fromList) return;
+    if (!bookSearch || !bookList) return;
 
     var verses = [];
 
     function renderRangeControl(control) {
       var picker = control.closest('.editor__picker');
+      var trigger = picker && picker.querySelector('[data-picker-trigger]');
       var list = picker && picker.querySelector('[data-picker-options]');
-      if (!picker || !list) return;
+      if (!trigger || !list) return;
       list.innerHTML = '';
       [].slice.call(control.options).forEach(function (option) {
         var item = document.createElement('button');
@@ -531,24 +528,18 @@
         list.appendChild(item);
       });
       var selected = control.options[control.selectedIndex];
+      var placeholder = trigger.dataset.placeholder || 'Choose an option';
       var text = selected
         ? (control.name === 'verse_end' && selected.value === ''
           ? 'No ending verse' : selected.textContent.trim())
-        : '';
-      var search = picker.querySelector('input[type="search"]');
-      if (search) {
-        search.value = text;
-        search.disabled = !!control.disabled;
-        var hint = picker.querySelector('[data-picker-empty]');
-        if (hint) hint.hidden = true;
-      } else {
-        var trigger = picker.querySelector('[data-picker-trigger]');
-        if (!trigger) return;
-        var label = trigger.querySelector('[data-picker-label]');
-        var placeholder = trigger.dataset.placeholder || 'Choose an option';
-        if (label) label.textContent = text || placeholder;
-        trigger.disabled = control.disabled;
-      }
+        : placeholder;
+      var label = trigger.querySelector('[data-picker-label]');
+      if (label) label.textContent = text;
+      trigger.disabled = control.disabled;
+      var filter = picker.querySelector('.editor__picker-menu input[type="search"]');
+      if (filter) filter.value = '';
+      var hint = picker.querySelector('[data-picker-empty]');
+      if (hint) hint.hidden = true;
     }
 
     function wireRangeControl(control) {
@@ -566,19 +557,28 @@
       });
     }
 
-    /* To verse keeps its button menu; chapter and from verse are search combos below. */
-    [to].forEach(wireRangeControl);
+    [chapter, from, to].forEach(wireRangeControl);
 
-    function filterByNumber(list, hint, query) {
-      var text = (query || '').trim();
-      var visible = 0;
-      [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
-        var hit = !text || option.dataset.value.indexOf(text) !== -1;
-        option.hidden = !hit;
-        if (hit) visible += 1;
+    /* The chapter and verse popovers keep their button trigger but filter their
+       own options from a field inside the menu, like the book picker did. */
+    function wireRangeFilter(control) {
+      var picker = control.closest('.editor__picker');
+      var filter = picker && picker.querySelector('.editor__picker-menu input[type="search"]');
+      var list = picker && picker.querySelector('[data-picker-options]');
+      var hint = picker && picker.querySelector('[data-picker-empty]');
+      if (!filter || !list) return;
+      filter.addEventListener('input', function () {
+        var text = (filter.value || '').trim();
+        var visible = 0;
+        [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
+          var hit = !text || option.dataset.value.indexOf(text) !== -1;
+          option.hidden = !hit;
+          if (hit) visible += 1;
+        });
+        if (hint) hint.hidden = visible > 0;
       });
-      if (hint) hint.hidden = visible > 0;
     }
+    [chapter, from, to].forEach(wireRangeFilter);
 
     function numbers(count) {
       var out = '';
@@ -758,18 +758,6 @@
       });
     }
 
-    function setChapterValue(value) {
-      chapter.value = value;
-      chapter.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    function setFromValue(value) {
-      from.value = value;
-      from.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    function numberHint(list) {
-      return list.parentElement.querySelector('[data-picker-empty]');
-    }
-
     var bookCombo = wireSearchCombo({
       scope: scope, input: bookSearch, menu: scope.querySelector('#entry-book-menu'), list: bookList,
       optionSelector: '[data-book]',
@@ -783,33 +771,6 @@
         bookCombo.hide();
       }
     });
-    var chapterCombo = wireSearchCombo({
-      scope: scope, input: chapterSearch, menu: scope.querySelector('#entry-chapter-menu'), list: chapterList,
-      optionSelector: '[data-picker-option]',
-      query: function (value, refresh, show) {
-        filterByNumber(chapterList, numberHint(chapterList), value);
-        refresh();
-        show();
-      },
-      choose: function (option) {
-        setChapterValue(option.dataset.value);
-        chapterCombo.hide();
-      }
-    });
-    var fromCombo = wireSearchCombo({
-      scope: scope, input: fromSearch, menu: scope.querySelector('#entry-verse_start-menu'), list: fromList,
-      optionSelector: '[data-picker-option]',
-      query: function (value, refresh, show) {
-        filterByNumber(fromList, numberHint(fromList), value);
-        refresh();
-        show();
-      },
-      choose: function (option) {
-        setFromValue(option.dataset.value);
-        fromCombo.hide();
-      }
-    });
-
     /* First paint: what the form already held, else a blank cascade to fill in. */
     if (select.value) {
       bookSearch.value = (chosenBook().textContent || '').trim();

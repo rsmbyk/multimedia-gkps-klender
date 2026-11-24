@@ -15,22 +15,23 @@ to disk.
 
 | State | How to reach it | What to look for |
 | --- | --- | --- |
-| Rest | Open `+ Passage` | Book, Chapter, From verse and To verse; the first three are search fields with placeholders, no chevrons; Chapter and From verse are muted/disabled until a book and chapter are chosen |
+| Rest | Open `+ Passage` | Book is a search field; Chapter, From verse and To verse are the original button popovers with chevrons; the numeric buttons are disabled until the preceding list is loaded |
 | Book focus | Click the Book field | Full 66-book list in two Testament groups; text selected so typing replaces it |
 | Book filter | Type `mat` | Imamat + Matius only; empty hint when nothing matches |
 | Book active | ArrowDown / ArrowUp | One option tinted at a time |
 | Book chosen | Enter or click | Field shows the book name in the active translation; menu closes; Chapter enables and shows `1` |
-| Chapter filter | Focus Chapter, type `1` | Chapters 1, 10–19, 21… filtered by number substring |
-| Verse cascade | Choose chapter 10 | Verses for that chapter load; From verse enables and shows `1` |
-| From verse filter | Focus From verse, type `1` | Matching verse numbers; choosing one refreshes To verse |
+| Chapter filter | Click the Chapter button, type `1` in the filter inside the popover | Chapters 1, 10–19, 21… filtered by number substring |
+| Verse cascade | Choose chapter 10 | Verses for that chapter load; From verse enables and its label shows `1` |
+| From verse filter | Click From verse, type `1` in its popover filter | Matching verse numbers; choosing one refreshes To verse |
 | Translation | Toggle TB/SIM | Book labels, group headings and the chosen book's translation-aware id change; cascade reloads |
 | Dismissal | Escape, or click outside | Only the menu closes; the dialog and all field values stay |
-| One menu | Focus Book, then Chapter, then open To verse | Only the newest menu is visible; the previous one closes |
+| To verse filter | Choose a start verse, click To verse, type `1` in its popover filter | Later verse numbers containing 1; choosing one sets `verse_end` |
+| One menu | Focus Book, then open Chapter, then To verse | Only the newest menu is visible; the previous one closes |
 | Edit | Open an existing passage entry | Stored book/chapter/verse show in the fields and hidden selects |
 | Dark theme | Toggle the app theme | Same chrome, theme tokens |
 
-To verse is deliberately unchanged: it stays a button picker with its "No ending verse"
-state and hover note.
+To verse keeps its button picker and "No ending verse"
+state and hover note; only the in-menu filter was added.
 
 ## Probes
 

@@ -15,6 +15,6 @@ Existing interfaces relied on by this slice (read only):
 - `tests/e2e/test_song_entry_pickers.py` as the green behavioural baseline;
 - `preview/run.py`, which reads the database URL from the compose web container.
 
-The change does alter one *internal* contract: the three passage fields answer
-`[data-menu-anchor]` rather than `[data-picker-trigger]`. That is a template/JS contract
-inside one file pair, and `tests/e2e/test_entry_pickers.py` is migrated accordingly.
+The change alters two *internal* contracts: Book answers `[data-menu-anchor]` rather than
+`[data-picker-trigger]`, and the three numeric popovers gained an in-menu search field. Both are
+template/JS contracts inside one file pair; `tests/e2e/test_entry_pickers.py` is migrated.
