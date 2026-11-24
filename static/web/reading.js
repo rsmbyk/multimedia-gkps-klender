@@ -1027,12 +1027,18 @@
 
   /* ---------- song-list order: recently updated <-> alphabetical ---------- */
   function songRowEls() {
+    /* A song row carries the sorter's data; a Tata Ibadah contents row is also a
+       `.songrow` but carries only its anchor and label, so the sorter must not treat
+       it as a song (spec 233 / R57: a list with no song rows is never reordered). */
     return Array.prototype.filter.call(chList.children, function (li) {
-      return li.querySelector('.songrow');
+      var row = li.querySelector('.songrow');
+      return !!row && row.hasAttribute('data-t') && row.hasAttribute('data-o')
+        && row.hasAttribute('data-m');
     });
   }
   function applySongOrder() {
     var rows = songRowEls();
+    if (rows.length < 2) return;
     rows.sort(function (x, y) {
       var rx = x.querySelector('.songrow');
       var ry = y.querySelector('.songrow');
@@ -1049,9 +1055,15 @@
       var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
       return recent || (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
     });
-    var frag = document.createDocumentFragment();
-    rows.forEach(function (li) { frag.appendChild(li); });
-    chList.appendChild(frag);
+    /* Keep every non-song row where it is: only the song rows trade places. */
+    var slots = new Set(rows);
+    var cursor = 0;
+    var children = Array.prototype.map.call(chList.children, function (li) {
+      return slots.has(li) ? rows[cursor++] : li;
+    });
+    children.forEach(function (li, index) {
+      if (chList.children[index] !== li) chList.insertBefore(li, chList.children[index] || null);
+    });
     updateChInds();
   }
   function syncSortBtn() {

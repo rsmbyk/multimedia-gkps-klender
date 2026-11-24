@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A reordered Tata Ibadah now keeps every entry, with the contents and the stage in agreement.**
+  Saving an entry no longer pushes the break divider to the top of the sidebar, and a drag to the
+  top writes the dropped order once instead of rewinding to the pre-drag order; no section falls
+  out of the stage. The song list still keeps its chosen sort (spec 241).
 - **The large entry dialogs draw their title band again.** New text, Edit text and New media restore the 26px/20px inset and the divider under the title; spec 226's verse header keeps its own single rule, and the compact media Edit form is untouched (ITEM-255, spec 240).
 - **The kind mark in a service entry row now sits at the row's centre.** Its 16px box shares the order number's vertical alignment on one-line, wrapped and song rows, and on the drag copy; the columns, row heights and slot badge stay in place (ITEM-252, spec 237).
 - **The song entry modal no longer paints a scrollbar on its own edge.** The shared editor dialog clips overflow at its rounded edge while the form keeps scrolling inside its content wrapper; the new and edit song forms, the verse-panel animation and the fixed results menu are unchanged (ITEM-251, spec 236).
