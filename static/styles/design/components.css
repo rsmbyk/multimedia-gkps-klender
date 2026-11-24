@@ -634,6 +634,7 @@ li:hover > .row-delete,
 .media-library__filters { border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--focus) 28%, var(--divider)); }
 .media-library__chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .media-library__chips button { padding: 7px 11px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; }
+.media-library__chips button:not([aria-pressed="true"]):hover { border-color: var(--focus); background: var(--icon-hover-bg); }
 .media-library__chips button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
 .media-library__chips > span { color: var(--head-ink); }
 #mediaResultCount { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
