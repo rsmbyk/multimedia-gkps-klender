@@ -609,6 +609,10 @@
       var label = trigger.querySelector('[data-picker-label]');
       if (label) label.textContent = text;
       trigger.disabled = control.disabled;
+      /* The wrapper is tabbable only to expose the hover note of a disabled To
+         verse. When the control is usable, it must not be an extra Tab stop. */
+      var endWrap = picker.closest('[data-end-wrap]');
+      if (endWrap) endWrap.setAttribute('tabindex', control.disabled ? '0' : '-1');
       var selectedIndex = [].slice.call(list.querySelectorAll('[data-picker-option]'))
         .map(function (option) { return option.getAttribute('aria-selected'); })
         .indexOf('true');

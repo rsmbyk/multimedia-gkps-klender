@@ -418,6 +418,18 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#id_verse_start').input_value(), '3')
         expect(page.locator('#entry-verse_end-trigger')).to_be_focused()
 
+    def test_tab_from_from_verse_button_skips_the_tooltip_wrapper(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        self._choose_range(page, 'chapter', '1')
+        expect(page.locator('#entry-verse_end-trigger')).to_be_enabled()
+        self.assertEqual(page.locator('[data-end-wrap]').get_attribute('tabindex'), '-1')
+        page.locator('#entry-verse_start-trigger').focus()
+        page.keyboard.press('Tab')
+        page.wait_for_timeout(120)
+        expect(page.locator('#entry-verse_end-trigger')).to_be_focused()
+
     def test_keyboard_and_dismissal_match_the_song_picker(self):
         page = self._page()
         self._open(page)

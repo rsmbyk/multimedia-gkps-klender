@@ -65,6 +65,11 @@
   so the tooltip container is no longer an extra stop after From verse. Pinned by
   `test_tab_from_from_verse_reaches_to_verse_in_one_press`; live probe: one Tab moved focus from
   the From verse filter to `#entry-verse_end-trigger`. 18 passage tests pass.
+- **Native Tab from the button**: `renderRangeControl` now sets `.editor__end-wrap` `tabindex`
+  to `-1` while To verse is enabled (and `0` while disabled, for the hover note). Pinned by
+  `test_tab_from_from_verse_button_skips_the_tooltip_wrapper`; live probe: wrapper 0 while
+  disabled, -1 once verses load, and one native Tab from the From verse button reached
+  `#entry-verse_end-trigger`. 19 passage tests pass.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
@@ -75,6 +80,6 @@
 | US1…US4 | each has an independent test in the new module |
 | SC-001…SC-004 | passed: field/menu parity, unchanged payload, no endpoint, song path unchanged |
 | Edge cases | disabled options and empty hints inspected in `wireSearchCombo` and covered by tests |
-| Plan traceability | 20 test · 12 inspection · 0 manual, all rows resolved |
+| Plan traceability | 21 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.
