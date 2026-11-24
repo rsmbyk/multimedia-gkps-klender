@@ -136,16 +136,30 @@
   function applyPaneOrder(what) {
     var body = pane();
     if (!body) return;
-    var slotNodes = Object.keys(nodes).reduce(function (all, pk) {
-      return all.concat(nodes[pk]);
-    }, []);
-    var slotSet = new Set(slotNodes);
-    var moving = [].concat.apply([], what.map(function (pk) { return nodes[pk] || []; }));
+    /* The pane may have gained an entry since the last read (an add, an edit that
+       re-rendered a block), so read it here rather than trust a caller's cache. */
+    readNodes();
+    var moving = [];
+    var seen = new Set();
+    what.forEach(function (pk) {
+      if (seen.has(pk)) return;
+      seen.add(pk);
+      (nodes[pk] || []).forEach(function (node) {
+        if (node.parentNode === body) moving.push(node);
+      });
+    });
+    if (!moving.length) return;
+    var movingSet = new Set(moving);
     var cursor = 0;
     var children = [].slice.call(body.children).map(function (item) {
-      return slotSet.has(item) ? moving[cursor++] : item;
+      return movingSet.has(item) ? moving[cursor++] : item;
     });
-    body.replaceChildren.apply(body, children);
+    /* Move only the nodes that changed position. Replacing the whole pane would
+       detach the control the save just focused and cancel a drag that is still
+       settling, which is how a drop used to rewind to the pre-drag order. */
+    children.forEach(function (item, index) {
+      if (body.children[index] !== item) body.insertBefore(item, body.children[index] || null);
+    });
   }
 
   function csrf() {
@@ -394,9 +408,14 @@
       swallowTimer = window.setTimeout(function () { swallow = false; }, 0);
       renumber();
       morph(before);
+      /* The gesture is over before the pane is rewritten: moving a pane node can
+         fire pointercancel/blur, and cancelDrag must not read that as an abandoned
+         drag and rewind the drop to the order it started from. */
+      drag = null;
       applyPaneOrder(order());
+    } else {
+      drag = null;
     }
-    drag = null;
     if (moved) persist();                   /* the drop is the write (spec 026) */
     else if (current.link) current.link.click(); /* restore the quicklink after a short press */
   }

@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A reordered Tata Ibadah now keeps every entry, with the contents and the stage in agreement.**
+  Saving an entry no longer pushes the break divider to the top of the sidebar, and a drag to the
+  top writes the dropped order once instead of rewinding to the pre-drag order; no section falls
+  out of the stage. The song list still keeps its chosen sort (spec 241).
 - **A newly created Tata Ibadah Template now opens on the reading stage.** Saving a Template lands on `/tatib/<id>/?mode=template` from either Tata Ibadah list, with the same in-place navigation, panel state and restored focus a dated service gets; edits, refusals, generation and copy-as-template are unchanged (spec 234).
 - **The reason a referenced verse cannot be deleted now sits beside the button.** The verse editor's
   action row leads with `Used in <count> Tata Ibadah — delete unavailable`, the disabled Delete reads

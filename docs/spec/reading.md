@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-23
-**slices**: `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-24
+**slices**: `241-tatib-reorder-kept`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1835,9 +1835,13 @@ A song list SHALL keep the order the operator chose with the sort control after 
 refresh of that list — a create, an edit, a delete, a row click or a section change. The sort
 control's indicated order SHALL agree with the painted rows after the refresh, and the refresh
 SHALL remain in the same document. The default on a freshly loaded page SHALL stay last modified
-first, and lists with no song rows SHALL not be reordered by the song sorter. Hymn songbooks keep
-their number order and offer no sort control. The choice SHALL live for the life of the document;
-a full reload starts again in the default order. (spec 233)
+first, and a list with no song rows SHALL NOT be reordered by the song sorter. Only a row whose
+song carries the sorter's data — its sort title, source order and modification stamp — is a song
+row; a Tata Ibadah contents row, an Alkitab chapter row and a break divider are not, even when
+they share the `.songrow` class or the same shared list. Where song rows do trade places, rows
+that are not song rows SHALL keep their places in that list. Hymn songbooks keep their number
+order and offer no sort control. The choice SHALL live for the life of the document; a full reload
+starts again in the default order. (spec 233; scope stated explicitly by spec 241)
 
 #### Scenario: a created song in alphabetical order
 - WHEN the list is sorted alphabetically and a song is created
@@ -1850,4 +1854,33 @@ a full reload starts again in the default order. (spec 233)
 #### Scenario: the default and other lists
 - WHEN the page loads or the operator opens a section with no song rows
 - THEN the list is in last modified order on load and no chapter or service row is reordered
+
+#### Scenario: a contents list after a save
+- WHEN an entry of an open Tata Ibadah is added, edited or deleted and the lists refresh
+- THEN the contents rows stay in the order the server returned, with the break divider in its own place
+
+### R58 — A reordered service keeps every entry, and both lists agree
+
+The contents list and the stage of an open Tata Ibadah SHALL show the same entries in the same
+order after any in-place save and after a reorder. A completed drop or settled keyboard move SHALL
+write that order once, with no Save or Discard; a fresh read of the page SHALL show the same order.
+Every live entry SHALL remain on both surfaces exactly once — a rewrite of the stage SHALL never
+drop a section, duplicate one, or leave the stage holding an order the sidebar does not show.
+Legacy rows, a break's divider and a choice's options SHALL keep their existing places and
+relative order; only the entries named by the gesture move among their existing slots. A drag
+that is cancelled or abandoned SHALL restore the pre-drag order on both surfaces and SHALL post
+nothing, and the next gesture SHALL read the current pane rather than a stale cache. If the server
+refuses the write, both lists SHALL return to the last order it confirmed. (spec 241)
+
+#### Scenario: a drop after an edit
+- WHEN an entry is edited and saved, then another entry is dragged to the top
+- THEN the dropped order is written once, both lists show it, and a reload keeps it
+
+#### Scenario: an add then a drop
+- WHEN a new entry is added at the start and the last row is then dragged to the top
+- THEN the stage holds every entry once, in the order the sidebar shows
+
+#### Scenario: a cancelled gesture
+- WHEN a drag is released outside a drop, or Escape cancels it
+- THEN both lists show the pre-drag order and no write is posted
 

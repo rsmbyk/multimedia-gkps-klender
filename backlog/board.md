@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-256](./items/ITEM-256-tatib-reorder-kept.md) | A Tata Ibadah reorder loses entries after a save | The post-save re-sort scrambles the contents, and a drop's pane rewrite rewinds the order and drops a section | fix | P1 | M | [241](../specs/241-tatib-reorder-kept/spec.md) | `fix/241-tatib-reorder-kept` | 2026-11-24 |
 
 ## In review
 

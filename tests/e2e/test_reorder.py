@@ -204,6 +204,109 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('.entry__add').first.is_hidden())
         self.assertEqual(page.locator('[data-reorder-save]').count(), 0)
 
+    def test_an_edit_leaves_the_contents_in_server_order(self):
+        """The song sorter must not touch a contents list with no song rows (R57)."""
+        page = self._page(self._service_url())
+        page.locator('[data-entry-edit="%d"]' % self.first.pk).click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('textarea[name="text"]', 'Kasih karunia, diperbarui')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.wait_for_timeout(400)
+
+        server = page.evaluate("""async () => {
+          const html = await fetch(location.href).then(r => r.text());
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          return [].slice.call(doc.querySelectorAll('#chList > li'))
+            .filter(li => li.querySelector('[data-move-grip]'))
+            .map(li => Number(li.querySelector('[data-move-grip]').dataset.moveGrip));
+        }""")
+        self.assertEqual(self._row_order(page), server)
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
+
+    def test_a_drop_after_an_edit_is_written_and_the_pane_follows(self):
+        """The save restores focus into the pane; the drop must survive that focus.
+
+        Rewriting the pane moves the focused control, and the window-blur guard used to
+        read that as an abandoned gesture: the list snapped back to the order it had
+        before the drag, the pane and the list disagreed, and the write posted the old
+        order. A drop is a completed gesture and is always the one written.
+        """
+        page = self._page(self._service_url())
+        page.locator('[data-entry-edit="%d"]' % self.first.pk).click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('textarea[name="text"]', 'Kasih karunia, diperbarui')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.wait_for_timeout(400)
+
+        grip = page.locator('[data-move-grip="%d"]' % self.third.pk)
+        grip.scroll_into_view_if_needed()
+        box = grip.bounding_box()
+        target = self._row(page, self.first.pk).bounding_box()
+        with self._write_of(page) as written:
+            page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+            page.mouse.down()
+            page.mouse.move(box['x'] + box['width'] / 2, target['y'] + 2, steps=10)
+            page.mouse.up()
+        self.assertTrue(written.value.ok)
+        page.wait_for_timeout(400)
+
+        expected = [self.third.pk, self.first.pk, self.second.pk, self.break_.pk]
+        self.assertEqual(self._row_order(page), expected)
+        self.assertEqual(self._order_in_pane(page), expected[:-1])
+
+        # The write is the drop's: a fresh read of the page agrees with it.
+        page.reload()
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(300)
+        self.assertEqual(self._row_order(page), expected)
+        self.assertEqual(self._order_in_pane(page), expected[:-1])
+
+    def test_a_drag_after_an_add_keeps_every_entry_on_the_stage(self):
+        """A drop rewrites the pane in place; no entry may fall out of it."""
+        page = self._page(self._service_url())
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
+        page.locator('#readBody .entry__start [data-entry-open="text"]').click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('textarea[name="text"]', 'Pembuka baru')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.wait_for_timeout(400)
+
+        after_add = self._row_order(page)
+        new_pk = after_add[0]                   # the add lands at the start
+        grip = page.locator('#chList [data-move-grip="%d"]' % self.third.pk)
+        grip.scroll_into_view_if_needed()
+        box = grip.bounding_box()
+        target = self._row(page, new_pk).bounding_box()
+        with self._write_of(page) as written:
+            page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+            page.mouse.down()
+            page.mouse.move(box['x'] + box['width'] / 2, target['y'] + 2, steps=10)
+            page.mouse.up()
+        self.assertTrue(written.value.ok)
+        page.wait_for_timeout(400)
+
+        expected_rows = [self.third.pk] + [pk for pk in after_add if pk != self.third.pk]
+        expected_sections = [pk for pk in expected_rows if pk != self.break_.pk]
+        self.assertEqual(self._row_order(page), expected_rows)
+
+        def sections():
+            return page.evaluate("""() => [].slice.call(
+              document.querySelectorAll('#readBody > section[data-entry-pk]'))
+              .map(function (s) { return Number(s.dataset.entryPk); })""")
+
+        self.assertEqual(sections(), expected_sections)
+
+        page.reload()
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(300)
+        self.assertEqual(self._row_order(page), expected_rows)
+        self.assertEqual(sections(), expected_sections)
+
     def test_dragging_from_a_row_number_reorders_without_following_its_quicklink(self):
         page = self._page(self._service_url())
         original_url = page.url
