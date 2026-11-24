@@ -3,7 +3,7 @@
 **Slice**: `specs/238-passage-search-pickers`
 **Branch**: `feat/238-passage-search-pickers`
 **Created**: 2026-11-24
-**Status**: Draft → accepted at Gate 1; scope revised in review
+**Status**: Accepted — final scope (Gate 1 accepted the initial spec; the review revision and all follow-up fixes were accepted on 2026-11-24)
 **Input**: "can you make the book, chapter and from verse dropdowns in passage entry modal to use the same dropdown as the song picker dropdown in song entry modal" — revised in review to: "turn the chapter and from/to verse dropdown back to their previous version, but add a search filter inside the popout dropdown (just like the previous songbook dropdown)"
 **Demand**: `ITEM-253` (new card)
 **Capability**: `reading/R59` (new)

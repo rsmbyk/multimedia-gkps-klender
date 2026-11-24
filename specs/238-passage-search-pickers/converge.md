@@ -87,3 +87,6 @@
 | Plan traceability | 21 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.
+
+**Owner acceptance**: 2026-11-24 — final scope accepted (Book search field; Chapter/From/To button
+popovers with in-menu filters, highlight, keyboard commit and scroll-follow).
