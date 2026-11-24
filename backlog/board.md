@@ -41,6 +41,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
+| [ITEM-253](./items/ITEM-253-passage-search-dropdown.md) | Passage entry uses the song search dropdown | Book, Chapter and From verse become type-to-filter search fields like the song picker; values, cascade and To verse unchanged | feat | P2 | M | [238](../specs/238-passage-search-pickers/spec.md) | feat/238-passage-search-pickers | 2026-11-24 |
+
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |

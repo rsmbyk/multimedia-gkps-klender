@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-24
-**slices**: `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1900,4 +1900,30 @@ overflow still counts — so the observable is the missing gutter, not a smaller
 #### Scenario: results menu
 - WHEN the Song field is typed into and its results list runs past the dialog
 - THEN the menu is still fixed to the window and the dialog's height and width do not change
+
+### R59 — The passage entry's Book, Chapter and From verse use the song search combobox
+
+The passage-entry modal SHALL present Book, Chapter and From verse as `INPUT[type=search]` fields
+with the same chrome, type-to-filter, keyboard selection and viewport-capped menu as the song
+entry's Song field. Focus SHALL select the stored label; typing SHALL filter the options already
+in the modal after 140ms; Arrow Down/Up SHALL move one visible active option and Enter SHALL choose
+it; Escape SHALL close only the menu without clearing the chosen label. Book SHALL filter by TB/SIM
+name and code, Chapter and From verse by number substring, with an empty hint when nothing
+matches. The hidden selects SHALL remain the posted values, so the book → chapter → verse cascade,
+the translation toggle, stored edit values and the optional To verse button picker SHALL be
+unchanged. (spec 238)
+
+#### Scenario: Book is searched
+- WHEN the operator focuses Book and types `mat`
+- THEN only matching books remain, grouped by Testament, and choosing one shows its name in the
+  active translation and enables Chapter
+
+#### Scenario: Chapter and From verse are searched
+- WHEN a book and chapter are chosen and the operator types into Chapter or From verse
+- THEN only numbers containing the query remain and choosing one updates the hidden select and
+  reloads the next list
+
+#### Scenario: Dismissal keeps the saved value
+- WHEN Escape or an outside click closes an open menu
+- THEN the field keeps its chosen label, the hidden selects keep their values and the dialog stays open
 

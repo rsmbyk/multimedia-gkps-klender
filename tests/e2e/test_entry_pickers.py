@@ -183,7 +183,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def _menu_geometry(self, page, picker):
         return page.evaluate("""pickerName => {
           const menu = document.querySelector(`[data-entry-picker="${pickerName}"] .editor__picker-menu`);
-          const trigger = document.querySelector(`[data-entry-picker="${pickerName}"] [data-picker-trigger]`);
+          const trigger = document.querySelector(`[data-entry-picker="${pickerName}"] [data-picker-trigger], [data-entry-picker="${pickerName}"] [data-menu-anchor]`);
           const m = menu.getBoundingClientRect(), t = trigger.getBoundingClientRect();
           const content = document.getElementById('editorContent').getBoundingClientRect();
           return {position: getComputedStyle(menu).position, gap: m.top - t.bottom,
@@ -242,12 +242,12 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                         windowWidth: window.innerWidth,
                         toggle: rect(document.querySelector('[data-entry-translation-toggle]')),
                         bookLabel: byId('entry-book-label'),
-                        bookTrigger: byId('entry-book-trigger'),
+                        bookTrigger: byId('entry-book-search'),
                         chapterLabel: byId('entry-chapter-label'),
-                        chapterTrigger: byId('entry-chapter-trigger'),
+                        chapterTrigger: byId('entry-chapter-search'),
                         chapterField: rect(document.querySelector('.editor__row .editor__field')),
                         fromLabel: byId('entry-verse_start-label'),
-                        fromTrigger: byId('entry-verse_start-trigger'),
+                        fromTrigger: byId('entry-verse_start-search'),
                         toLabel: byId('entry-verse_end-label'),
                         toTrigger: byId('entry-verse_end-trigger')
                       };
@@ -260,7 +260,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                     self.assertAlmostEqual((toggle['left'] + toggle['right']) / 2,
                                            (book['left'] + book['right']) / 2, delta=1)
                     self.assertEqual(page.locator('#entry-book-label').get_attribute('for'),
-                                     'entry-book-trigger')
+                                     'entry-book-search')
                     self.assertAlmostEqual(layout['chapterField']['width'],
                                            layout['innerRight'] - layout['innerLeft'], delta=1)
 
@@ -311,7 +311,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         options = picker.locator('[data-picker-options] [data-book]')
         expect(options).to_have_count(2)
         matius_option = picker.locator('[data-book-name-tb="Matius"]')
@@ -342,7 +342,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         old_group = picker.locator('[data-picker-group][data-testament="old"]')
         new_group = picker.locator('[data-picker-group][data-testament="new"]')
         option = picker.locator('[data-book-name-tb="Kejadian"]')
@@ -358,7 +358,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(old_group.locator('[data-testament-label]')).to_have_text('Padan na Basaia')
         expect(new_group.locator('[data-testament-label]')).to_have_text('Padan na Baru')
         expect(option.locator('.book__n')).to_have_text('1 Musa')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         expect(filter_box).to_be_visible()
         filter_box.fill('Kej')
         expect(option).to_be_visible()
@@ -372,7 +372,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         edit.click()
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         option = picker.locator(f'[data-book-tb="{self.kej_tb.pk}"]')
         filter_box = picker.locator('input[type="search"]')
         old_group = picker.locator('[data-picker-group][data-testament="old"]')
@@ -382,7 +382,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(option).to_be_visible()
         page.locator('[data-entry-translation-toggle] [data-edition-option="tb"]').click()
         expect(old_group.locator('[data-testament-label]')).to_have_text('Perjanjian Lama')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         expect(filter_box).to_be_visible()
         filter_box.fill('Kej')
         expect(option).to_be_visible()
@@ -393,7 +393,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'scripture')
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
 
         options = picker.locator('[data-picker-options] [data-book]')
         expect(options).to_have_count(1)
@@ -480,7 +480,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(toggle).to_be_visible()
         toggle_box = toggle.bounding_box()
         label_box = page.locator('#entry-book-label').bounding_box()
-        book_box = page.locator('#entry-book-trigger').bounding_box()
+        book_box = page.locator('#entry-book-search').bounding_box()
         assert toggle_box is not None
         assert label_box is not None
         assert book_box is not None
@@ -530,7 +530,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(toggle).to_have_attribute('data-edition', 'sim')
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         option = picker.locator('[data-book-name-sim="Mateus"]')
         expect(option.locator('.book__n')).to_have_text('Mateus')
         expect(option.locator('.book__s')).to_have_text('Matius')
@@ -553,7 +553,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self._open_modal(page, 'scripture')
 
         picker = page.locator('[data-entry-picker="book"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         option = picker.locator(f'[data-book="{translation.pk}"]')
         expect(option).to_be_enabled()
         expect(option.locator('.book__n')).to_have_text('Lukas Alternatif')
@@ -567,7 +567,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'song')
         picker = page.locator('[data-entry-picker="song"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         options = page.locator('#entry-song-options [data-song]')
         expect(options).to_have_count(11)
         groups = page.locator('#entry-song-options .editor__songgroup-label')
@@ -583,7 +583,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         options.first.click()
         self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'KJ 2 Number Two')
 
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         page.fill('#entry-song-search', 'Alpha Song')
         page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 1")
         non_hymn = page.locator('#entry-song-options [data-song]')
@@ -595,7 +595,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_modal(page, 'song')
         picker = page.locator('[data-entry-picker="song"]')
-        picker.locator('[data-picker-trigger]').click()
+        picker.locator('[data-picker-trigger], input[type="search"]').click()
         page.fill('#entry-song-search', 'kj')
         page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 6",
                                timeout=5000)
@@ -609,7 +609,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_song_picker_filters_songs_by_songbook_name(self):
         page = self._page()
         self._open_modal(page, 'song')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
 
         query_results = (
             ('kidung jemaat', self.kj_songs),
@@ -626,7 +626,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_song_picker_reference_number_prefix_includes_sub_number(self):
         page = self._page()
         self._open_modal(page, 'song')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
 
         page.fill('#entry-song-search', 'kj 12')
         prefix_matches = [
@@ -646,7 +646,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_song_picker_searches_by_short_and_full_songbook_reference(self):
         page = self._page()
         self._open_modal(page, 'song')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
 
         for query, song in (
                 ('kj 123', self.short_reference_song),
@@ -662,7 +662,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_song_picker_reference_can_include_the_title(self):
         page = self._page()
         self._open_modal(page, 'song')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
         page.fill('#entry-song-search', 'Kidung Jemaat 235 Reference Title Target')
         page.wait_for_function(
             "document.querySelectorAll('#entry-song-options [data-song]').length === 1")
@@ -679,7 +679,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         edit.hover()
         edit.click()
         page.wait_for_selector('dialog[open]')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
         page.fill('#entry-song-search', 'kidung jemaat 235')
         page.wait_for_function(
             "document.querySelectorAll('#entry-song-options [data-song]').length === 1")
@@ -689,7 +689,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_the_book_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()
         self._open_modal(page, 'scripture')
-        page.locator('[data-entry-picker="book"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="book"] input[type="search"]').click()
         expect(page.locator('[data-entry-picker="book"] .editor__picker-menu')).to_be_visible()
         geometry = self._menu_geometry(page, 'book')
         self.assertEqual(geometry['position'], 'fixed')
@@ -702,7 +702,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def test_the_song_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()
         self._open_modal(page, 'song')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="song"] [data-menu-anchor]').click()
         expect(page.locator('[data-entry-picker="song"] .editor__picker-menu')).to_be_visible()
         geometry = self._menu_geometry(page, 'song')
         self.assertEqual(geometry['position'], 'fixed')
@@ -713,7 +713,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self._open_modal(page, 'scripture')
         page.add_style_tag(content='''#editorContent { height: 120px !important;
             max-height: 120px !important; flex: 0 0 120px !important; }''')
-        page.locator('[data-entry-picker="book"] [data-picker-trigger]').click()
+        page.locator('[data-entry-picker="book"] input[type="search"]').click()
         menu = page.locator('[data-entry-picker="book"] .editor__picker-menu')
         expect(menu).to_be_visible()
         before = self._menu_geometry(page, 'book')
