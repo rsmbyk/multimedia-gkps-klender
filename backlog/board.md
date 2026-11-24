@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-254](./items/ITEM-254-media-filter-pill-hover.md) | Media Library filter pills have no hover feedback | Six type/Unused pills keep their rest border and fill under the pointer while neighbouring controls change | feat | P2 | S | [239](../specs/239-media-filter-pill-hover/spec.md) | 2026-11-24 |
 
 ## Ready
 
