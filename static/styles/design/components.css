@@ -2708,6 +2708,7 @@ kbd {
   font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   background: transparent; border: 0; cursor: pointer;
 }
+.editor__picker-option[hidden] { display: none; }    /* author display beats [hidden] */
 .editor__songoption--book {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }

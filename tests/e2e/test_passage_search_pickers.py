@@ -165,6 +165,7 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         chapter.fill('12')
         page.wait_for_timeout(220)
         expect(page.locator('#entry-chapter-options [data-picker-option]:not([hidden])')).to_have_count(1)
+        expect(page.locator('#entry-chapter-options [data-picker-option]:visible')).to_have_count(1)
         self._choose_chapter(page, '12')
         self.assertEqual(page.locator('#id_chapter').input_value(), '12')
         expect(page.locator('#entry-verse_start-search')).to_be_enabled()
@@ -181,6 +182,7 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(220)
         visible = page.locator('#entry-verse_start-options [data-picker-option]:not([hidden])')
         expect(visible).to_have_count(7)  # 1, 10..15
+        expect(page.locator('#entry-verse_start-options [data-picker-option]:visible')).to_have_count(7)
         start.fill('')
         page.wait_for_timeout(220)
         page.locator(

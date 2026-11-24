@@ -34,6 +34,12 @@
   `closeMenus(scope)` first; `test_only_one_picker_menu_is_open_at_a_time` pins the rule across
   both search combos and the To verse button picker. Live preview confirmed one open menu at a
   time. The spec gained US4/AC3 and an edge case for this.
+- A fourth defect was reported from the live preview: chapter and verse numbers filtered out by
+  the query stayed painted but could not be clicked. `.editor__picker-option { display: block }`
+  overrode the UA `[hidden]` rule; the missing `.editor__picker-option[hidden] { display: none }`
+  author rule was added, matching the book options' existing rule. The two filtering tests now
+  assert `:visible` counts, not only the `hidden` attribute. Live preview measured the filtered
+  options at `display: none` and 0px height, with only the matching numbers clickable.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
