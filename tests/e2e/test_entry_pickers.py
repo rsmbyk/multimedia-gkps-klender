@@ -213,8 +213,9 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                         "document.documentElement.dataset.nav === 'closed'")
                     self._open_modal(page, 'scripture')
 
-                    for name in ('Book', 'Chapter', 'From verse', 'To verse'):
-                        expect(page.get_by_role('button', name=name)).to_be_visible()
+                    for name in ('Book', 'Chapter', 'From verse'):
+                        expect(page.get_by_role('searchbox', name=name)).to_be_visible()
+                    expect(page.get_by_role('button', name='To verse')).to_be_visible()
 
                     layout = page.evaluate("""() => {
                       const rect = element => {
