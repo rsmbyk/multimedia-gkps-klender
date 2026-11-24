@@ -1,6 +1,6 @@
 ---
 id: ITEM-256
-status: in-progress
+status: in-review
 title: 'A Tata Ibadah reorder loses entries after a save'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 241-tatib-reorder-kept
 branch: fix/241-tatib-reorder-kept
-pr:
+pr: 620
 issue: 619
 closed_at:
 closed_reason:

@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-256](./items/ITEM-256-tatib-reorder-kept.md) | A Tata Ibadah reorder loses entries after a save | The post-save re-sort scrambles the contents, and a drop's pane rewrite rewinds the order and drops a section | fix | P1 | M | [241](../specs/241-tatib-reorder-kept/spec.md) | `fix/241-tatib-reorder-kept` | 2026-11-24 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-256](./items/ITEM-256-tatib-reorder-kept.md) | A Tata Ibadah reorder loses entries after a save | The post-save re-sort scrambles the contents, and a drop's pane rewrite rewinds the order and drops a section | fix | P1 | M | [241](../specs/241-tatib-reorder-kept/spec.md) | [#620](https://github.com/rsmbyk/multimedia-gkps-klender/pull/620) | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
