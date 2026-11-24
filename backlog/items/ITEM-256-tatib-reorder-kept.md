@@ -10,7 +10,7 @@ updated: 2026-11-24
 spec: 241-tatib-reorder-kept
 branch: fix/241-tatib-reorder-kept
 pr:
-issue:
+issue: 619
 closed_at:
 closed_reason:
 bump: patch
