@@ -58,6 +58,13 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
             bible.Verse.objects.create(
                 book_translation=translation, chapter=1, verse=1, text='first verse')
 
+        if self._testMethodName == 'test_book_menu_scrolls_with_the_highlight':
+            for index in range(20):
+                extra = bible.Book.objects.create(
+                    name=f'X{index:02d}', testament='old', number_of_chapters=1)
+                bible.BookTranslation.objects.create(
+                    version=version, book=extra, translation=f'Extra Book {index}')
+
         self.service = tatib.TataIbadah.objects.create(
             name='Ibadah Picker', date=date(2026, 11, 24), is_active=True)
         tatib.ServiceEntry.objects.create(
@@ -271,6 +278,31 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         assert_one('entry-verse_start-menu')
         self.assertEqual(
             page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
+
+    def test_book_menu_scrolls_with_the_highlight(self):
+        page = self._page()
+        self._open(page)
+        book = page.locator('#entry-book-search')
+        book.focus()
+        page.wait_for_timeout(160)
+        for _ in range(15):
+            book.press('ArrowDown')
+        page.wait_for_timeout(120)
+        state = page.evaluate("""() => {
+          const list = document.querySelector('#entry-book-options');
+          const active = list.querySelector('.is-active');
+          const view = list.getBoundingClientRect(), row = active.getBoundingClientRect();
+          return {top: list.scrollTop,
+                  inView: row.top >= view.top - 1 && row.bottom <= view.bottom + 1};
+        }""")
+        self.assertGreater(state['top'], 0)
+        self.assertTrue(state['inView'])
+        for _ in range(12):
+            book.press('ArrowUp')
+        page.wait_for_timeout(120)
+        self.assertLess(
+            page.evaluate("document.querySelector('#entry-book-options').scrollTop"),
+            state['top'])
 
     def test_tab_from_book_chooses_and_moves_focus(self):
         page = self._page()

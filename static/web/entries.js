@@ -324,6 +324,15 @@
     if (next && next.focus) next.focus();
   }
 
+  /* Keep the keyboard's active option inside the menu's own scroll box, without
+     scrolling the dialog underneath it. */
+  function scrollOptionIntoView(option, viewport) {
+    var row = option.getBoundingClientRect();
+    var view = viewport.getBoundingClientRect();
+    if (row.top < view.top) viewport.scrollTop -= view.top - row.top;
+    else if (row.bottom > view.bottom) viewport.scrollTop += row.bottom - view.bottom;
+  }
+
   function pickerOf(scope, name) {
     return scope.querySelector('[data-entry-picker="' + name + '"]');
   }
@@ -448,6 +457,8 @@
       options.forEach(function (option, index) {
         if (index === active) option.classList.add('is-active');
       });
+      var current = options[active];
+      if (current) scrollOptionIntoView(current, list);
     }
     function showMenu() {
       /* One menu at a time in a modal, including the button pickers. */
@@ -939,6 +950,7 @@
       options.forEach(function (option, index) {
         option.classList.toggle('is-active', index === active);
       });
+      if (options[active]) scrollOptionIntoView(options[active], list);
     }
     function showMenu() {
       menu.hidden = false;

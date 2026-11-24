@@ -92,6 +92,9 @@ and compare the POSTed payload and rendered stage reference with a baseline.
    — **When** Tab is pressed **Then** that option is chosen and focus moves to the next field.
    This applies to Book, Song, the three in-menu filters, the OBS dock find and the projector
    find and entry-list comboboxes.
+5. **Given** a long option list **When** ArrowDown/ArrowUp moves the highlight past the visible
+   rows **Then** the menu scrolls just enough to keep the highlighted option inside its own
+   scroll box, without scrolling the dialog underneath.
 
 ### Edge Cases
 
@@ -109,6 +112,7 @@ and compare the POSTed payload and rendered stage reference with a baseline.
 - With no visible match, Tab leaves the typed text alone and still moves focus to the next field.
 - The next focus target is read *after* the choice, because a field such as Chapter only becomes
   enabled by choosing Book; option buttons inside a closing menu are never the next target.
+- Scrolling is limited to `.editor__picker-options`; the dialog content must not move with it.
 
 ## UI/UX
 

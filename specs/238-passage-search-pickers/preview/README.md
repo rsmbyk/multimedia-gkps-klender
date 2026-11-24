@@ -28,6 +28,7 @@ to disk.
 | To verse filter | Choose a start verse, click To verse, type `1` in its popover filter | Later verse numbers containing 1; choosing one sets `verse_end` |
 | One menu | Focus Book, then open Chapter, then To verse | Only the newest menu is visible; the previous one closes |
 | Tab commit | Type in Book or any popover filter, press Tab | The highlighted (or first visible) match is chosen and focus lands on the next field |
+| Scroll follow | Arrow down past the visible rows in Book or Song | The option list scrolls to keep the highlight in view; the dialog stays put |
 | Edit | Open an existing passage entry | Stored book/chapter/verse show in the fields and hidden selects |
 | Dark theme | Toggle the app theme | Same chrome, theme tokens |
 
