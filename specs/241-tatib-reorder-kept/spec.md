@@ -6,7 +6,7 @@
 **Status**: Draft
 **Input**: "after add/edit/delete and reordering entries, the page appears cut off: the sidebar and pane disagree, sections vanish, and a reorder can be lost even when dragged to the top"
 **Demand**: `ITEM-256`
-**Capability**: `modified: reading/R57` · `new: reading/R58`
+**Capability**: `modified: reading/R57` · `new: reading/R60` (R58/R59 were taken by specs 236/238 while this slice was open)
 
 A Tata Ibadah's contents list and its stage are two views of one order. After any in-place save
 — an add, an edit or a delete — the shell reconciles both from the server's answer, then the

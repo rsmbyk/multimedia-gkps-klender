@@ -34,7 +34,7 @@ sidebar with `[4, 5, 1, 2, 3]`.
 - `endDrag()` rewrites the pane while the gesture is live; the rewrite raises a cancel that
   restores the pre-drag order, and `applyPaneOrder()`'s stale node cache drops a section.
 - The server already renders and accepts the right order; the fix is client-side.
-- Capability: `reading/R57` modified (sorter scope), `reading/R58` added (one write, both lists agree).
+- Capability: `reading/R57` modified (sorter scope), `reading/R60` added (one write, both lists agree — R58/R59 went to specs 236/238 while this slice was open).
 
 ## Acceptance sketch
 

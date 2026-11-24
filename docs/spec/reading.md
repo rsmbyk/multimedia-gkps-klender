@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-24
-**slices**: `241-tatib-reorder-kept`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -298,6 +298,12 @@ carry that dialog's chrome — no content padding, a title band padded `20px 26p
 21px type, top-level fields and the mode switch inset `26px` from the sides and `14px` apart, and an
 action row inset `26px`, `14px` above and `20px` below, drawing no divider of its own.
 
+The entry form renders its title directly in the dialog content, with no
+`.editor__head`; the inset and the one rule SHALL therefore sit on its title itself.
+The head-bearing editors keep spec 226's rule: their head carries the inset and the
+title carries neither padding nor a border. This distinction SHALL survive both
+markup shapes (spec 240).
+
 Inside that frame the Text field SHALL take the height the switch, the title field and the action row
 leave: the field SHALL grow and its textarea SHALL grow with it, so the box ends `14px` above the action
 row and never pushes that row out of the dialog.
@@ -338,6 +344,10 @@ re-render that follows a rejected save.
 #### Scenario: a narrow window
 - WHEN the window is 390×844
 - THEN the frame is 352×760, its title band padded `16px 18px`, its fields inset 18px, and the page behind gains no scrollbar
+
+#### Scenario: the headerless form after spec 226
+- WHEN New text, Edit text or New media is opened after the head-based title change
+- THEN the title text still starts 26px/21px from the dialog with one 1px divider under a 72.5px band, while a verse editor's head keeps its single rule
 
 ### R11 — A sidebar edit keeps every visible reading view current
 
@@ -990,28 +1000,40 @@ SHALL NOT change.
 - WHEN the theme changes
 - THEN every mark repaints with its own element's ink and needs no repaint of its own
 
-### R30 — A song entry hides its Verses section when there is nothing to choose
+### R30 — A song entry names a song that has no live verses
 
-The song entry's Verses section SHALL be hidden when no song is picked, and when the picked song carries no
-live verses; its label SHALL be hidden with it, so the field leaves no empty title behind. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
-server-rendered fragment before any script runs; the collapsed section SHALL measure 0 px and SHALL offer no
-checkbox or menu. A song whose live verses exist SHALL keep the section visible, starting at verse 1 on a
-fresh pick and at the saved verse IDs on an edit. Its other lines SHALL read `Bait` plus a collapsed range
-list (`Bait 1–2`), whatever the size of the selection, and `No verses: keep at least one` when a song's
+The song entry's Verses section SHALL be hidden when no song is picked: its label SHALL be hidden
+with it, the section SHALL measure 0 px and SHALL offer no checkbox or menu. When the picked song
+carries no live verses, the label and the bordered section SHALL instead be visible in both Add and
+Edit forms, collapsed to their summary line: the summary SHALL read exactly `This song has no verses`,
+the helper/All–Clear row, the tile grid and the readout SHALL NOT be visible, and the summary SHALL
+NOT draw a bottom separator (`data-empty="true"`). That state SHALL be in the server-rendered
+fragment before any script runs — including an Add form returned by a refused save — and
+`verseSummary()` SHALL re-derive it on every later pick without a second animation phase. A song
+whose live verses exist SHALL keep the section visible, starting at verse 1 on a fresh pick and at
+the saved verse IDs on an edit. Its other lines SHALL read `Bait` plus a collapsed range list
+(`Bait 1–2`), whatever the size of the selection, and `No verses: keep at least one` when a song's
 boxes were all cleared. A refusal caused by a verse-less song SHALL name the song —
 `This song has no verses: pick another song.` — while clearing every box of a song with verses SHALL keep
-`Keep at least one verse in the service.` (spec 210; modifies the earlier disabled-trigger rule.)
+`Keep at least one verse in the service.` (specs 210 and 235.)
+
+#### Scenario: an empty song names itself
+- WHEN a song with no live verses is picked in Add or Edit
+- THEN the Verses label and panel remain, holding only the line `This song has no verses`, with no rule under it
 
 **Superseded (spec 210):** the summary drew `All verses` when every box was ticked; the whole set is now
 stated as a range list, so that line is gone.
 
 **Superseded (spec 210):** the earlier requirement kept the section visible with a disabled trigger reading
-`This song has no verses` and no checkbox drawn. That surface is replaced by a hidden section; the two
+`This song has no verses` and no checkbox drawn. That surface was replaced by a hidden section.
+
+**Superseded (spec 235):** spec 210's answer to "what should a song with no verses show?" was to hide the
+whole Verses section, including its label. The section is now shown, collapsed to its summary row. The two
 refusal messages and the stale-verse survival rule are unchanged.
 
 #### Scenario: a song with no verses is picked
 - WHEN a song whose live verses are empty is picked in the song entry
-- THEN the Verses section collapses to 0 px, no checkbox is drawn, and the refusal still names the song
+- THEN the Verses section stays visible with only `This song has no verses`, no checkbox is drawn, and the refusal still names the song
 
 #### Scenario: nothing is picked
 - WHEN the song entry opens with no song chosen
@@ -1610,9 +1632,11 @@ mark left behind. A server-rendered checklist — the Edit form, or an Add form 
 SHALL already be that same five-across grid: the widget renders `div > label.editor__verse-tile` directly,
 with `<span>` numbers and no extra wrapper of its own. `All` SHALL be disabled at all-ticked and `Clear` at
 none-ticked. A one-verse song SHALL
-show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing
+show one inert tile in a muted section. When the picked song has no live verses, the section stays
+and collapses to its summary row under `data-empty="true"`, with the body rows changing in the
+same frame as the pick and no second animation phase (spec 235). The section's reveal SHALL last 200 ms on the product's existing
 ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL be instant under
-`prefers-reduced-motion`. (spec 210)
+`prefers-reduced-motion`. (spec 210; spec 235 modifies the empty-song state.)
 
 #### Scenario: search from the first frame
 - WHEN the Add song form opens and the operator types without clicking
@@ -1630,6 +1654,10 @@ ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL 
 - WHEN the Verses section renders
 - THEN the summary is inside it, a 1px rule separates it from the controls, and the soft summary collapses only the tiles
 
+#### Scenario: an empty song in the picker
+- WHEN the picked song has no live verses
+- THEN the panel holds only the summary row, and swapping to a song with verses brings the tiles back in the same frame
+
 ### R49 — A contents row states its entry's kind in a column after the number
 
 The Tata Ibadah contents list SHALL paint one decorative kind mark per numbered row, in a dedicated
@@ -1642,11 +1670,12 @@ the dashed frame and its `+` / `◎` stay and the badge names the resolved kind;
 cannot be read SHALL draw the frame without a badge.
 
 The number SHALL keep its left edge and vertical centring in a 24px box that grows past three digits;
-the mark SHALL be 16px; the label SHALL keep its three-line clamp, its `…` and its wrap at the pane edge.
+the mark SHALL be 16px and SHALL share the number's vertical centring on every row, including the drag
+copy of a row; the label SHALL keep its three-line clamp, its `…` and its wrap at the pane edge.
 The mark SHALL be server-rendered, `aria-hidden`, take no pointer and add no focusable element, so the
 row's accessible name is unchanged. It SHALL be legible in both themes and on the hover and selected
 fills. The OBS dock's entry list SHALL carry no marks: the contents list is the only surface in scope.
-(spec 214)
+(spec 214, 237)
 
 #### Scenario: one rail of kinds
 - WHEN a service holds a passage, a song, a media file, a text entry and a section break
@@ -1663,6 +1692,10 @@ fills. The OBS dock's entry list SHALL carry no marks: the contents list is the 
 #### Scenario: geometry
 - WHEN the mark is drawn at a 404px pane, in either theme
 - THEN the number starts 10px from the row edge in a 24px box, the mark at 42px and the label at 66px, with no row moving
+
+#### Scenario: the mark shares the number's centre
+- WHEN a contents row is one line, carries a `Bait` line under its title, or wraps at a 390px pane
+- THEN its mark's box centre matches the row's and the number's within 1px, and a slot's corner badge stays on the mark (spec 237)
 
 ### R50 — The empty search landing is ready for typing
 
@@ -1859,7 +1892,58 @@ starts again in the default order. (spec 233; scope stated explicitly by spec 24
 - WHEN an entry of an open Tata Ibadah is added, edited or deleted and the lists refresh
 - THEN the contents rows stay in the order the server returned, with the break divider in its own place
 
-### R58 — A reordered service keeps every entry, and both lists agree
+### R58 — The song entry modal's own edge has no scrollbar
+
+The shared editor dialog SHALL NOT be a scroll container in any song-entry state. Overflow at its
+edge SHALL be clipped; the dialog's computed `overflow-y` SHALL be `clip` and its
+`offsetWidth - clientWidth` SHALL be `0px`, so no scrollbar is painted on its rounded right edge.
+Scrolling for a form taller than the cap SHALL remain on `.editor__content`. The dialog's 480px
+default width, 14px corner radius, the collapsed verse panel's animated reveal and the fixed song
+results menu SHALL be unchanged. A `scrollHeight` greater than `clientHeight` is permitted — clipped
+overflow still counts — so the observable is the missing gutter, not a smaller `scrollHeight`.
+(spec 236)
+
+#### Scenario: New song
+- WHEN the operator opens the song-entry add form with no song chosen
+- THEN the dialog has a 0px scrollbar gutter, does not move under a wheel gesture and keeps its box
+
+#### Scenario: Edit song with a collapsed verse section
+- WHEN a song with no verses is edited
+- THEN the dialog has the same 0px gutter and no wheel movement
+
+#### Scenario: tall forms
+- WHEN a form is taller than the dialog's `86vh` cap at a desktop or short viewport
+- THEN `.editor__content` scrolls while the dialog's own edge stays fixed and clean
+
+#### Scenario: results menu
+- WHEN the Song field is typed into and its results list runs past the dialog
+- THEN the menu is still fixed to the window and the dialog's height and width do not change
+
+### R59 — Book is a search field; chapter and verse popovers filter inside the menu
+
+The passage-entry modal SHALL present Book as an `INPUT[type=search]` with the same chrome,
+type-to-filter, keyboard selection and viewport-capped menu as the song entry's Song field.
+Chapter, From verse and To verse SHALL keep their button triggers and popout menus, and each of
+those three menus SHALL carry a `type="search"` filter above its options that hides options whose
+number does not contain the query, with an empty hint when none match. Opening a popover SHALL
+focus its filter. The hidden selects SHALL remain the posted values, so the book → chapter →
+verse cascade, the translation toggle, stored edit values and the original button geometry and
+hover note SHALL be unchanged. Only one picker menu SHALL be open in the modal at a time. Tab in any search dropdown SHALL commit the highlighted option, or the first visible match, then move focus to the next field. Arrow-led highlights SHALL scroll the option list itself to keep the highlighted row visible. Chapter and verse popovers SHALL open with the stored option highlighted. (spec 238)
+
+#### Scenario: Book is searched
+- WHEN the operator focuses Book and types `mat`
+- THEN only matching books remain, grouped by Testament, and choosing one shows its name in the
+  active translation and enables Chapter
+
+#### Scenario: Chapter and verse popovers filter
+- WHEN a chapter or verse popover is opened and a number is typed into its filter
+- THEN only numbers containing the query remain and choosing one updates the hidden select and
+  reloads the next list
+
+#### Scenario: Dismissal keeps the saved value
+- WHEN Escape or an outside click closes an open menu
+- THEN the field and hidden selects keep their values and the dialog stays open
+### R60 — A reordered service keeps every entry, and both lists agree
 
 The contents list and the stage of an open Tata Ibadah SHALL show the same entries in the same
 order after any in-place save and after a reorder. A completed drop or settled keyboard move SHALL

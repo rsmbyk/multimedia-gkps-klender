@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Add Passage now uses the song search field for Book, and the chapter and verse popovers can be filtered.** Book became the same type-to-filter search combobox as the song picker; Chapter, From verse and To verse keep their button popovers but each menu gained a filter field above its options. The cascade, translation toggle, saved values and To verse's optional state are unchanged. Pressing Tab in any search dropdown now commits the highlighted (or first visible) match and moves focus to the next field; arrow-key highlights scroll their own menu into view, and the chapter and verse popovers open with the stored option highlighted (ITEM-253, spec 238).
+- **Media Library filter pills now answer the pointer.** Unpressed type and Unused pills take the app's focus-border and hover-fill treatment; a pressed pill keeps its accent fill (spec 239).
+- **An empty song now names itself in the song entry's Verses section.** Picking a song with no
+  live verses no longer hides the field: the label and panel stay, collapsed to the single line
+  `This song has no verses`, with no tiles, helper row or separator. No song still hides the field,
+  and songs with verses keep the full picker (spec 235).
 - **Add verse now sits beside Project in the song header.** A song with verses offers the control
   in the header, immediately left of Project; an empty song keeps only its centred invitation (spec 231).
 
@@ -24,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Saving an entry no longer pushes the break divider to the top of the sidebar, and a drag to the
   top writes the dropped order once instead of rewinding to the pre-drag order; no section falls
   out of the stage. The song list still keeps its chosen sort (spec 241).
+- **The large entry dialogs draw their title band again.** New text, Edit text and New media restore the 26px/20px inset and the divider under the title; spec 226's verse header keeps its own single rule, and the compact media Edit form is untouched (ITEM-255, spec 240).
+- **The kind mark in a service entry row now sits at the row's centre.** Its 16px box shares the order number's vertical alignment on one-line, wrapped and song rows, and on the drag copy; the columns, row heights and slot badge stay in place (ITEM-252, spec 237).
+- **The song entry modal no longer paints a scrollbar on its own edge.** The shared editor dialog clips overflow at its rounded edge while the form keeps scrolling inside its content wrapper; the new and edit song forms, the verse-panel animation and the fixed results menu are unchanged (ITEM-251, spec 236).
 - **A newly created Tata Ibadah Template now opens on the reading stage.** Saving a Template lands on `/tatib/<id>/?mode=template` from either Tata Ibadah list, with the same in-place navigation, panel state and restored focus a dated service gets; edits, refusals, generation and copy-as-template are unchanged (spec 234).
 - **The reason a referenced verse cannot be deleted now sits beside the button.** The verse editor's
   action row leads with `Used in <count> Tata Ibadah — delete unavailable`, the disabled Delete reads

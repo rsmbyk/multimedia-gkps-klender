@@ -1361,6 +1361,12 @@ class ServiceEntryViewTests(TestCase):
         html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
         self.assertIn('This song has no verses', html)
         self.assertNotIn('Pick a song first', html)
+        # spec 235: the section is present on first paint, collapsed to its summary row
+        match = re.search(r'<div class="editor__verse-panel"[^>]*>', html)
+        tag = match.group(0) if match else ''
+        self.assertNotIn(' hidden', tag)
+        self.assertIn('data-empty="true"', tag)
+        self.assertIn('data-settled="true"', tag)
 
     def test_an_edit_form_keeps_the_verses_an_entry_stored(self):
         """Stored numbers stay choices even when the song has none, so the entry is saveable."""

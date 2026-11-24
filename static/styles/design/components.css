@@ -523,6 +523,10 @@ li:hover > .row-delete,
   box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
   display: flex; flex-direction: column;
   max-height: min(86vh, 46rem);
+  /* the UA's auto overflow makes the DIALOG a second scrollport: a collapsed verse
+     panel leaves a few clipped pixels past the box and paints a scrollbar on its
+     rounded edge. .editor__content owns scrolling; clip here only hides overflow. */
+  overflow: clip;
 }
 /* An author display rule beats the UA's rule for a CLOSED dialog, so the dialog
    has to say it again for itself -- otherwise it lays out inside the page and
@@ -543,6 +547,11 @@ li:hover > .row-delete,
    (0,2,0), so leaving them on the title drew a second rule 37.5px above this one. */
 .editor:has([data-editor-size="large"]) .editor__head { padding: 20px 26px 14px; }
 .editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 0; border: 0; font-size: 21px; }
+/* The entry form puts its title straight in the content, with no header row.
+   Its large frame still needs the inset and the one rule on the title itself. */
+.editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title {
+  padding: 20px 26px; border-bottom: 1px solid var(--divider);
+}
 .editor:has([data-editor-size="large"]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__form > .editor__field,
 .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin: 14px 26px 0; }
@@ -630,6 +639,7 @@ li:hover > .row-delete,
 .media-library__filters { border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--focus) 28%, var(--divider)); }
 .media-library__chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .media-library__chips button { padding: 7px 11px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; }
+.media-library__chips button:not([aria-pressed="true"]):hover { border-color: var(--focus); background: var(--icon-hover-bg); }
 .media-library__chips button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
 .media-library__chips > span { color: var(--head-ink); }
 #mediaResultCount { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
@@ -677,7 +687,7 @@ li:hover > .row-delete,
 @keyframes media-library-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
 @media (prefers-reduced-motion: reduce) { .media-library__dialog[open], .media-library__dialog[open].closing, .media-library__status:not([hidden]), .media-library__status.closing:not([hidden]), .editor[open]:has([data-entry-form="media"]), .editor[open].media-closing:has([data-entry-form="media"]) { animation: none; } }
 @media (max-width: 700px) { .media-library__options { grid-template-columns: repeat(2, minmax(0, 1fr)); } .media-library__sort { width: 100%; } .media-library__sort > button { width: 100%; text-align: left; } }
-@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
+@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
 /* The reference note keeps its one line and drops above the buttons when the row is tight (spec 232). */
 @media (max-width: 650px) {
   .editor__actions:has(.editor__refnote) { flex-wrap: wrap; row-gap: 10px; }
@@ -2704,6 +2714,7 @@ kbd {
   font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   background: transparent; border: 0; cursor: pointer;
 }
+.editor__picker-option[hidden] { display: none; }    /* author display beats [hidden] */
 .editor__songoption--book {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
@@ -2711,9 +2722,14 @@ kbd {
 .editor__songoption--book .book__n { flex: 1; }
 .editor__songoption--book .book__s[hidden] { display: none; }
 .editor__picker-option:hover, .editor__picker-option:focus-visible,
-.editor__songoption:hover, .editor__songoption:focus-visible {
+.editor__songoption:hover, .editor__songoption:focus-visible,
+.editor__picker-option.is-active, .editor__songoption.is-active {
   background: var(--icon-hover-bg); outline: none;
 }
+/* The passage fields wear the song search's chrome; a disabled one keeps the
+   select-like muted tone instead of looking editable. */
+.editor__songsearch:disabled { color: var(--head-ink); cursor: default; }
+.editor__songsearch:disabled:hover { border-color: var(--divider); }
 .editor__songsearch { width: 100%; }
 /* The song results keep the product's fixed, viewport-capped menu (spec 040), but the
    anchor is the live search field and the cap is the window, not the dialog. */
@@ -2741,6 +2757,15 @@ kbd {
   color: var(--ink);
 }
 .editor__verse-summary[data-invalid="true"] { color: var(--danger); }
+/* A picked song with no live verses keeps the section and shows only its summary row
+   (spec 235): no helper/All-Clear row, no tiles, no readout, and no rule left dangling
+   under the one line that is drawn. */
+.editor__verse-panel[data-empty="true"] .editor__verse-quick,
+.editor__verse-panel[data-empty="true"] .editor__verses,
+.editor__verse-panel[data-empty="true"] .editor__verse-readout { display: none; }
+.editor__verse-panel[data-empty="true"] .editor__verse-summary {
+  margin: 0; padding: 0; border-bottom: 0;
+}
 .editor__verses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
 .editor__verses > div { display: flex; min-width: 0; }
 .editor__verses label {
@@ -3007,6 +3032,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
    text keeps its baseline. The drag copy lives outside #chList and must match. */
 :root[data-section="tatib"] #chList .songrow__c,
 .reorder__ghost .songrow__c { align-self: center; }
+/* spec 237: the kind mark shares the number's centred seat, so a two-line row
+   does not leave its glyph beside the first line of text. */
+:root[data-section="tatib"] #chList .songrow__mark,
+.reorder__ghost .songrow__mark { align-self: center; }
 /* The real row is the sole destination slot. Hide its contents, not its box;
    its tint marks the space without a ring. */
 #chList li.is-dragging {
