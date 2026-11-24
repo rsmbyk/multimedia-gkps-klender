@@ -1,7 +1,7 @@
 ---
 id: ITEM-253
-status: in progress
-title: 'Passage entry uses the song search dropdown'
+status: in review
+title: 'Passage entry pickers use searchable dropdowns'
 type: feat
 priority: P2
 effort: M
@@ -9,7 +9,7 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 238-passage-search-pickers
 branch: feat/238-passage-search-pickers
-pr:
+pr: 618
 issue:
 closed_at:
 closed_reason:
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-253: Passage entry uses the song search dropdown
+# ITEM-253: Passage entry pickers use searchable dropdowns
 
 ## Summary
 
