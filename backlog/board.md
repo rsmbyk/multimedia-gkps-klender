@@ -45,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-255](./items/ITEM-255-entry-modal-title-band.md) | Large entry dialogs lost their title band | The headerless entry form lost the inset and divider spec 226 moved to the head; scoped rule restores them for text Create/Edit and media Create | fix | P1 | S | [240](../specs/240-entry-modal-title/spec.md) | pending | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done

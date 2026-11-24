@@ -547,6 +547,11 @@ li:hover > .row-delete,
    (0,2,0), so leaving them on the title drew a second rule 37.5px above this one. */
 .editor:has([data-editor-size="large"]) .editor__head { padding: 20px 26px 14px; }
 .editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 0; border: 0; font-size: 21px; }
+/* The entry form puts its title straight in the content, with no header row.
+   Its large frame still needs the inset and the one rule on the title itself. */
+.editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title {
+  padding: 20px 26px; border-bottom: 1px solid var(--divider);
+}
 .editor:has([data-editor-size="large"]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__form > .editor__field,
 .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin: 14px 26px 0; }
@@ -682,7 +687,7 @@ li:hover > .row-delete,
 @keyframes media-library-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
 @media (prefers-reduced-motion: reduce) { .media-library__dialog[open], .media-library__dialog[open].closing, .media-library__status:not([hidden]), .media-library__status.closing:not([hidden]), .editor[open]:has([data-entry-form="media"]), .editor[open].media-closing:has([data-entry-form="media"]) { animation: none; } }
 @media (max-width: 700px) { .media-library__options { grid-template-columns: repeat(2, minmax(0, 1fr)); } .media-library__sort { width: 100%; } .media-library__sort > button { width: 100%; text-align: left; } }
-@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
+@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
 /* The reference note keeps its one line and drops above the buttons when the row is tight (spec 232). */
 @media (max-width: 650px) {
   .editor__actions:has(.editor__refnote) { flex-wrap: wrap; row-gap: 10px; }

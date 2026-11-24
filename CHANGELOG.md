@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The large entry dialogs draw their title band again.** New text, Edit text and New media restore the 26px/20px inset and the divider under the title; spec 226's verse header keeps its own single rule, and the compact media Edit form is untouched (ITEM-255, spec 240).
 - **The kind mark in a service entry row now sits at the row's centre.** Its 16px box shares the order number's vertical alignment on one-line, wrapped and song rows, and on the drag copy; the columns, row heights and slot badge stay in place (ITEM-252, spec 237).
 - **The song entry modal no longer paints a scrollbar on its own edge.** The shared editor dialog clips overflow at its rounded edge while the form keeps scrolling inside its content wrapper; the new and edit song forms, the verse-panel animation and the fixed results menu are unchanged (ITEM-251, spec 236).
 - **A newly created Tata Ibadah Template now opens on the reading stage.** Saving a Template lands on `/tatib/<id>/?mode=template` from either Tata Ibadah list, with the same in-place navigation, panel state and restored focus a dated service gets; edits, refusals, generation and copy-as-template are unchanged (spec 234).
