@@ -3020,6 +3020,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
    text keeps its baseline. The drag copy lives outside #chList and must match. */
 :root[data-section="tatib"] #chList .songrow__c,
 .reorder__ghost .songrow__c { align-self: center; }
+/* spec 237: the kind mark shares the number's centred seat, so a two-line row
+   does not leave its glyph beside the first line of text. */
+:root[data-section="tatib"] #chList .songrow__mark,
+.reorder__ghost .songrow__mark { align-self: center; }
 /* The real row is the sole destination slot. Hide its contents, not its box;
    its tint marks the space without a ring. */
 #chList li.is-dragging {
