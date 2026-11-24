@@ -88,6 +88,10 @@ and compare the POSTed payload and rendered stage reference with a baseline.
    chosen label.
 3. **Given** one picker's menu is open **When** any other picker in the modal is opened **Then**
    the first menu closes and only the newly opened one is visible.
+4. **Given** a search dropdown with a highlighted option — or visible matches with none highlighted
+   — **When** Tab is pressed **Then** that option is chosen and focus moves to the next field.
+   This applies to Book, Song, the three in-menu filters, the OBS dock find and the projector
+   find and entry-list comboboxes.
 
 ### Edge Cases
 
@@ -102,6 +106,9 @@ and compare the POSTed payload and rendered stage reference with a baseline.
   `.editor__picker-option` needs an explicit `[hidden]` rule, or they stay painted but unclickable.
 - Opening the numeric popovers via a button click focuses their in-menu filter, so typing filters
   immediately.
+- With no visible match, Tab leaves the typed text alone and still moves focus to the next field.
+- The next focus target is read *after* the choice, because a field such as Chapter only becomes
+  enabled by choosing Book; option buttons inside a closing menu are never the next target.
 
 ## UI/UX
 
@@ -138,6 +145,8 @@ Chapter's in-menu filter left 1 visible option and chose hidden chapter `12` on 
   that hides options whose `data-value` does not contain the query.
 - **FR-003** Book's focus SHALL select the field's text; ArrowDown/ArrowUp SHALL move an active
   option and Enter SHALL choose it; Escape SHALL close only that menu without clearing the label.
+  Tab SHALL choose the highlighted option, or the first visible match when none is highlighted,
+  and then move focus to the next field, in every search dropdown the app offers.
 - **FR-004** Choosing a book SHALL keep the translation-aware id lookup, group labels, chapter fill
   and verse load.
 - **FR-005** Choosing a numeric option SHALL keep the existing hidden `<select>` values, verse

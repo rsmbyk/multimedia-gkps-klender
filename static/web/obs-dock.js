@@ -1654,6 +1654,12 @@
       paintFind();
       return;
     }
+    if (key === 'Tab') {
+      /* Commit the marked match; the dock keeps its keyboard on the panel when
+         closeFind resolves, which is the next target after the find field. */
+      if (find.rows.length) chooseFind(find.choice === undefined ? 0 : find.choice);
+      return;
+    }
     if (key === 'Enter') { event.preventDefault(); event.stopPropagation(); chooseFind(find.choice); return; }
     if (key === 'Backspace' && !findInput.value) {
       event.preventDefault(); event.stopPropagation(); closeFind();

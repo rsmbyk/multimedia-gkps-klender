@@ -296,6 +296,34 @@
      their own options from inside; the verse pick is a checklist whose trigger
      reads what is still included. */
 
+  /* Tab after typing commits the highlighted (or first visible) option, then leaves
+     the field. Read the focus order after choosing: the menu closes and the next
+     control (for example Chapter) may only become enabled on that choice. */
+  function tabToNextField(event, input, commit) {
+    if (commit) commit();
+    var root = document.querySelector('dialog[open]') || document;
+    var focusable = [].slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]),' +
+      ' select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) {
+      return !el.closest('[inert], .editor__picker-menu') &&
+        (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    });
+    var at = focusable.indexOf(input);
+    var next;
+    if (at >= 0) {
+      next = focusable[at + (event.shiftKey ? -1 : 1)];
+    } else {
+      var following = focusable.length;
+      for (var i = 0; i < focusable.length; i += 1) {
+        if (input.compareDocumentPosition(focusable[i]) & 4) { following = i; break; }
+      }
+      next = event.shiftKey ? focusable[following - 1] : focusable[following];
+    }
+    event.preventDefault();
+    if (next && next.focus) next.focus();
+  }
+
   function pickerOf(scope, name) {
     return scope.querySelector('[data-entry-picker="' + name + '"]');
   }
@@ -465,6 +493,11 @@
       } else if (event.key === 'Enter' && !menu.hidden && active >= 0 && options[active]) {
         event.preventDefault();
         config.choose(options[active]);
+      } else if (event.key === 'Tab' && !menu.hidden) {
+        var tabbed = active >= 0 && options[active] ? options[active] : options[0];
+        tabToNextField(event, input, function () {
+          if (tabbed) config.choose(tabbed);
+        });
       } else if (event.key === 'Escape' && !menu.hidden) {
         /* Escape closes the menu; it must not clear the chosen label the way a
            bare search field's native Escape would. */
@@ -576,6 +609,20 @@
           if (hit) visible += 1;
         });
         if (hint) hint.hidden = visible > 0;
+      });
+      filter.addEventListener('keydown', function (event) {
+        if (event.key !== 'Tab') return;
+        var first = [].slice.call(list.querySelectorAll('[data-picker-option]'))
+          .filter(function (option) { return !option.hidden && !option.disabled; })[0];
+        tabToNextField(event, filter, function () {
+          if (!first) return;
+          control.value = first.dataset.value;
+          control.dispatchEvent(new window.Event('change', { bubbles: true }));
+          var menu = picker.querySelector('.editor__picker-menu');
+          if (menu) menu.hidden = true;
+          var trigger = picker.querySelector('[data-picker-trigger]');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        });
       });
     }
     [chapter, from, to].forEach(wireRangeFilter);
@@ -978,6 +1025,11 @@
       } else if (event.key === 'Enter' && !menu.hidden && active >= 0) {
         event.preventDefault();
         choose(options[active]);
+      } else if (event.key === 'Tab' && !menu.hidden) {
+        var tabbed = active >= 0 && options[active] ? options[active] : options[0];
+        tabToNextField(event, search, function () {
+          if (tabbed) choose(tabbed);
+        });
       } else if (event.key === 'Escape' && !menu.hidden) {
         event.stopPropagation();
         hideMenu();

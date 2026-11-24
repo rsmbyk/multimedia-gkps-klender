@@ -106,6 +106,19 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         page.keyboard.type('HAL 4')
         self.assertEqual(search.input_value(), 'HAL 4')
 
+    def test_tab_chooses_the_highlighted_song_and_leaves_the_field(self):
+        page = self._page()
+        self._open_song(page)
+        search = page.locator('#entry-song-search')
+        search.fill('KJ 152')
+        page.wait_for_selector('#entry-song-options [data-song]')
+        search.press('Tab')
+        page.wait_for_timeout(250)
+        self.assertEqual(page.locator('#id_song').input_value(), str(self.song.pk))
+        self.assertNotEqual(
+            page.evaluate('document.activeElement.id'), 'entry-song-search')
+        expect(page.locator('#entry-song-menu')).to_be_hidden()
+
     def test_results_overlay_may_pass_dialog_bottom_without_resizing(self):
         page = self._page()
         self._open_song(page)

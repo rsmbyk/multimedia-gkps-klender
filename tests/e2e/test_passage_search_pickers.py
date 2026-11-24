@@ -272,6 +272,30 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(
             page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
 
+    def test_tab_from_book_chooses_and_moves_focus(self):
+        page = self._page()
+        self._open(page)
+        book = page.locator('#entry-book-search')
+        book.focus()
+        book.fill('mat')
+        page.wait_for_timeout(220)
+        book.press('Tab')
+        page.wait_for_timeout(300)
+        self.assertEqual(page.locator('#id_book_translation').input_value(), str(self.mat_tb.pk))
+        expect(page.locator('#entry-chapter-trigger')).to_be_focused()
+
+    def test_tab_from_chapter_filter_chooses_first_visible_and_moves_focus(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        filter_box = self._open_range(page, 'chapter')
+        filter_box.fill('12')
+        page.wait_for_timeout(160)
+        filter_box.press('Tab')
+        page.wait_for_timeout(300)
+        self.assertEqual(page.locator('#id_chapter').input_value(), '12')
+        expect(page.locator('#entry-verse_start-trigger')).to_be_focused()
+
     def test_keyboard_and_dismissal_match_the_song_picker(self):
         page = self._page()
         self._open(page)

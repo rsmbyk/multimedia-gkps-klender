@@ -46,6 +46,7 @@
   Live preview confirmed `button` triggers, one filter per numeric menu, `12` → 1 chapter and
   hidden chapter `12`. The spec, R59, changelog, data model, contracts and preview notes carry
   the revised scope.
+- **Tab commits and advances**: `tabToNextField` was added to `entries.js`, `projector.js` and the OBS dock find handler; the next focus target is read after the choice so a field enabled by that choice (Chapter) is reachable, and option buttons in the closing menu are excluded. Pinned by two new passage tests and one song test: 24 tests run, 23 pass, the single known-red `test_hidden_and_muted_states` unchanged on base.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
@@ -56,6 +57,6 @@
 | US1…US4 | each has an independent test in the new module |
 | SC-001…SC-004 | passed: field/menu parity, unchanged payload, no endpoint, song path unchanged |
 | Edge cases | disabled options and empty hints inspected in `wireSearchCombo` and covered by tests |
-| Plan traceability | 11 test · 12 inspection · 0 manual, all rows resolved |
+| Plan traceability | 14 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.

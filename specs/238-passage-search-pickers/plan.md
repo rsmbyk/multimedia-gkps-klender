@@ -65,7 +65,7 @@ See `research.md`. **Unknowns remaining: 0.**
 | SC-004 | `wireSongPicker()` in `entries.js` | `test` → `tests.e2e.test_song_entry_pickers` (10 tests) | 9 pass, 1 known-red identically on base `88b300bf` |
 | Edge cases | disabled books, empty lists, last verse | `inspection` — `option.disabled`/`hidden` filtered in `wireSearchCombo.refresh()` and `list` click guard | see spec Edge Cases |
 
-**Verification split**: 11 test · 12 inspection · 0 manual
+**Verification split**: 14 test · 12 inspection · 0 manual
 
 ## Complexity Tracking
 

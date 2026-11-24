@@ -12,6 +12,33 @@
 (function () {
   'use strict';
 
+  /* Tab after typing commits the highlighted (or first) match, then leaves the field.
+     Read the focus order after choosing: closing the picker makes it inert. */
+  function tabToNextField(event, input, commit) {
+    if (commit) commit();
+    var root = document.querySelector('dialog[open]') || document;
+    var focusable = [].slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]),' +
+      ' select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) {
+      return !el.closest('[inert], .editor__picker-menu') &&
+        (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    });
+    var at = focusable.indexOf(input);
+    var next;
+    if (at >= 0) {
+      next = focusable[at + (event.shiftKey ? -1 : 1)];
+    } else {
+      var following = focusable.length;
+      for (var i = 0; i < focusable.length; i += 1) {
+        if (input.compareDocumentPosition(focusable[i]) & 4) { following = i; break; }
+      }
+      next = event.shiftKey ? focusable[following - 1] : focusable[following];
+    }
+    event.preventDefault();
+    if (next && next.focus) next.focus();
+  }
+
   var body = document.body;
   var channelName = body.dataset.displayChannel || 'gkps-service-display';
   var service = Number(body.dataset.service);
@@ -1197,6 +1224,11 @@
       scrollEntryListChoice();
     } else if (event.key === 'Enter') {
       event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
+    } else if (event.key === 'Tab') {
+      var tabChoice = entryListChoice === undefined ? entryListMatches[0] : entryListChoice;
+      tabToNextField(event, entryListSearch, function () {
+        if (tabChoice !== undefined) chooseEntryList(tabChoice);
+      });
     }
   });
   entryList.addEventListener('click', function (event) {
@@ -1483,6 +1515,10 @@
       paintFind();
     } else if (event.key === 'Enter') {
       event.preventDefault(); event.stopPropagation(); chooseFind(findChoice);
+    } else if (event.key === 'Tab') {
+      tabToNextField(event, findInput, function () {
+        if (findRows.length) chooseFind(findChoice === undefined ? 0 : findChoice);
+      });
     } else if (event.key === 'Backspace' && !findInput.value) {
       event.preventDefault(); event.stopPropagation(); closeFind();
     }
