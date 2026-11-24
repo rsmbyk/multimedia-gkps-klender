@@ -56,6 +56,11 @@
   row. Two new pins; live probe: Chapter opened with `1` active, five downs reached `6`, twenty
   downs reached `21` at `scrollTop` 389 with the row in view. 16 passage tests pass, 12 song tests
   with only the known-red base failure.
+- **Enter only picks**: the numeric filter keydown now handles Enter with `preventDefault` and
+  `stopPropagation`, committing the highlighted option without submitting the entry form. Pinned
+  by `test_enter_in_a_numeric_filter_selects_without_submitting`; live probe: Chapter and From
+  verse both kept `dialog[open]` at 1 with hidden values `12` and `3` and their menus closed.
+  17 passage tests pass.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage
@@ -66,6 +71,6 @@
 | US1…US4 | each has an independent test in the new module |
 | SC-001…SC-004 | passed: field/menu parity, unchanged payload, no endpoint, song path unchanged |
 | Edge cases | disabled options and empty hints inspected in `wireSearchCombo` and covered by tests |
-| Plan traceability | 18 test · 12 inspection · 0 manual, all rows resolved |
+| Plan traceability | 19 test · 12 inspection · 0 manual, all rows resolved |
 
 **Verdict**: converged. Ready for Fold; no follow-up slice required for behaviour found here.

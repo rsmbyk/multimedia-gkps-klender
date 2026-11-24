@@ -653,9 +653,7 @@
           setActiveOption(list, activeOptionIndex(list) + (event.key === 'ArrowDown' ? 1 : -1));
           return;
         }
-        if (event.key !== 'Tab') return;
-        var chosen = visibleOptions(list)[activeOptionIndex(list)];
-        tabToNextField(event, filter, function () {
+        function commit(chosen) {
           if (!chosen) return;
           control.value = chosen.dataset.value;
           control.dispatchEvent(new window.Event('change', { bubbles: true }));
@@ -663,6 +661,18 @@
           if (menu) menu.hidden = true;
           var trigger = picker.querySelector('[data-picker-trigger]');
           if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+        if (event.key === 'Enter') {
+          /* The filter lives in the entry form: Enter must pick, not submit. */
+          event.preventDefault();
+          event.stopPropagation();
+          commit(visibleOptions(list)[activeOptionIndex(list)]);
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var chosen = visibleOptions(list)[activeOptionIndex(list)];
+        tabToNextField(event, filter, function () {
+          commit(chosen);
         });
       });
     }

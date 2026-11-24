@@ -2,7 +2,7 @@
 
 **Spec**: `specs/238-passage-search-pickers/spec.md`
 **Plan**: `specs/238-passage-search-pickers/plan.md`
-**Verification split**: 18 test · 12 inspection · 0 manual
+**Verification split**: 19 test · 12 inspection · 0 manual
 
 `[P]` means order-independent, not concurrent. Every `test` row is a red task and a green task.
 Inspection rows produce no test task.

@@ -118,6 +118,8 @@ and compare the POSTed payload and rendered stage reference with a baseline.
 - Scrolling is limited to `.editor__picker-options`; the dialog content must not move with it.
 - The numeric popovers share the active-option helper: the highlight starts on the stored value,
   follows Arrow keys over visible options, and is what Tab commits.
+- Enter in a numeric popover filter commits the highlight and closes only the menu: the filter sits
+  inside the entry form, so without `preventDefault` the dialog would submit and close.
 
 ## UI/UX
 

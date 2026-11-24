@@ -283,6 +283,32 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(
             page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
 
+    def test_enter_in_a_numeric_filter_selects_without_submitting(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        page.locator('#entry-chapter-trigger').click()
+        page.wait_for_timeout(120)
+        chapter_filter = page.locator('#entry-chapter-menu input[type="search"]')
+        chapter_filter.fill('12')
+        page.wait_for_timeout(160)
+        chapter_filter.press('Enter')
+        page.wait_for_timeout(300)
+        expect(page.locator('dialog[open]')).to_have_count(1)
+        self.assertEqual(page.locator('#id_chapter').input_value(), '12')
+        expect(page.locator('#entry-chapter-menu')).to_be_hidden()
+
+        expect(page.locator('#entry-verse_start-trigger')).to_be_enabled()
+        page.locator('#entry-verse_start-trigger').click()
+        page.wait_for_timeout(120)
+        start_filter = page.locator('#entry-verse_start-menu input[type="search"]')
+        start_filter.fill('3')
+        page.wait_for_timeout(160)
+        start_filter.press('Enter')
+        page.wait_for_timeout(300)
+        expect(page.locator('dialog[open]')).to_have_count(1)
+        self.assertEqual(page.locator('#id_verse_start').input_value(), '3')
+
     def test_numeric_popovers_open_with_a_highlight_and_follow_arrows(self):
         page = self._page()
         self._open(page)

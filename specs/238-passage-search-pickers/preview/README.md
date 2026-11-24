@@ -30,6 +30,7 @@ to disk.
 | Tab commit | Type in Book or any popover filter, press Tab | The highlighted (or first visible) match is chosen and focus lands on the next field |
 | Scroll follow | Arrow down past the visible rows in Book or Song | The option list scrolls to keep the highlight in view; the dialog stays put |
 | Numeric highlight | Open Chapter, From verse or To verse | The stored number carries the `.is-active` tint; Arrow keys move it and scroll the list |
+| Enter | Type a number in a popover filter, press Enter | Only the option is chosen: the dialog stays open |
 | Edit | Open an existing passage entry | Stored book/chapter/verse show in the fields and hidden selects |
 | Dark theme | Toggle the app theme | Same chrome, theme tokens |
 
