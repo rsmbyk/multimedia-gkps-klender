@@ -2,7 +2,7 @@
 
 **Spec**: `specs/238-passage-search-pickers/spec.md`
 **Plan**: `specs/238-passage-search-pickers/plan.md`
-**Verification split**: 10 test · 12 inspection · 0 manual
+**Verification split**: 11 test · 12 inspection · 0 manual
 
 `[P]` means order-independent, not concurrent. Every `test` row is a red task and a green task.
 Inspection rows produce no test task.
@@ -61,6 +61,8 @@ Inspection rows produce no test task.
 **Goal**: keyboard and dismissal match the song picker.
 
 - [ ] T013 [P] [US4] Red: `test_keyboard_and_dismissal_match_the_song_picker`.
+- [ ] T013b [P] [US4] Review fix: `test_only_one_picker_menu_is_open_at_a_time` — opening any
+      picker closes the others; `wireSearchCombo.showMenu()` calls `closeMenus(scope)`.
 
 ## Phase 6 — Regression
 

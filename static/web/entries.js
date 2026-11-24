@@ -422,6 +422,8 @@
       });
     }
     function showMenu() {
+      /* One menu at a time in a modal, including the button pickers. */
+      if (config.scope) closeMenus(config.scope);
       menu.hidden = false;
       input.setAttribute('aria-expanded', 'true');
       placeMenu(menu);
@@ -769,7 +771,7 @@
     }
 
     var bookCombo = wireSearchCombo({
-      input: bookSearch, menu: scope.querySelector('#entry-book-menu'), list: bookList,
+      scope: scope, input: bookSearch, menu: scope.querySelector('#entry-book-menu'), list: bookList,
       optionSelector: '[data-book]',
       query: function (value, refresh, show) {
         filterBooks(value);
@@ -782,7 +784,7 @@
       }
     });
     var chapterCombo = wireSearchCombo({
-      input: chapterSearch, menu: scope.querySelector('#entry-chapter-menu'), list: chapterList,
+      scope: scope, input: chapterSearch, menu: scope.querySelector('#entry-chapter-menu'), list: chapterList,
       optionSelector: '[data-picker-option]',
       query: function (value, refresh, show) {
         filterByNumber(chapterList, numberHint(chapterList), value);
@@ -795,7 +797,7 @@
       }
     });
     var fromCombo = wireSearchCombo({
-      input: fromSearch, menu: scope.querySelector('#entry-verse_start-menu'), list: fromList,
+      scope: scope, input: fromSearch, menu: scope.querySelector('#entry-verse_start-menu'), list: fromList,
       optionSelector: '[data-picker-option]',
       query: function (value, refresh, show) {
         filterByNumber(fromList, numberHint(fromList), value);

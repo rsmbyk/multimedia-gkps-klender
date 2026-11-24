@@ -224,6 +224,30 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#id_book_translation').input_value(), str(self.mat_sim.pk))
         expect(page.locator('#entry-chapter-options [data-picker-option]')).to_have_count(28)
 
+    def test_only_one_picker_menu_is_open_at_a_time(self):
+        page = self._page()
+        self._open(page)
+        self._choose_book(page)
+        open_menus = (".editor__picker-menu:not([hidden])")
+
+        def assert_one(expected_id):
+            page.wait_for_timeout(120)
+            expect(page.locator(open_menus)).to_have_count(1)
+            self.assertEqual(
+                page.locator(open_menus).first.get_attribute('id'), expected_id)
+
+        page.locator('#entry-book-search').focus()
+        assert_one('entry-book-menu')
+        page.locator('#entry-chapter-search').focus()
+        assert_one('entry-chapter-menu')
+        # the translated button picker closes a search combo when it opens
+        page.locator('#entry-verse_end-trigger').dispatch_event('click')
+        assert_one('entry-verse_end-menu')
+        page.locator('#entry-verse_start-search').focus()
+        assert_one('entry-verse_start-menu')
+        self.assertEqual(
+            page.locator('#entry-verse_end-trigger').get_attribute('aria-expanded'), 'false')
+
     def test_keyboard_and_dismissal_match_the_song_picker(self):
         page = self._page()
         self._open(page)

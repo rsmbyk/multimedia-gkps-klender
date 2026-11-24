@@ -25,6 +25,7 @@ to disk.
 | From verse filter | Focus From verse, type `1` | Matching verse numbers; choosing one refreshes To verse |
 | Translation | Toggle TB/SIM | Book labels, group headings and the chosen book's translation-aware id change; cascade reloads |
 | Dismissal | Escape, or click outside | Only the menu closes; the dialog and all field values stay |
+| One menu | Focus Book, then Chapter, then open To verse | Only the newest menu is visible; the previous one closes |
 | Edit | Open an existing passage entry | Stored book/chapter/verse show in the fields and hidden selects |
 | Dark theme | Toggle the app theme | Same chrome, theme tokens |
 

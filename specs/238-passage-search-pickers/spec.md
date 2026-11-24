@@ -91,7 +91,9 @@ option, the chosen value and the menu's visibility.
    option carries the active tint and Enter chooses it.
 2. **Given** an open menu **When** Escape is pressed **Then** only that menu closes and the dialog
    stays open; a click outside the picker also closes it.
-3. **Given** a chosen value **When** the field is focused again **Then** its text is selected so
+3. **Given** one picker's menu is open **When** any other picker in the modal is focused or its
+   button is clicked **Then** the first menu closes and only the newly opened one is visible.
+4. **Given** a chosen value **When** the field is focused again **Then** its text is selected so
    typing starts a new query instead of appending to the chosen label.
 
 ### Edge Cases
@@ -104,6 +106,8 @@ option, the chosen value and the menu's visibility.
 - Editing keeps the stored values; focus does not reset the cascade to chapter 1.
 - The menu stays anchored to the field while the dialog scrolls and flips up near the viewport
   bottom, as every picker does today.
+- Only one menu may be open in the modal: opening a search combo closes any other picker's menu,
+  and opening the To verse button picker closes a search combo.
 
 ## UI/UX
 
