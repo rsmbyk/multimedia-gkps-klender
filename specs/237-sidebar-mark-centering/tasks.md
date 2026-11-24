@@ -76,7 +76,7 @@ selectors before restoring them.
       suite to the push step and report what the narrower run proves.
 - [X] T013 Re-check the next spec number, `ITEM-252`, `reading/R49` and the patch level against
       `develop` and every unmerged branch before delivery.
-- [ ] T014 At delivery only, after Converge and on your word: write the `VERSION` bump, the
+- [X] T014 At delivery only, after Converge and on your word: write the `VERSION` bump, the
       `## [Unreleased]` changelog line, the `backlog/board.md` `In review`/`Done` moves and the
       `reading.md` R49 modification.
 
