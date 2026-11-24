@@ -1,8 +1,8 @@
 # media-library
 
 **capability**: `media-library`
-**last folded**: 2026-11-01
-**slices**: `182-host-font-detection`, `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`, `166-slides-render-fidelity`
+**last folded**: 2026-11-24
+**slices**: `239-media-filter-pill-hover`, `182-host-font-detection`, `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`, `166-slides-render-fidelity`
 
 The local Media Library and the companion's transfer dialog. This file starts at spec 149: no
 media-library capability existed while the slices that built the surface landed (113, 117, 118), so
@@ -144,3 +144,24 @@ page's own origin, with no media token. (spec 192)
   **Then** it is refused with the page-naming message and the web app's status popup shows it.
 - **Given** a computer whose font mounts are all empty, **When** the page is opened, **Then** the
   fonts section says no font directory was found. (spec 192)
+
+### R6 — The Media Library's unpressed filter pills answer the pointer
+
+The Media Library's file-type filter pills and the Unused pill SHALL take a `--focus` border
+and an `--icon-hover-bg` fill while hovered — the same pair the sort and icon buttons in
+that filter row already use. A pill with `aria-pressed="true"` SHALL keep its accent fill,
+text and border while hovered. The change SHALL alter no box geometry, label colour,
+focus-visible outline, separator dot or filter behaviour, and no surface outside those
+unpressed pills SHALL change. (spec 239)
+
+**Scenarios**
+
+- **Given** the Media Library page with no filter selected, **When** the pointer moves over any
+  of the six pills, **Then** that pill's border reads `--focus` and its fill `--icon-hover-bg`,
+  in both themes.
+- **Given** a hovered pill, **When** the pointer leaves it, **Then** its transparent fill and
+  `--divider` border return, with no transition or added motion.
+- **Given** a pressed pill, **When** it is hovered, **Then** its background, border and text
+  colours are identical to its resting values.
+- **Given** a pill at rest, hovered or pressed, **When** its box is measured at 1440px, **Then**
+  it stays 63.36 × 30 px and the keyboard focus-visible outline stays 2px with 2px offset. (spec 239)
