@@ -120,6 +120,8 @@ and compare the POSTed payload and rendered stage reference with a baseline.
   follows Arrow keys over visible options, and is what Tab commits.
 - Enter in a numeric popover filter commits the highlight and closes only the menu: the filter sits
   inside the entry form, so without `preventDefault` the dialog would submit and close.
+- Selecting a To verse updates its button label as well as the hidden value, from Enter, Tab or
+  a click. Chapter and From verse already did this through their own `change` listeners.
 - Tab out of From verse lands directly on the To verse trigger, whether the focus was in the
   popover filter or on the From verse button. `.editor__end-wrap` keeps `tabindex="0"` only while
   To verse is disabled, so its hover note stays keyboard-reachable without being an extra stop.

@@ -309,6 +309,19 @@ class PassageSearchPickerE2ETests(StaticLiveServerTestCase):
         expect(page.locator('dialog[open]')).to_have_count(1)
         self.assertEqual(page.locator('#id_verse_start').input_value(), '3')
 
+        expect(page.locator('#entry-verse_end-trigger')).to_be_enabled()
+        page.locator('#entry-verse_end-trigger').click()
+        page.wait_for_timeout(120)
+        end_filter = page.locator('#entry-verse_end-menu input[type="search"]')
+        end_filter.fill('10')
+        page.wait_for_timeout(160)
+        end_filter.press('Enter')
+        page.wait_for_timeout(300)
+        expect(page.locator('dialog[open]')).to_have_count(1)
+        self.assertEqual(page.locator('#id_verse_end').input_value(), '10')
+        self.assertEqual(
+            page.locator('#entry-verse_end-trigger [data-picker-label]').inner_text(), '10')
+
     def test_numeric_popovers_open_with_a_highlight_and_follow_arrows(self):
         page = self._page()
         self._open(page)

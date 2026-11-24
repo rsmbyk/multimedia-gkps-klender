@@ -70,6 +70,10 @@
   `test_tab_from_from_verse_button_skips_the_tooltip_wrapper`; live probe: wrapper 0 while
   disabled, -1 once verses load, and one native Tab from the From verse button reached
   `#entry-verse_end-trigger`. 19 passage tests pass.
+- **To verse label**: `wireScripture` had no `change` listener on `to`, so Enter/Tab committed the
+  hidden value but left the button reading "No ending verse". Added `renderRangeControl(to)` on
+  change; the Enter pin now also asserts the label reads `10`. Live probe: `verse_end=10`, label
+  `10`, dialog still open. 19 passage tests pass.
 - The song picker's own code is unchanged, as SC-004 requires.
 
 ## Requirements and coverage

@@ -903,6 +903,9 @@
       renderRangeControl(from);
       syncTo();
     });
+    to.addEventListener('change', function () {
+      renderRangeControl(to);
+    });
   }
 
   /* ---------- the song pick and its verse checklist ------------------------- */
