@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-254](./items/ITEM-254-media-filter-pill-hover.md) | Media Library filter pills have no hover feedback | Six type/Unused pills keep their rest border and fill under the pointer while neighbouring controls change | feat | P2 | S | [239](../specs/239-media-filter-pill-hover/spec.md) | 2026-11-24 |
 
 ## Ready
 
@@ -47,6 +46,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
+| [ITEM-254](./items/ITEM-254-media-filter-pill-hover.md) | Media Library filter pills have no hover feedback | Six type/Unused pills keep their rest border and fill under the pointer while neighbouring controls change | feat | P2 | S | [239](../specs/239-media-filter-pill-hover/spec.md) | [#616](https://github.com/rsmbyk/multimedia-gkps-klender/pull/616) | 2026-11-24 |
 
 ## Done
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-254
-status: speccing
+status: in-review
 title: 'Media Library filter pills have no hover feedback'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 239-media-filter-pill-hover
 branch: feat/239-media-filter-pill-hover
-pr:
+pr: 616
 issue:
 closed_at:
 closed_reason:
