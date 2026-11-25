@@ -57,10 +57,10 @@ until Fold, and each new E2E pin is proven red on unmodified `develop` before it
   paths: `docs/spec/dock.md`, `specs/242-dock-top-pin/fold.md`.
 - [X] T016 Commit the converged pack, code, board row and capability delta on
   `feat/242-dock-top-pin` (first commit; green suite required); Conventional Commit subject.
-- [ ] T017 On the owner's `push` word, push and open the draft PR, then move `ITEM-257` to
+- [X] T017 On the owner's `push` word, push and open the draft PR, then move `ITEM-257` to
   `In review` with `pr:` in its own commit and mark the PR ready; paths: `backlog/board.md`,
   `backlog/items/ITEM-257-dock-top-pin.md`.
-- [ ] T018 Pre-merge delivery commit: `VERSION` 1.36.27 → 1.37.0 (`minor`), one `CHANGELOG.md`
+- [X] T018 Pre-merge delivery commit: `VERSION` 1.36.27 → 1.37.0 (`minor`), one `CHANGELOG.md`
   `## [Unreleased]` line, card `Done` with `closed_at`/`closed_reason` and board row
   `develop via [#N]`; paths: `VERSION`, `CHANGELOG.md`, board and card.
 - [ ] T019 On the owner's `merge` word, squash-merge with the PR title and body as the squash

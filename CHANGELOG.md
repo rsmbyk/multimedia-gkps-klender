@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The live entry header now stays pinned at the top when its entry scrolls off-screen.** Once the entry's whole block passes above the runner, a faithful copy of its header holds the top edge with a flat top and round bottom; clicking it returns to the live row without changing what is on air. The bottom pin, Next band and go to are unchanged (spec 242).
 - **A passage cue now shows where it stands in the passage.** The projector prints a `current/end`
   verse counter after the reference, before the TB/SIM flip: a service passage counts its own verses
   and a chapter Go To counts against the chapter it loaded (spec 229).
