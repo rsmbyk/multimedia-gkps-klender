@@ -35,6 +35,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-257](./items/ITEM-257-dock-top-pin.md) | The live entry header leaves the top when its block goes off-screen | The runner's native sticky header is caged in its own `li`; above the fold the live label is gone while the bottom half has a pin — mirror it at the top with a faithful clone | feat | P2 | S | [242](../specs/242-dock-top-pin/spec.md) | 2026-11-25 |
 
 ## In progress
 
