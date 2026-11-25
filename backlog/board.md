@@ -35,7 +35,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-257](./items/ITEM-257-dock-top-pin.md) | The live entry header leaves the top when its block goes off-screen | The runner's native sticky header is caged in its own `li`; above the fold the live label is gone while the bottom half has a pin — mirror it at the top with a faithful clone | feat | P2 | S | [242](../specs/242-dock-top-pin/spec.md) | 2026-11-25 |
 
 ## In progress
 
@@ -47,6 +46,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-257](./items/ITEM-257-dock-top-pin.md) | The live entry header leaves the top when its block goes off-screen | The runner's native sticky header is caged in its own `li`; above the fold the live label is gone while the bottom half has a pin — mirror it at the top with a faithful clone | feat | P2 | S | [242](../specs/242-dock-top-pin/spec.md) | [#622](https://github.com/rsmbyk/multimedia-gkps-klender/pull/622) | 2026-11-25 |
 | [ITEM-253](./items/ITEM-253-passage-search-dropdown.md) | Passage entry pickers use searchable dropdowns | Book became the song search field; chapter and verse popovers gained in-menu filters, highlight, keyboard commit and scroll-follow; saved values unchanged | feat | P2 | M | [238](../specs/238-passage-search-pickers/spec.md) | develop via [#618](https://github.com/rsmbyk/multimedia-gkps-klender/pull/618) | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 

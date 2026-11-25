@@ -1,6 +1,6 @@
 ---
 id: ITEM-257
-status: ready
+status: in-review
 title: 'The live entry header leaves the top when its block goes off-screen'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-25
 updated: 2026-11-25
 spec: specs/242-dock-top-pin/spec.md
 branch: feat/242-dock-top-pin
-pr:
+pr: 622
 issue: 621
 closed_at:
 closed_reason:
