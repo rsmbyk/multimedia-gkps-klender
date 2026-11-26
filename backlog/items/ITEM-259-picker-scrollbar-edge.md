@@ -1,6 +1,6 @@
 ---
 id: ITEM-259
-status: speccing
+status: in-review
 title: 'Picker popout scrollbars sit at the menu edge'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-26
 updated: 2026-11-26
 spec: 244-picker-menu-scrollbar-edge
 branch: fix/244-picker-menu-scrollbar-edge
-pr:
+pr: 625
 issue:
 closed_at:
 closed_reason:
