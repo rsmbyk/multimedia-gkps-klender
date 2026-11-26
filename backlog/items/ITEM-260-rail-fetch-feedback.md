@@ -1,6 +1,6 @@
 ---
 id: ITEM-260
-status: in-review
+status: done
 title: 'Search and Media Library rail fetches show pending state'
 type: feat
 priority: P1
@@ -11,8 +11,8 @@ spec: 245-rail-fetch-feedback
 branch: fix/245-rail-fetch-feedback
 pr: 627
 issue: 626
-closed_at:
-closed_reason:
+closed_at: 2026-11-26
+closed_reason: merged into develop (PR #627)
 bump: patch
 release_version:
 ---
