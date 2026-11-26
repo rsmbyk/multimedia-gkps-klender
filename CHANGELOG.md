@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Rail and sidebar fetches now show where they are working.** The clicked rail icon dims in place
+  and the row dims with its edit/delete/add controls disabled; a bar runs at the top edge of the
+  section that will refresh. A list-only click leaves the reading page untouched, while a song,
+  passage or service shows a seeded placeholder in that page's real layout. Another click cancels
+  or coexists by write class (ITEM-258, spec 243).
 - **A reordered Tata Ibadah now keeps every entry, with the contents and the stage in agreement.**
   Saving an entry no longer pushes the break divider to the top of the sidebar, and a drag to the
   top writes the dropped order once instead of rewinding to the pre-drag order; no section falls

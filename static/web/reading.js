@@ -831,7 +831,8 @@
         var href = tile.getAttribute('href') || '';
         navigate(tile.href, {
           kind: activeSection === 'alkitab' ? 'bible-book'
-            : /\/tatib\//.test(href) ? 'service' : 'lists'
+            : /\/tatib\//.test(href) ? 'service' : 'lists',
+          source: tile
         });
       });
     }
@@ -846,7 +847,7 @@
           target = new window.URL(stageInfo.url, window.location.href).pathname
             + new window.URL(mode.href, window.location.href).search;
         }
-        navigate(target, { kind: 'mode' });
+        navigate(target, { kind: 'mode', source: mode });
       });
     }
   }
@@ -897,7 +898,10 @@
         }
         if (link.classList.contains('ch-num') || link.classList.contains('songrow')) {
           event.preventDefault();
-          navigate(link.href, { kind: link.classList.contains('ch-num') ? 'chapter' : 'song' });
+          navigate(link.href, {
+            kind: link.classList.contains('ch-num') ? 'chapter' : 'song',
+            source: link
+          });
         }
     });
   }
@@ -1324,9 +1328,12 @@
       /* the phone's menu is the rail: choosing a section keeps it underneath
          the list that slides over it (spec 138) */
       if (mqNarrow.matches) root.dataset.rail = 'open';
-      if (name !== activeSection) {
-        /* another section: fetch its root and morph the shell in place */
-        navigate(btn.getAttribute('href'), { kind: 'rail', section: name });
+      var railFetchPending = activeFetches.some(function (f) {
+        return !f.done && f.kind === 'rail';
+      });
+      if (name !== activeSection || railFetchPending) {
+        /* another section — or a rail fetch still in flight: the new tile wins */
+        navigate(btn.getAttribute('href'), { kind: 'rail', section: name, source: btn });
         return;
       }
       if (root.dataset.nav === 'open') {
@@ -1386,8 +1393,6 @@
      swaps the sidebar / list / stage fragments, so the push and wipe
      transitions run instead of a full reload. The links keep their real
      hrefs: without JS (or when a fetch fails) the browser navigates. */
-  var navBusy = false;
-  var pendingNavigation = null;
   var navigationGeneration = 0;
   var SEARCH_LAST = 'gkps-search-last-tab';
   var TAB_KEY = 'gkps-search-tab-id';
@@ -1482,47 +1487,260 @@
   }, {passive: true});
   window.addEventListener('pagehide', saveSearchSnapshot);
 
-  function releaseNavigation(success, resolve) {
-    navBusy = false;
-    if (resolve) resolve(!!success);
-    if (!pendingNavigation) return;
-    var next = pendingNavigation;
-    pendingNavigation = null;
-    navigate(next.url, next.opts).then(next.resolve);
+  /* ---------- spec 243: pending state owned by navigate() --------------- */
+  var activeFetches = [];
+  var STAGE_KINDS = ['chapter', 'song', 'service', 'result', 'more',
+                     'search', 'results', 'refresh'];
+  function writesStage(kind) { return STAGE_KINDS.indexOf(kind) >= 0; }
+  function sectionsFor(kind) {
+    if (kind === 'rail') return ['panel', 'chapters'];
+    if (writesStage(kind)) return ['stage'];
+    return ['chapters'];
+  }
+  function liveRegion() {
+    var live = document.querySelector('.gkps-nav-live');
+    if (!live) {
+      live = document.createElement('div');
+      live.className = 'gkps-nav-live pv-sr';
+      live.setAttribute('role', 'status');
+      live.setAttribute('aria-live', 'polite');
+      live.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(live);
+    }
+    return live;
+  }
+  function announce(message) {
+    var live = liveRegion();
+    live.textContent = '';
+    window.setTimeout(function () { live.textContent = message; }, 0);
+  }
+  function seedFrom(source, kind) {
+    var data = {name: '', no: '', eyebrow: ''};
+    if (!source) return data;
+    if (source.classList && source.classList.contains('rail__btn')) {
+      var railName = source.querySelector('.rail__name');
+      data.name = railName ? railName.textContent.trim() : source.getAttribute('aria-label') || '';
+      data.eyebrow = 'section';
+    } else if (source.classList && source.classList.contains('ch-num')) {
+      var current = document.querySelector('.book[aria-current="true"]');
+      data.name = current ? current.dataset.name || '' : '';
+      data.no = source.textContent.trim();
+    } else if (source.classList && source.classList.contains('songrow')) {
+      var shown = source.querySelector('.songrow__t');
+      var code = source.querySelector('.songrow__c');
+      data.name = shown ? shown.textContent.trim() : '';
+      data.eyebrow = code ? code.textContent.trim() : source.dataset.num || '';
+      if (!data.eyebrow) {
+        var songbook = document.querySelector('#panelBody .book[aria-current="true"] .book__n');
+        data.eyebrow = songbook ? songbook.textContent.trim() : '';
+      }
+    } else {
+      if (kind === 'service') {
+        var serviceName = source.querySelector('.book__n');
+        data.name = serviceName ? serviceName.textContent.trim() : source.dataset.name || '';
+        data.eyebrow = 'Tata Ibadah';
+      } else {
+        data.name = source.dataset.name || '';
+      }
+      if (!data.name) {
+        var label = source.querySelector('.book__n, .rail__name');
+        data.name = label ? label.textContent.trim() : '';
+      }
+      var shortCode = source.querySelector('.book__a');
+      data.no = shortCode ? shortCode.textContent.trim() : '';
+    }
+    return data;
+  }
+  function placeholderFor(kind, data) {
+    var articleKind = kind === 'song' ? 'song' : kind === 'service' ? 'tatib' : 'bible';
+    var ph = document.createElement('div');
+    ph.className = 'pv-placeholder';
+    ph.id = 'pvPh-' + articleKind;
+    var rows = articleKind === 'song' ? 3 : 5;
+    var bar = '<span class="pv-ph-bar pv-ph-bar--line"></span>';
+    var body = '';
+    if (articleKind === 'tatib') {
+      body = '<div class="entry__start"><span class="entry__start-inner">'
+        + '<button type="button" class="entry__add-btn">+ Text</button>'
+        + '<button type="button" class="entry__add-btn">+ Song</button>'
+        + '<button type="button" class="entry__add-btn">+ Passage</button>'
+        + '</span></div>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--entry"></span></h2>'
+        + '<p class="read__sub"><span class="pv-ph-bar pv-ph-bar--sub"></span></p></section>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--mid"></span></h2></section>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--short"></span></h2></section>';
+    } else {
+      var verse = '';
+      for (var n = 1; n <= rows; n++) {
+        verse += '<p class="v"><span class="v__n">' + n + '</span>'
+          + '<span class="v__text">' + (articleKind === 'song' ? bar + bar + bar : bar)
+          + '</span></p>';
+      }
+      body = (articleKind === 'bible'
+        ? '<h2 class="read__sec"><span class="pv-ph-bar pv-ph-bar--sec"></span></h2>' : '')
+        + verse;
+    }
+    ph.innerHTML = '<article class="read" data-kind="' + articleKind + '">'
+      + '<header class="read__head"><div class="read__head-top">'
+      + '<p class="read__eyebrow pv-ph-eyebrow" hidden></p></div>'
+      + '<div class="read__row"><h1 class="read__title">'
+      + '<span class="pv-ph-name"></span> <span class="read__no pv-ph-no" hidden></span>'
+      + '</h1></div></header><div class="read__body">' + body + '</div></article>';
+    ph.querySelector('.pv-ph-name').textContent = data.name || 'Loading…';
+    var no = ph.querySelector('.pv-ph-no');
+    if (data.no) { no.textContent = data.no; no.hidden = false; }
+    var eyebrow = ph.querySelector('.pv-ph-eyebrow');
+    if (data.eyebrow) { eyebrow.textContent = data.eyebrow; eyebrow.hidden = false; }
+    return ph;
+  }
+  function barFor(section) {
+    var host = section === 'panel' ? panel : section === 'chapters' ? chaptersEl : stage;
+    var cls = section === 'stage' ? 'pv-stagebar' : 'pv-section-bar';
+    var existing = host.querySelector(':scope > .' + cls);
+    if (existing) return existing;
+    var bar = document.createElement('div');
+    bar.className = cls;
+    if (section === 'panel') bar.id = 'pvPanelBar';
+    if (section === 'chapters') bar.id = 'pvChBar';
+    bar.setAttribute('aria-hidden', 'true');
+    host.insertBefore(bar, host.firstChild);
+    return bar;
+  }
+  function clearBars(sections) {
+    sections.forEach(function (section) {
+      var host = section === 'panel' ? panel : section === 'chapters' ? chaptersEl : stage;
+      var cls = section === 'stage' ? '.pv-stagebar' : '.pv-section-bar';
+      var bar = host.querySelector(':scope > ' + cls);
+      if (bar && !activeFetches.some(function (f) {
+        return !f.done && f.bars.indexOf(section) >= 0;
+      })) bar.remove();
+    });
+  }
+  function clearStageFor(record) {
+    if (activeFetches.some(function (f) {
+      return f !== record && !f.done && f.writes;
+    })) return;
+    stage.removeAttribute('aria-busy');
+    var ph = stage.querySelector(':scope > .pv-placeholder');
+    if (ph) ph.remove();
+  }
+  var PENDING_CONTROLS = '.row-edit, .row-delete, [data-editor-open], '
+    + '[data-editor-delete], .entry__ctrl, .entry__add-btn, .verse-add__btn';
+  function setRowControls(source, disabled) {
+    var row = source && source.closest ? source.closest('li') : null;
+    if (!row) return;
+    if (disabled) row.classList.add('gkps-pending-row');
+    else row.classList.remove('gkps-pending-row');
+    row.querySelectorAll(PENDING_CONTROLS).forEach(function (control) {
+      if (disabled) {
+        if (control.hasAttribute('data-gkps-pending-disabled')) return;
+        control.setAttribute('data-gkps-pending-disabled', '1');
+        control.setAttribute('aria-disabled', 'true');
+        if (control.tagName === 'BUTTON' || control.tagName === 'INPUT') {
+          if (!control.hasAttribute('disabled')) control.setAttribute('disabled', '');
+        } else if (control.hasAttribute('tabindex')) {
+          control.setAttribute('data-gkps-pending-tabindex', control.getAttribute('tabindex'));
+          control.setAttribute('tabindex', '-1');
+        } else {
+          control.setAttribute('tabindex', '-1');
+        }
+      } else if (control.hasAttribute('data-gkps-pending-disabled')) {
+        control.removeAttribute('data-gkps-pending-disabled');
+        control.removeAttribute('aria-disabled');
+        if (control.hasAttribute('disabled')) control.removeAttribute('disabled');
+        if (control.hasAttribute('data-gkps-pending-tabindex')) {
+          control.setAttribute('tabindex', control.getAttribute('data-gkps-pending-tabindex'));
+          control.removeAttribute('data-gkps-pending-tabindex');
+        } else {
+          control.removeAttribute('tabindex');
+        }
+      }
+    });
+  }
+  function lockItem(source) {
+    if (!source || !source.setAttribute) return;
+    source.setAttribute('aria-disabled', 'true');
+    source.classList.add('gkps-pending-item');
+    setRowControls(source, true);
+  }
+  function unlockItem(source) {
+    if (!source || !source.removeAttribute) return;
+    source.removeAttribute('aria-disabled');
+    source.classList.remove('gkps-pending-item');
+    setRowControls(source, false);
+  }
+  function cancelFetch(record) {
+    record.cancelled = true;
+    if (record.controller) record.controller.abort();
+    record.finish(false);
   }
 
   function navigate(url, opts) {
     if (!url) return Promise.resolve(false);
     opts = opts || {};
-    var resolveCompletion;
-    var completion = new Promise(function (resolve) { resolveCompletion = resolve; });
-    if (navBusy) {
-      if (!opts.historyTraversal) saveSearchSnapshot();
-      if (pendingNavigation) pendingNavigation.resolve(false);
-      pendingNavigation = {url: url, opts: opts, resolve: resolveCompletion};
-      return completion;
+    var kind = opts.kind || 'lists';
+    var writes = writesStage(kind);
+    if (opts.source && opts.source.getAttribute
+        && opts.source.getAttribute('aria-disabled') === 'true') {
+      return Promise.resolve(false);
     }
     if (!opts.historyTraversal) saveSearchSnapshot();
-    navBusy = true;
-    var generation = ++navigationGeneration;
-    var finished = false;
-    function finish(success) {
-      if (finished) return;
-      finished = true;
-      releaseNavigation(success, resolveCompletion);
+
+    activeFetches.slice().forEach(function (fetch) {
+      if (fetch.done) return;
+      /* Cancel by default. Keep the live fetch only when it writes to the
+         reading page and the new click does not. */
+      if (!(fetch.writes && !writes)) cancelFetch(fetch);
+    });
+
+    var resolveCompletion;
+    var completion = new Promise(function (resolve) { resolveCompletion = resolve; });
+    var sections = sectionsFor(kind);
+    var record = {
+      source: opts.source, kind: kind, writes: writes, bars: sections,
+      controller: typeof AbortController === 'function' ? new AbortController() : null,
+      cancelled: false, done: false,
+      finish: null
+    };
+    var seed = seedFrom(opts.source, kind);
+    sections.forEach(function (section) { barFor(section); });
+    if (writes) {
+      stage.setAttribute('aria-busy', 'true');
+      stage.appendChild(placeholderFor(kind, seed));
     }
-    function isSuperseded() { return !!pendingNavigation; }
+    lockItem(opts.source);
+    activeFetches.push(record);
+    announce('Opening ' + (seed.name || 'page'));
+    navigationGeneration++;
+    var generation = navigationGeneration;
+
+    function finish(success) {
+      if (record.done) return;
+      record.done = true;
+      unlockItem(record.source);
+      clearBars(record.bars);
+      clearStageFor(record);
+      activeFetches = activeFetches.filter(function (f) { return f !== record; });
+      if (success) announce((seed.name || 'Page') + ' opened');
+      resolveCompletion(!!success);
+    }
+    record.finish = finish;
     function fail(error) {
+      if (record.cancelled) { finish(false); return; }
       if (window.console && console.error) console.error('in-page navigation failed:', error);
-      if (!isSuperseded() && navigator.onLine && !opts.noLocationFallback) {
+      if (navigator.onLine && !opts.noLocationFallback) {
         window.location.href = url;
+        return;
       }
       finish(false);
     }
-    function applyFresh(doc, kind) {
-      if (!doc || isSuperseded()) { finish(false); return false; }
+    function applyFresh(doc, freshKind) {
+      if (record.cancelled || generation !== navigationGeneration) { finish(false); return false; }
       try {
-        applyPage(doc, url, Object.assign({}, opts, kind ? {kind: kind} : {}));
+        applyPage(doc, url, Object.assign({}, opts, freshKind ? {kind: freshKind} : {}));
         finish(true);
         return true;
       } catch (error) {
@@ -1531,18 +1749,16 @@
       }
     }
     function fromServer() {
-      return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
-      .then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text();
-      })
-      .then(function (html) {
-        applyFresh(new window.DOMParser().parseFromString(html, 'text/html'));
-      });
-    }
-    if (opts.forceServer) {
-      fromServer().catch(fail);
-      return completion;
+      var init = { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } };
+      if (record.controller) init.signal = record.controller.signal;
+      return fetch(url, init)
+        .then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.text();
+        })
+        .then(function (html) {
+          applyFresh(new window.DOMParser().parseFromString(html, 'text/html'));
+        });
     }
     fromServer().catch(fail);
     return completion;
