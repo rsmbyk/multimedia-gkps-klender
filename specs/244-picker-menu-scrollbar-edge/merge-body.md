@@ -15,7 +15,7 @@ heading and filter exactly where it was. A one-option menu still draws no bar.
   verse 706/883 → 714/891 against 715/892. First option and chapter filter boxes unchanged.
   Dark and flipped menus measured at 1px/1px.
 
-**Board**: ITEM-259 — `In review` in this PR.
+**Board**: ITEM-259 — `Done` (`status: done`, `closed_at`, `closed_reason: merged into develop (PR #625)`, board row `develop via [#625]`), merged with this PR.
 **Bump**: patch (declared at Plan; applied immediately before merge).
 
 Refs ITEM-259

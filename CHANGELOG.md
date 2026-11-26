@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The picker popouts' scrollbars now meet the menu edge.** The Book search and Chapter/verse menus paint their 5px bar against the popout's border instead of floating 9px inside it; option, heading and filter boxes keep their places, and a one-option menu still draws no bar (ITEM-259, spec 244).
 - **Rail and sidebar fetches now show where they are working.** The clicked rail icon dims in place
   and the row dims with its edit/delete/add controls disabled; a bar runs at the top edge of the
   section that will refresh. A list-only click leaves the reading page untouched, while a song,

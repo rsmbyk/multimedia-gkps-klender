@@ -77,7 +77,7 @@ menu reserves no lane.
 - [X] T015 Re-check spec 244, ITEM-259, `reading/R59`, the next patch number and the live preview
       listener (port + process cwd) against `origin/develop` and every unmerged worktree before
       delivery.
-- [ ] T016 At delivery only, after Converge: write `VERSION` `1.37.2`, the `## [Unreleased]`
+- [X] T016 At delivery only, after Converge: write `VERSION` `1.37.2`, the `## [Unreleased]`
       changelog line, the board's `In review`/`Done` moves and the `reading/R59` modification at
       Fold.
 
