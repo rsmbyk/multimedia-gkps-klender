@@ -3493,3 +3493,69 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
      drag dies as a scroll the moment the finger moves (spec 138). */
   .toc__grip { opacity: 1; touch-action: none; }
 }
+
+/* ============================================================
+   spec 243 — pending state for rail and sidebar fetches
+   The clicked item dims; a bar runs at the very top edge of each
+   section the fetch will update; a stage write gets a placeholder
+   with the real page anatomy. No spinner or row recolour.
+   ============================================================ */
+.pv-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.gkps-pending-item { pointer-events: none !important; }
+li.gkps-pending-row > .row-edit,
+li.gkps-pending-row > .row-delete,
+li.gkps-pending-row .entry__ctrl,
+li.gkps-pending-row .entry__add-btn,
+li.gkps-pending-row [data-editor-open],
+li.gkps-pending-row [data-editor-delete] {
+  opacity: .45 !important; pointer-events: none !important;
+}
+.rail__btn.gkps-pending-item > svg { opacity: .45; }
+.book.gkps-pending-item, .songrow.gkps-pending-item,
+.ch-num.gkps-pending-item, .panel__mode.gkps-pending-item { opacity: .58; }
+.pv-section-bar, .pv-stagebar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 45;
+  overflow: hidden; background: color-mix(in srgb, var(--active-bg) 20%, transparent);
+}
+.pv-stagebar { z-index: 46; }
+.pv-section-bar::before, .pv-stagebar::before {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 28%;
+  background: var(--active-bg); animation: gkps-pending-slide 1.05s var(--ease-timing) infinite;
+}
+@keyframes gkps-pending-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(460%); }
+}
+.stage { position: relative; }
+.stage[aria-busy="true"] { pointer-events: none !important; }
+.stage[aria-busy="true"] .read { visibility: hidden; }
+.pv-placeholder {
+  position: absolute; inset: 0 0 auto 0; z-index: 44;
+  padding: var(--stage-pad-top) clamp(24px, 5vw, 64px) 0;
+  background: var(--canvas); color: var(--ink);
+}
+.stage[aria-busy="true"] > .pv-placeholder .read { visibility: visible !important; }
+.pv-placeholder .read {
+  pointer-events: none; visibility: visible !important; display: block !important;
+}
+.pv-ph-bar {
+  display: block; height: 12px; border-radius: 4px;
+  background: var(--divider); opacity: .55;
+}
+.pv-ph-bar--sec { height: 18px; width: 78%; margin: 0 0 6px; }
+.pv-ph-bar--line { height: 11px; width: 94%; margin-top: 7px; }
+.pv-ph-bar--line:nth-child(2) { width: 82%; }
+.pv-ph-bar--line:nth-child(3) { width: 67%; }
+.pv-ph-bar--entry { height: 20px; width: 58%; }
+.pv-ph-bar--mid { height: 20px; width: 74%; }
+.pv-ph-bar--short { height: 20px; width: 53%; }
+.pv-ph-bar--sub { height: 10px; width: 28%; }
+@media (max-width: 720px) {
+  .pv-placeholder { padding-left: 18px; padding-right: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pv-section-bar::before, .pv-stagebar::before { animation: none; }
+}
