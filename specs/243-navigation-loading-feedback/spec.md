@@ -5,7 +5,7 @@
 **Created**: 2026-11-25
 **Status**: Accepted (gate 1, preview v14)
 **Input**: "when you try to open anything from the sidebar, if the network is a slightly bit slow, the page and the sidebar do not show any sign that it is fetching something. sometimes the operators might think that the site is frozen"
-**Demand**: `ITEM-258` (next free board ID; card is opened when Specify is executed)
+**Demand**: `ITEM-258` (card opened at delivery)
 **Capability**: `new: reading/R61`
 
 Every in-page fetch starts at `navigate()` in `static/web/reading.js:1494`: rail

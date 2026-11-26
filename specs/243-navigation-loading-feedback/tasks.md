@@ -43,7 +43,7 @@
 - [X] T022 Analyze: write `analysis.md` with artifact SHAs, metrics, findings and history (Analyze stage).
 - [X] T023 Converge: compare the present code with the traceability table and append `converge.md`.
 - [X] T024 Fold: add `reading/R61` to `docs/spec/reading.md` and record `fold.md`.
-- [ ] T025 Open `ITEM-258`, move the board row and deliver the patch bump in `VERSION` / `CHANGELOG.md` with the card closed in the same PR (delivery, not authorized yet).
+- [X] T025 Open `ITEM-258`, move the board row and deliver the patch bump in `VERSION` / `CHANGELOG.md` with the card closed in the same PR.
 
 ## Late asks after gate 2 (in-slice extensions)
 
@@ -56,3 +56,5 @@
 ## Phase 1: Convergence
 
 - 1 of 1 pass — consolidated 15-test run green on the build; same command red on base `14af227a` (10 failures, 1 error, 4 passes). `converge.md` records the rows and dispositions.
+
+Merged into `develop` via PR #624 on 2026-11-26.

@@ -1,6 +1,6 @@
 ---
 id: ITEM-258
-status: in-review
+status: done
 title: 'A slow rail or sidebar fetch gives no sign of work'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: 243-navigation-loading-feedback
 branch: fix/243-navigation-loading-feedback
 pr: 624
 issue: 623
-closed_at:
-closed_reason:
+closed_at: 2026-11-26
+closed_reason: merged into develop (PR #624)
 bump: patch
 release_version:
 ---
