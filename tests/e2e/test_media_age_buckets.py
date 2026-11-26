@@ -89,7 +89,12 @@ class MediaAgeBucketE2ETests(StaticLiveServerTestCase):
                               headers={'Access-Control-Allow-Origin': self.live_server_url})
             page.route('http://127.0.0.1:63174/**', companion)
         page.goto(self.live_server_url + '/media-library/')
-        page.wait_for_selector('#mediaFileList .media-library__file, #mediaEmpty:not([hidden])')
+        # The count's initial "Loading files…" is not a settled state any more;
+        # render() replaces it together with the rows and the final empty message.
+        page.wait_for_function("""() => {
+          const count = document.querySelector('#mediaResultCount');
+          return count && count.textContent.trim() && !count.textContent.includes('Loading');
+        }""")
         return page
 
     def list_headings(self, page):

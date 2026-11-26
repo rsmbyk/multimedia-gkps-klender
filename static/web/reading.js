@@ -1490,7 +1490,7 @@
   /* ---------- spec 243: pending state owned by navigate() --------------- */
   var activeFetches = [];
   var STAGE_KINDS = ['chapter', 'song', 'service', 'result', 'more',
-                     'search', 'results', 'refresh'];
+                     'search', 'results', 'refresh', 'media-library'];
   function writesStage(kind) { return STAGE_KINDS.indexOf(kind) >= 0; }
   function sectionsFor(kind) {
     if (kind === 'rail') return ['panel', 'chapters'];
@@ -1515,8 +1515,19 @@
     window.setTimeout(function () { live.textContent = message; }, 0);
   }
   function seedFrom(source, kind) {
-    var data = {name: '', no: '', eyebrow: ''};
+    var data = {name: '', no: '', eyebrow: '', query: ''};
     if (!source) return data;
+    if (kind === 'results') {
+      var last = lastSearchSnapshot();
+      data.query = last
+        ? (new window.URL(last.snapshot.url, window.location.href).searchParams.get('q') || '') : '';
+      data.name = data.query || 'Search';
+      return data;
+    }
+    if (kind === 'media-library') {
+      data.name = 'Media Library';
+      return data;
+    }
     if (source.classList && source.classList.contains('rail__btn')) {
       var railName = source.querySelector('.rail__name');
       data.name = railName ? railName.textContent.trim() : source.getAttribute('aria-label') || '';
@@ -1552,9 +1563,100 @@
     return data;
   }
   function placeholderFor(kind, data) {
-    var articleKind = kind === 'song' ? 'song' : kind === 'service' ? 'tatib' : 'bible';
     var ph = document.createElement('div');
-    ph.className = 'pv-placeholder';
+    ph.className = (kind === 'results' || kind === 'media-library')
+      ? 'pv-placeholder pv-placeholder--destination' : 'pv-placeholder';
+    if (kind === 'results') {
+      var home = !data.query;
+      ph.id = home ? 'pvPh-search-home' : 'pvPh-results';
+      if (home) {
+        ph.innerHTML = '<section class="search-home" aria-label="Search GKPS Klender">'
+          + '<div class="search-home__inner"><span class="search-home__logo pv-ph-logo" '
+          + 'aria-hidden="true"></span><form class="search-home__form" role="search" action="#">'
+          + '<input class="search-home__input" type="search" value="" placeholder="" readonly>'
+          + '<span class="pv-ph-bar pv-ph-bar--input" aria-hidden="true"></span>'
+          + '<button class="search-home__submit" type="button" aria-label="Search">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+          + 'stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/>'
+          + '<path d="m15.5 15.5 5 5"/></svg></button></form></div></section>';
+      } else {
+        var resultRow = function (title, meta, excerpt) {
+          return '<li><a class="result-row" data-kind="passage" href="#">'
+            + '<span class="result-row__title">' + title + '</span>'
+            + '<span class="result-row__meta">' + meta + '</span>'
+            + (excerpt ? '<span class="result-row__excerpt">' + excerpt + '</span>' : '')
+            + '</a></li>';
+        };
+        var barTitle = '<span class="pv-ph-bar pv-ph-bar--title"></span>';
+        var barSub = '<span class="pv-ph-bar pv-ph-bar--sub"></span>';
+        var barVerse = '<span class="pv-ph-bar pv-ph-bar--verse"></span>';
+        ph.innerHTML = '<div class="search-results">'
+          + '<p class="search-results__intro">Results for <b class="pv-ph-query"></b></p>'
+          + '<section class="result-group" data-kind="passage"><div class="result-group__head">'
+          + '<h2 class="result-group__title">Passage</h2>'
+          + '<span class="result-group__count">3 results</span></div><ul class="result-list">'
+          + resultRow('Yohanes 3:16', 'Yohanes · 3',
+                      'Karena demikianlah Allah mengasihi isi dunia…')
+          + resultRow(barTitle, barSub, barVerse) + resultRow(barTitle, barSub, barVerse)
+          + '</ul><a class="result-more" href="#">Show more</a></section>'
+          + '<section class="result-group" data-kind="song"><div class="result-group__head">'
+          + '<h2 class="result-group__title">Song</h2>'
+          + '<span class="result-group__count">2 results</span></div><ul class="result-list">'
+          + resultRow(barTitle, barSub, '') + resultRow(barTitle, barSub, '')
+          + '</ul></section></div>';
+        ph.querySelector('.pv-ph-query').textContent = data.query;
+      }
+      return ph;
+    }
+    if (kind === 'media-library') {
+      ph.id = 'pvPh-media-library';
+      var mediaIcon = '<span class="pv-ph-bar pv-ph-bar--icon"></span>';
+      function mediaSub() { return '<span class="pv-ph-bar pv-ph-bar--sub"></span>'; }
+      function mediaTitle() { return '<span class="pv-ph-bar pv-ph-bar--title"></span>'; }
+      var fileRow = function () {
+        return '<div class="media-library__file">'
+          + '<div class="media-library__file-icon">' + mediaIcon + '</div>'
+          + '<div class="media-library__file-main">'
+          + '<div class="media-library__filename">' + mediaTitle() + '</div>'
+          + '<div class="media-library__meta">' + mediaSub() + '</div>'
+          + '<div class="media-library__unused">' + unusedBar + '</div></div>'
+          + '<div class="media-library__cloud"><span class="pv-ph-bar pv-ph-bar--button" '
+          + 'aria-hidden="true"></span></div>'
+          + '<span class="pv-ph-bar pv-ph-bar--button" aria-hidden="true"></span>'
+          + '</div>';
+      };
+      var unusedBar = '<span class="pv-ph-bar pv-ph-bar--unused"></span>';
+      var actionButtons = '<div class="media-library__head-actions">'
+        + '<button type="button" class="media-library__icon-btn"></button>'
+        + '<button type="button" class="media-library__icon-btn"></button>'
+        + '<button type="button" class="media-library__icon-btn"></button></div>';
+      ph.innerHTML = '<article class="read" data-kind="media-library">'
+        + '<header class="read__head"><div class="read__head-top">' + actionButtons + '</div>'
+        + '<div class="read__row"><h1 class="read__title">Media Library</h1></div></header>'
+        + '<div class="read__body"><div class="media-library">'
+        + '<p class="media-library__intro">Files available on this computer. '
+        + 'Add a file while editing a Tata Ibadah entry, or choose one already in this library.</p>'
+        + '<div class="media-library__filters"><div class="media-library__chips" role="group" '
+        + 'aria-label="File type filters">'
+        + '<button type="button" aria-pressed="false">Images</button>'
+        + '<button type="button" aria-pressed="false">Audio</button>'
+        + '<button type="button" aria-pressed="false">Video</button>'
+        + '<button type="button" aria-pressed="false">PDF</button>'
+        + '<button type="button" aria-pressed="false">Slides</button>'
+        + '<span aria-hidden="true">·</span>'
+        + '<button type="button" aria-pressed="false">Unused</button></div>'
+        + '<p class="pv-media-count">Loading files…</p>'
+        + '<div class="media-library__sort"><button type="button" '
+        + 'aria-label="Sort files: Upload date, newest" aria-expanded="false">'
+        + '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" '
+        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + '<path d="M5.5 3.5v13m0-13-2.5 2.5m2.5-2.5L8 6m6.5 10.5v-13m0 13-2.5-2.5m2.5 2.5L17 14"/>'
+        + '</svg><span>Upload date · newest</span></button></div></div>'
+        + fileRow() + fileRow() + fileRow()
+        + '</div></div></article>';
+      return ph;
+    }
+    var articleKind = kind === 'song' ? 'song' : kind === 'service' ? 'tatib' : 'bible';
     ph.id = 'pvPh-' + articleKind;
     var rows = articleKind === 'song' ? 3 : 5;
     var bar = '<span class="pv-ph-bar pv-ph-bar--line"></span>';
@@ -1624,6 +1726,7 @@
       return f !== record && !f.done && f.writes;
     })) return;
     stage.removeAttribute('aria-busy');
+    stage.classList.remove('stage--destination-placeholder');
     var ph = stage.querySelector(':scope > .pv-placeholder');
     if (ph) ph.remove();
   }
@@ -1710,6 +1813,7 @@
     if (writes) {
       stage.setAttribute('aria-busy', 'true');
       stage.appendChild(placeholderFor(kind, seed));
+      stage.classList.add('stage--destination-placeholder');
     }
     lockItem(opts.source);
     activeFetches.push(record);
@@ -1806,6 +1910,10 @@
 
   function applyPage(doc, url, opts) {
     opts = opts || {};
+    /* The arriving page is reconciled in this same task; reveal the old search
+       sections before focusLandingSearch() runs, so the incoming field can take
+       focus instead of being hidden by the pending-state rule. */
+    stage.classList.remove('stage--destination-placeholder');
     var fresh = doc.documentElement.dataset;
     /* spec 220: the state being left. The landing taking focus, and handing it back
        when results open, are both transitions rather than destinations. */
@@ -1839,7 +1947,7 @@
     var currentChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
-      || kind === 'refresh';
+      || kind === 'refresh' || kind === 'media-library';
     /* A page opened from a second-level list -- and the in-place refresh that follows a save --
        updates the reading stage while keeping the operator's first-panel open/mini choice.
        Every server reading page is rendered with nav="open", so copying that value over a
@@ -2084,7 +2192,8 @@
     if (opts.replaceUrl) {
       history.replaceState({gkps: true, url: url, kind: kind}, '', url);
     } else if (!opts.skipHistory) {
-      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results'];
+      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results',
+                    'media-library'];
       if (pushes.indexOf(kind) !== -1) {
         history.pushState({gkps: true, url: url, kind: kind,
           searchId: fresh.home === 'results' ? searchId() : null}, '', url);
@@ -2282,10 +2391,15 @@
   function openSearch(event) {
     event.preventDefault();
     var last = lastSearchSnapshot();
-    navigate(last ? last.snapshot.url : '/', {kind: 'results',
+    navigate(last ? last.snapshot.url : '/', {kind: 'results', source: railSearch,
       restoreSearchId: last && last.id});
   }
   railSearch.addEventListener('click', openSearch);
+  if (railMediaLibrary) railMediaLibrary.addEventListener('click', function (event) {
+    event.preventDefault();
+    navigate(railMediaLibrary.getAttribute('href'),
+             {kind: 'media-library', source: railMediaLibrary});
+  });
   var railLogo = document.querySelector('.rail__logo');
   if (railLogo) railLogo.addEventListener('click', function (event) {
     event.preventDefault();

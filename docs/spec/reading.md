@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-26
-**slices**: `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2017,3 +2017,51 @@ each; focus SHALL not be moved by the announcement. (spec 243)
 - WHEN another item is clicked while a fetch is pending
 - THEN the first is cancelled and unlocked unless it writes to the reading page and the new click does
   not, in which case both proceed with their own bars
+
+### R62 — Search and Media Library rail tiles fetch in place with visible pending state
+
+Activating the Search or Media Library rail tile SHALL fetch its destination in place through the
+reading shell's navigation choke point. The Search tile SHALL keep its saved last result set or the
+home search; the Media Library tile SHALL open `/media-library/`. Neither destination changes.
+
+At activation the clicked tile SHALL lock: its SVG at opacity `0.45`, `aria-disabled="true"`, no
+spinner, label, edge fill or ring. While the request is pending the reading stage SHALL carry
+`aria-busy="true"` and show a 3px bar flush with its top edge. The rail and both sidebars SHALL stay
+interactive; only the tile and the stage are locked.
+
+The stage SHALL show a placeholder built from the destination's own markup and classes. Search
+results SHALL show the intro, result-group head with count, result rows with title/meta/excerpt and
+Show more; Search home SHALL show the centred 96px logo and the input with its submit button, the
+input's own text replaced by a grey bar; Media
+Library SHALL show the intro, filter chips, result count, sort control and three identical file-row
+skeletons with icon, name, meta, unused line and two action bars. No date-group headings, seeded file
+names or file data SHALL appear while the library is loading. Bars SHALL stand in only for content not
+yet known, and the placeholder SHALL start at the same content offsets as the real page.
+
+On settlement the lock, `aria-busy`, bar and placeholder SHALL clear and the real page SHALL replace
+the placeholder. A later page-writing click SHALL cancel the in-flight fetch and retarget the bar
+and placeholder, following R61. On failure into a full page load the pending state SHALL remain
+until unload. A polite status region SHALL announce opening and settlement once each without moving
+focus, and reduced motion SHALL stop the bar's sweep while keeping the lock and placeholder text.
+On a direct Media Library load that bypasses the rail placeholder, the result count and empty slot
+SHALL show a loading line with a small spinner centred above the text until the companion status/files and service
+references resolve, then render once with the spinner removed. While a destination placeholder is shown, the previous stage content — search home,
+search results or reading article — SHALL be hidden rather than left visible below a shorter
+skeleton. (spec 245)
+
+#### Scenario: a slow Search click with a saved result set
+- WHEN the Search rail tile is clicked while its last results are restored
+- THEN the tile locks, the stage bar runs, and the placeholder shows real result groups and rows
+
+#### Scenario: a slow Search click with no saved results
+- WHEN the Search rail tile is clicked on the home search
+- THEN the placeholder shows the centred logo and search input, not an empty result list
+
+#### Scenario: a slow Media Library click
+- WHEN the Media Library rail tile is clicked
+- THEN the page swaps in place, the tile locks, the stage bar runs, and the placeholder shows the
+  library's filters, sorter and three skeleton file rows with no group headings or file data
+
+#### Scenario: arrival and supersede
+- WHEN the page paints, or another tile is clicked while one is pending
+- THEN all pending state clears or retargets, and the arriving tile becomes current

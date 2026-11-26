@@ -1,0 +1,4 @@
+services:
+  media:
+    environment:
+      GKPS_MEDIA_ALLOWED_ORIGINS: "http://localhost:63404,http://127.0.0.1:63404,http://localhost:8787,http://127.0.0.1:8787"

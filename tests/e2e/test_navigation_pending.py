@@ -269,6 +269,222 @@ class NavigationPendingTests(StaticLiveServerTestCase):
             browser.close()
             playwright.stop()
 
+    def test_destination_placeholder_hides_the_previous_search_home(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            page.locator('#railMediaLibrary').click()
+            expect(page.locator('#pvPh-media-library')).to_be_visible(timeout=1000)
+            for sel in ('#searchHome', '#homeLogo', '#searchQuery'):
+                self.assertFalse(page.locator(sel).is_visible(), sel)
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_media_library_direct_load_shows_a_loading_state(self):
+        playwright = sync_playwright().start()
+        browser = playwright.chromium.launch(headless=True)
+        page = browser.new_page(viewport={'width': 1440, 'height': 900})
+        try:
+            slow_network(page, latency=1500)
+            page.goto(self.live_server_url + '/media-library/', wait_until='commit')
+            expect(page.locator('#mediaResultCount')).to_have_text('Loading files…', timeout=8000)
+            expect(page.locator('#mediaEmpty')).to_contain_text(
+                'Loading files on this computer…', timeout=8000)
+            spinner = page.locator('#mediaEmpty .media-library__loading-spinner')
+            expect(spinner).to_be_visible(timeout=8000)
+            self.assertEqual(spinner.evaluate('(e) => getComputedStyle(e).animationDuration'), '0.8s')
+            self.assertEqual(spinner.evaluate('(e) => getComputedStyle(e).display'), 'block')
+            above = page.evaluate("""() => {
+              const spinner = document.querySelector('#mediaEmpty .media-library__loading-spinner');
+              const range = document.createRange();
+              range.selectNodeContents(document.getElementById('mediaEmpty'));
+              const nodes = Array.from(document.getElementById('mediaEmpty').childNodes)
+                .filter(n => n.nodeType === Node.TEXT_NODE);
+              if (!nodes.length) return false;
+              range.selectNode(nodes[0]);
+              return spinner.getBoundingClientRect().bottom <= range.getBoundingClientRect().top;
+            }""")
+            self.assertTrue(above, 'spinner must sit above the loading text')
+            expect(page.locator('#mediaResultCount')).to_contain_text('files shown', timeout=8000)
+            self.assertEqual(page.locator('#mediaEmpty .media-library__loading-spinner').count(), 0)
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_search_rail_locks_the_tile(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            tile = page.locator('#railSearch')
+            tile.click()
+            expect(tile).to_have_attribute('aria-disabled', 'true')
+            opacity = tile.locator('svg').evaluate('(e) => getComputedStyle(e).opacity')
+            self.assertEqual(opacity, '0.45')
+            self.assertEqual(page.locator('.stage').get_attribute('aria-busy'), 'true')
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_search_rail_shows_the_stage_bar(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            page.locator('#railSearch').click()
+            bar = page.locator('.stage > .pv-stagebar')
+            expect(bar).to_be_visible(timeout=1000)
+            self.assertEqual(bar.evaluate('(e) => getComputedStyle(e).height'), '3px')
+            offset = bar.evaluate('(e) => e.getBoundingClientRect().top '
+                                  '- e.parentElement.getBoundingClientRect().top')
+            self.assertEqual(round(offset), 0)
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_search_results_placeholder_matches_real_groups(self):
+        playwright, browser, page = self.open_home()
+        try:
+            page.evaluate("""() => {
+              sessionStorage.setItem('gkps-search-last-tab', 'x');
+              sessionStorage.setItem('gkps-search-entry:x', JSON.stringify({
+                url: '/search/?q=Yoh+3%3A16', query: 'Yoh 3:16'}));
+            }""")
+            page.reload()
+            slow_network(page)
+            page.locator('#railSearch').click()
+            ph = page.locator('#pvPh-results')
+            expect(ph).to_be_visible(timeout=1000)
+            self.assertEqual(ph.locator('.result-group').count(), 2)
+            self.assertEqual(ph.locator('.result-group__head').count(), 2)
+            self.assertEqual(ph.locator('.result-row').count(), 5)
+            self.assertEqual(ph.locator('.result-row__excerpt').count(), 3)
+            expect(ph.locator('.result-more')).to_be_visible()
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_search_home_placeholder_matches_the_landing(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            page.locator('#railSearch').click()
+            ph = page.locator('#pvPh-search-home')
+            expect(ph).to_be_visible(timeout=1000)
+            logo = ph.locator('.search-home__logo')
+            self.assertEqual(logo.evaluate('(e) => getComputedStyle(e).width'), '96px')
+            expect(ph.locator('.search-home__form')).to_be_visible()
+            expect(ph.locator('.search-home__input')).to_be_visible()
+            expect(ph.locator('.search-home__submit')).to_be_visible()
+            expect(ph.locator('.pv-ph-bar--input')).to_be_visible()
+            self.assertEqual(ph.locator('.search-home__input').get_attribute('placeholder'), '')
+            pending_y = ph.locator('.search-home__input').bounding_box()['y']
+            expect(page.locator('#searchHome')).to_be_visible(timeout=8000)
+            real_y = page.locator('#searchHome .search-home__input').bounding_box()['y']
+            self.assertLess(abs(pending_y - real_y), 2, (pending_y, real_y))
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_media_library_rail_fetches_in_place(self):
+        playwright, browser, page = self.open_home()
+        try:
+            origin = page.evaluate('performance.timeOrigin')
+            slow_network(page)
+            page.locator('#railMediaLibrary').click()
+            expect(page.locator('#mediaLibrary')).to_be_visible(timeout=8000)
+            self.assertEqual(page.evaluate('performance.timeOrigin'), origin)
+            self.assertEqual(page.url.endswith('/media-library/'), True)
+            expect(page.locator('#railMediaLibrary')).to_have_attribute('aria-current', 'page')
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_media_library_placeholder_matches_real_rows(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            page.locator('#railMediaLibrary').click()
+            ph = page.locator('#pvPh-media-library')
+            expect(ph).to_be_visible(timeout=1000)
+            expect(ph.locator('.media-library__intro')).to_be_visible()
+            self.assertEqual(ph.locator('.media-library__chips button').count(), 6)
+            self.assertEqual(ph.locator('.media-library__file').count(), 3)
+            for cls in ('.media-library__file-icon', '.media-library__filename',
+                        '.media-library__meta', '.media-library__unused',
+                        '.media-library__cloud'):
+                self.assertGreater(ph.locator(cls).count(), 0, cls)
+            self.assertEqual(ph.locator('.media-library__group').count(), 0)
+            self.assertEqual(ph.locator('.media-library__cloud-button, '
+                                        '.media-library__remove').count(), 0)
+            self.assertEqual(ph.locator('.pv-ph-bar--button').count(), 6)
+            self.assertEqual(ph.locator('.media-library__filename').first.text_content().strip(), '')
+            self.assertFalse(ph.locator('.media-library__icon-btn').first.is_visible())
+            for sel in ('.media-library__intro', '.media-library__chips button',
+                        '.pv-media-count', '.media-library__sort button span'):
+                self.assertEqual(ph.locator(sel).first.evaluate(
+                    '(e) => getComputedStyle(e).color'), 'rgba(0, 0, 0, 0)', sel)
+            self.assertNotEqual(ph.locator('.media-library__chips button').first.evaluate(
+                '(e) => getComputedStyle(e, "::after").content'), 'none')
+            pending = ph.locator('.read').bounding_box()
+            expect(page.locator('#mediaLibrary')).to_be_visible(timeout=8000)
+            real = page.locator('#read').bounding_box()
+            for key in ('x', 'y', 'width'):
+                self.assertLess(abs(pending[key] - real[key]), 2, (key, pending, real))
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_media_library_settlement_clears_state(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page, latency=900)
+            tile = page.locator('#railMediaLibrary')
+            tile.click()
+            expect(page.locator('#mediaLibrary')).to_be_visible(timeout=8000)
+            page.wait_for_timeout(900)
+            self.assertIsNone(tile.get_attribute('aria-disabled'))
+            self.assertIsNone(page.locator('.stage').get_attribute('aria-busy'))
+            self.assertFalse(page.locator('.stage > .pv-stagebar').is_visible())
+            self.assertFalse(page.locator('.pv-placeholder').is_visible())
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_search_then_media_library_cancels_the_first(self):
+        playwright, browser, page = self.open_home()
+        try:
+            slow_network(page)
+            search_tile = page.locator('#railSearch')
+            search_tile.click()
+            expect(page.locator('#pvPh-search-home')).to_be_visible(timeout=1000)
+            media_tile = page.locator('#railMediaLibrary')
+            media_tile.click()
+            expect(page.locator('#pvPh-media-library')).to_be_visible(timeout=1000)
+            self.assertIsNone(search_tile.get_attribute('aria-disabled'))
+            self.assertEqual(media_tile.get_attribute('aria-disabled'), 'true')
+        finally:
+            browser.close()
+            playwright.stop()
+
+    def test_destination_placeholder_origin_matches_the_reading_page(self):
+        playwright, browser, page = self.open_home()
+        try:
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.locator(f'#panelBody .book[href="/bible/{self.book.pk}/"]').click()
+            page.locator('#chList .ch-num').first.click()
+            expect(page.locator('#read')).to_be_visible(timeout=5000)
+            real = page.locator('#read').bounding_box()
+            slow_network(page)
+            page.locator('#railMediaLibrary').click()
+            ph = page.locator('#pvPh-media-library .read')
+            expect(ph).to_be_visible(timeout=1000)
+            box = ph.bounding_box()
+            self.assertEqual(round(box['x']), round(real['x']))
+            self.assertEqual(round(box['y']), round(real['y']))
+        finally:
+            browser.close()
+            playwright.stop()
+
     def test_row_controls_are_disabled_while_its_fetch_is_pending(self):
         playwright, browser, page = self.open_home()
         try:

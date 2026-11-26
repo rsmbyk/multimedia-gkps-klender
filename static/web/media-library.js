@@ -178,6 +178,16 @@
       return next.ready;
     });
   }
+  /* The server leaves the count and list empty; say what is happening until the
+     companion's status/files and the service references have all arrived. */
+  $('mediaResultCount').textContent = 'Loading files…';
+  var empty = $('mediaEmpty');
+  empty.textContent = '';
+  var spinner = node('span', 'media-library__loading-spinner');
+  spinner.setAttribute('aria-hidden', 'true');
+  empty.appendChild(spinner);
+  empty.appendChild(document.createTextNode('Loading files on this computer…'));
+  empty.hidden = false;
   refresh();
   document.addEventListener('media:status', function (event) {
     if (!page.isConnected) return;
