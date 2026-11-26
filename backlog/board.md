@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-259](./items/ITEM-259-picker-scrollbar-edge.md) | Picker popout scrollbars sit at the menu edge | The Book/Chapter/verse menus paint their 5px bar 9px inside the popout; the scrollport reaches the border without moving any content | fix | P2 | S | [244](../specs/244-picker-menu-scrollbar-edge/spec.md) | 2026-11-26 |
 
 ## Ready
 
