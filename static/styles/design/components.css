@@ -668,6 +668,16 @@ li:hover > .row-delete,
 .media-library__remove:hover { background: color-mix(in srgb, var(--danger) 11%, transparent); }
 .media-library__empty { text-align: center; color: var(--head-ink); padding: 55px 20px; }
 .media-library__empty[hidden] { display: none; }
+.media-library__loading-spinner {
+  display: block; box-sizing: border-box;
+  width: 18px; height: 18px; margin: 0 auto 10px;
+  border: 2px solid var(--divider); border-top-color: var(--active-bg);
+  border-radius: 50%; animation: media-load-spin 800ms linear infinite;
+}
+@keyframes media-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .media-library__loading-spinner { animation: none; }
+}
 .media-library__dialog { width: min(490px, calc(100vw - 32px)); max-height: min(86vh, 46rem); padding: 22px; border: 1px solid var(--divider); border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow-dialog); }
 .media-library__dialog::backdrop { background: var(--backdrop); }
 .media-library__dialog h2 { margin: 0 0 14px; font-size: 18px; }
@@ -3543,6 +3553,12 @@ li.gkps-pending-row [data-editor-delete] {
 .stage { position: relative; }
 .stage[aria-busy="true"] { pointer-events: none !important; }
 .stage[aria-busy="true"] .read { visibility: hidden; }
+/* The search shell's own sections are siblings of the placeholder, not inside
+   `.read`; hide them too so the old logo/field never shows below a shorter
+   destination skeleton. The descendant copy inside the placeholder is scoped
+   separately below and stays visible. */
+.stage[aria-busy="true"].stage--destination-placeholder > .search-home,
+.stage[aria-busy="true"].stage--destination-placeholder > .search-results { visibility: hidden !important; }
 .pv-placeholder {
   position: absolute; inset: 0 0 auto 0; z-index: 44;
   padding: var(--stage-pad-top) clamp(24px, 5vw, 64px) 0;
@@ -3552,9 +3568,58 @@ li.gkps-pending-row [data-editor-delete] {
 .pv-placeholder .read {
   pointer-events: none; visibility: visible !important; display: block !important;
 }
+/* The shell hides Search surfaces on the reading home state; a destination
+   placeholder must still paint while the stage is busy (spec 245). */
+.stage[aria-busy="true"] > .pv-placeholder--destination .search-results,
+.stage[aria-busy="true"] > .pv-placeholder--destination .media-library {
+  display: block !important; visibility: visible !important;
+}
+/* Search home keeps its grid: 1fr / form / 1fr is what centres the input. */
+.stage[aria-busy="true"] > .pv-placeholder--destination .search-home {
+  display: grid !important; visibility: visible !important;
+}
+.pv-ph-logo {
+  display: block; width: 96px; height: 96px; border-radius: 14px;
+  background: var(--icon-hover-bg);
+}
 .pv-ph-bar {
   display: block; height: 12px; border-radius: 4px;
   background: var(--divider); opacity: .55;
+}
+.pv-ph-bar--title { height: 24px; width: 62%; }
+.pv-ph-bar--verse { height: 12px; width: 88%; }
+.pv-ph-bar--unused { height: 18px; width: 53%; }
+.pv-ph-bar--button { width: 36px; height: 36px; border-radius: 9px; }
+.pv-ph-bar--input {
+  position: absolute; left: 22px; top: 50%; transform: translateY(-50%);
+  width: 58%; height: 12px; pointer-events: none;
+}
+.pv-ph-bar--icon { width: 23px; height: 23px; border-radius: 6px; }
+.pv-media-count { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
+/* While a fetch is pending the library's controls are skeleton, not content,
+   and the header actions are hidden with their space reserved. */
+.pv-placeholder--destination .media-library__head-actions { visibility: hidden; }
+.pv-placeholder--destination .media-library__intro,
+.pv-placeholder--destination .media-library__chips button,
+.pv-placeholder--destination .pv-media-count,
+.pv-placeholder--destination .media-library__sort button span {
+  position: relative; color: transparent;
+}
+.pv-placeholder--destination .media-library__sort button svg { visibility: hidden; }
+.pv-placeholder--destination .media-library__intro::after,
+.pv-placeholder--destination .media-library__chips button::after,
+.pv-placeholder--destination .pv-media-count::after,
+.pv-placeholder--destination .media-library__sort button span::after {
+  content: ""; position: absolute; border-radius: 4px;
+  background: var(--divider); opacity: .55;
+}
+.pv-placeholder--destination .media-library__intro::after { left: 0; top: 2px; width: 72%; height: 18px; }
+.pv-placeholder--destination .media-library__chips button::after {
+  left: 11px; right: 11px; top: 50%; height: 10px; transform: translateY(-50%);
+}
+.pv-placeholder--destination .pv-media-count::after { left: 0; right: 0; top: 3px; height: 12px; }
+.pv-placeholder--destination .media-library__sort button span::after {
+  left: 0; right: 0; top: 50%; height: 10px; transform: translateY(-50%);
 }
 .pv-ph-bar--sec { height: 18px; width: 78%; margin: 0 0 6px; }
 .pv-ph-bar--line { height: 11px; width: 94%; margin-top: 7px; }
