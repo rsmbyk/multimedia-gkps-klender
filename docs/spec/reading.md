@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-26
-**slices**: `244-picker-menu-scrollbar-edge`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1973,3 +1973,47 @@ refuses the write, both lists SHALL return to the last order it confirmed. (spec
 - WHEN a drag is released outside a drop, or Escape cancels it
 - THEN both lists show the pre-drag order and no write is posted
 
+### R61 — Rail and sidebar fetches show where they are working
+
+An activation of a rail tile or a sidebar row SHALL lock that item at once. The rail icon SHALL stay
+in place at reduced opacity; a sidebar row SHALL dim, and its edit, delete and add controls SHALL be
+disabled for the same period. Neither the item nor those controls SHALL act again until that request
+settles — success, failure or cancellation. Other items SHALL remain available.
+
+A 3px bar SHALL run at the very top edge of each section whose content the fetch will replace: the
+first-level sidebar and, when open and to be refreshed, the second-level sidebar for a rail click;
+the second-level sidebar for a chapter-number list or songbook click; the reading page for a song,
+verse/passage or service write. A fetch that does not write into the reading page SHALL leave the
+stage exactly as displayed — no `aria-busy`, bar or placeholder. A fetch that writes SHALL set
+`aria-busy` on the stage, disable it and show a placeholder built with the real page anatomy
+(`read__head`, `read__body`, numbered `v` rows or `tatib__item` rows) and seeded with the title,
+number, songbook name or service name already known from the sidebar. The placeholder SHALL start at
+the same offsets as the real reading page.
+
+Another activation SHALL cancel the in-flight fetch and fetch the new item, except that a fetch
+writing to the reading page SHALL continue when the new activation is list-only. A cancelled item
+SHALL unlock at once, and a cancelled stage write SHALL release the stage only if no other stage
+write is pending. A polite, pre-rendered status region SHALL announce opening and settlement once
+each; focus SHALL not be moved by the announcement. (spec 243)
+
+#### Scenario: a rail click with both lists open
+- WHEN a rail section is fetched slowly while both sidebars are open
+- THEN that rail icon dims, both list tops show a bar, and the reading page keeps its current content
+
+#### Scenario: a songbook or chapter list
+- WHEN a first-level row or a chapter-number list is fetched
+- THEN the row dims with its controls disabled, the second-level bar runs, and the stage is untouched
+
+#### Scenario: a song or verse write
+- WHEN a song or verse/passage is opened slowly
+- THEN the stage is disabled, its top bar runs, and the placeholder uses that page's own header and
+  numbered verse rows with the sidebar's title and number filled in
+
+#### Scenario: a song in a non-hymn book
+- WHEN a song without a hymn number is opened
+- THEN the placeholder eyebrow names the selected songbook and the title keeps the row's case
+
+#### Scenario: a superseding click
+- WHEN another item is clicked while a fetch is pending
+- THEN the first is cancelled and unlocked unless it writes to the reading page and the new click does
+  not, in which case both proceed with their own bars

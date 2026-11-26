@@ -37,6 +37,14 @@ The plan and tasks first named `ITEM-258`; that card was taken in flight by the 
 Before creating the card this slice re-checked every worktree and took `ITEM-259` instead. The
 card and board row use `ITEM-259`; the retake is recorded here and in `fold.md`.
 
+## Merge resolution (parallel slice)
+
+`origin/develop` advanced with spec 243 after this branch was cut. The merge auto-applied code and
+the board, and conflicted only on the capability header's `slices` line. Both IDs were kept, newest
+first: `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, then the existing list.
+The R59 modification survived unchanged. The focused module was re-run on the merged tree with
+`gkps244merge`: 4/4 green.
+
 ## Outcome
 
 **Converged** — no accepted gaps. H1 and H2 from `analysis.md` were discharged by the live computed
