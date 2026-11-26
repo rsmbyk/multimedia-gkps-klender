@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   button is the only one; that invitation sits in the same quarter-band as the Tata Ibadah empty
   state (spec 224).
 
+- **Search and Media Library rail fetches now show where they are working.** The clicked tile locks, the reading stage gets a progress bar and a placeholder built from the destination's own layout; direct Media Library loads show a loading line with a spinner until files arrive (ITEM-260, spec 245).
+
 ## [1.36.6] - 2026-11-22
 
 ### Added

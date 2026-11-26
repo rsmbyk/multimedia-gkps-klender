@@ -16,8 +16,8 @@ Header: `last folded` stays 2026-11-26 (same day) and `245-rail-fetch-feedback` 
 
 - **Files changed in this capability**: `static/web/reading.js`,
   `static/styles/design/components.css`, `tests/e2e/test_navigation_pending.py`,
-  `docs/spec/reading.md`, `specs/245-rail-fetch-feedback/`. Board card, `VERSION` and
-  `CHANGELOG.md` are NOT changed — delivery is not authorized.
+  `docs/spec/reading.md`, `specs/245-rail-fetch-feedback/`. Board card ITEM-260, `VERSION` 1.37.3 and the changelog line were written in the
+  delivery commit after PR #627 opened; the card was opened at that point, not at gate 1.
 - **Declared no behaviour change**: no — R62 describes the new client behaviour; spec, tests and
   capability file agree.
 - **Honest delta from research**: `openSearch()`'s destination lines are unchanged, but the call

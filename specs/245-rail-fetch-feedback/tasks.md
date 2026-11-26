@@ -154,3 +154,7 @@ shows the destination's real layout before the page arrives.
 ## Phase 15 — push-step verification
 
 - [X] T028 Manual lanes (no CI): 24 slice tests, 45 capability A, 141 capability B, 569 unit tests. Attributed all reds against the same commands on unmodified develop; fixed the age-bucket settle helper and the focus/hide interaction; carded the two uncarded base reds.
+
+## Phase 16 — delivery
+
+- [X] T029 Opened ITEM-260 at delivery with issue #626 and PR #627, moved its row to In review, bumped VERSION to 1.37.3 and appended the changelog line. Base-owned reds were carded as ITEM-261 and ITEM-262.

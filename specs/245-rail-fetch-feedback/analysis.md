@@ -9,13 +9,17 @@
 
 | Artifact | SHA-256 |
 | --- | --- |
+| `pr-body.md` | `7c61da3abd7a0ffc9d62a389d7874c23a2972f414ede0ba5476e64f6d1de0894` |
+| `analysis.md` | `88de61f49b82ac98764c3ddb666cc6933ff4fb778307cc38bbcad83a0c8c5ce9` |
+| `fold.md` | `64219fa8c27f57a63ddcd4f9d69be867c9023b1ef9a41d8683a00adee38a43e5` |
+| `converge.md` | `a4d9c7374ce88d23f354f343dfe4228c88af472bb9052e82e9f0bee8f0b457b3` |
 | `preview/media-override.yml` | `04e34167788d68856fc4807ace43a5a1301f5ebcbb68d19d6b91e9fc6fa3589b` |
-| `spec.md` | `6c97f1db32cd19e851dfd76ecae7874c574af9c76c277fe649f27b809bf2df94` |
+| `spec.md` | `5617620a9780b0ee0ff448b9794e1a0fcf8e5417fc456916d319e0857afe47b0` |
 | `plan.md` | `6dd1721f9ce7391ba9bde4dfe697586458fddaae30ac94b8dbc19b3e7e5428b8` |
 | `research.md` | `d709f715067359a325b098db5171b97576d5425c2e3984d6c682319e331bf4f5` |
 | `data-model.md` | `27ae326ab4840520cab8e9decb34a08b64a4bfe6194d8149ff474d2e8cad4d68` |
 | `quickstart.md` | `f7dc5157481f77e75cd209dd19ceba67750438be4f3a51cb7f8140acb78868b8` |
-| `tasks.md` | `53cf9120bf5091394fc804548765b6032a0a57eb16ed7160d571435ccc426de2` |
+| `tasks.md` | `4c2e469b017464a77a356cfcd125cb8fe97adac2b8fa961dfdfb59db4bee0996` |
 | `checklists/requirements.md` | `135e46b76d7e1259b6e2df4f4e31ce62493aedbc070c04afc3c0d29e610ae9ee` |
 | `contracts/README.md` | `2f8d9a1e8c11205ba4b84fd445da54a0bf139c413f3fb90d217c9dceef639965` |
 | `preview/README.md` | `fa230409d6a35d23bb6c8311b1adb6eba157245ebf273643396134b3e7714cf7` |

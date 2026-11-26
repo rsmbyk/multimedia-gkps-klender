@@ -5,7 +5,7 @@
 **Created**: 2026-11-26
 **Status**: Accepted at gate 1 (2026-11-26, `preview/combined.html`); final state accepted by the owner 2026-11-26
 **Input**: "search and media library on rails should get the same behavior when fetching the page"; clarified to "its all of them: the rails lock, the reading page progress bar, and a little bit of placeholder"
-**Demand**: `ITEM-260` (card opened at delivery)
+**Demand**: `ITEM-260` (card opened at delivery, 2026-11-26)
 **Capability**: `new: reading/R62` — extends `reading/R61`
 
 **Clarification**: "make the placeholder to match the real layout" — the placeholder must carry
