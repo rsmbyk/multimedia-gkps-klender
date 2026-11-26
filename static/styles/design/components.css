@@ -2686,9 +2686,20 @@ kbd {
   max-height: 268px; padding: 8px;
   background: var(--canvas); border: 1px solid var(--divider); border-radius: 10px;
   box-shadow: var(--shadow);
+  /* spec 244: the options' bar reaches the rounded border, so clip its last
+     pixels to the corner instead of painting over it. */
+  overflow: clip;
 }
 .editor__picker-menu[hidden] { display: none; }     /* author display beats [hidden] */
-.editor__picker-options { min-height: 0; overflow: auto; }
+/* spec 244: the menu's 8px padding used to stand between its border and the
+   scrollport, leaving the 5px bar floating inside the popout. Widen the
+   scrollport to the menu's inner edge with a negative margin and take the
+   padding back on its content, so every option, heading and filter keeps its
+   old box. The bottom extends too, so the bar's lane ends at the border. */
+.editor__picker-options {
+  min-height: 0; overflow: auto;
+  margin: 0 -8px -8px; padding: 0 8px 8px;
+}
 .editor__picker-group[hidden] { display: none; }
 .editor__picker-options .editor__hint { margin: 6px 8px; }
 
