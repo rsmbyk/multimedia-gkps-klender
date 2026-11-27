@@ -1,0 +1,55 @@
+name: Deploy Multimedia GKPS Klender production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: multimedia-gkps-klender-515917
+  REGION: asia-southeast2
+  REPOSITORY: multimedia-gkps-klender
+  SERVICE: multimedia-gkps-klender
+  IMAGE: asia-southeast2-docker.pkg.dev/multimedia-gkps-klender-515917/multimedia-gkps-klender/production:${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/73206048678/locations/global/workloadIdentityPools/multimedia-gkps-klender/providers/github
+          service_account: multimedia-gkps-klender-ci@multimedia-gkps-klender-515917.iam.gserviceaccount.com
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push the container
+        run: |
+          gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet
+          docker build -f Dockerfile.cloudrun -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Apply database migrations
+        run: |
+          gcloud run jobs execute multimedia-gkps-klender-migrate \
+            --project="$PROJECT_ID" --region="$REGION" --wait --quiet
+
+      - name: Deploy the production revision
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --project="$PROJECT_ID" --region="$REGION" --platform=managed \
+            --image="$IMAGE" --allow-unauthenticated --port=8080 \
+            --memory=512Mi --cpu=1 --max-instances=2 --concurrency=20 \
+            --set-secrets="DATABASE_URL=multimedia-gkps-klender-production-database-url:latest,DJANGO_SECRET_KEY=multimedia-gkps-klender-production-secret-key:latest" \
+            --set-env-vars="DJANGO_DEBUG=False,DJANGO_ALLOWED_HOSTS=*,WHITENOISE_MAX_AGE=31536000" \
+            --quiet
