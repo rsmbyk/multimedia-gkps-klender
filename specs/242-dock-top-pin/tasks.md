@@ -63,5 +63,5 @@ until Fold, and each new E2E pin is proven red on unmodified `develop` before it
 - [X] T018 Pre-merge delivery commit: `VERSION` 1.36.27 → 1.37.0 (`minor`), one `CHANGELOG.md`
   `## [Unreleased]` line, card `Done` with `closed_at`/`closed_reason` and board row
   `develop via [#N]`; paths: `VERSION`, `CHANGELOG.md`, board and card.
-- [ ] T019 On the owner's `merge` word, squash-merge with the PR title and body as the squash
+- [X] T019 On the owner's `merge` word, squash-merge with the PR title and body as the squash
   message; do not delete the local branch or worktree.

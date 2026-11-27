@@ -20,7 +20,7 @@
 
 - [X] T005 [US1] Add `_empty_stage(request)` and set `read_on`, `home_state`, `read_name` and `read_hint` in `BookDetailView` — `multimedia/web/reading/views.py`
 - [X] T006 [US1] In `base.html`, suppress the reading header when `read_hint` is set and render the `.entry__empty` block (empty-screen icon, `Nothing open.` title, subtitle) inside `#readBody`
-- [ ] T006a [US1] Add `.entry__empty-icon` (38px glyph) and the stage-centring rules (stage grid, full-width read, body margins zero) beside the existing `.entry__empty` rules — `static/styles/design/components.css`
+- [X] T006a [US1] Add `.entry__empty-icon` (38px glyph) and the stage-centring rules (stage grid, full-width read, body margins zero) beside the existing `.entry__empty` rules — `static/styles/design/components.css`
 - [X] T007 [US1] On an on-stage delete, append `stage=empty` to `parentListUrl(kind)` before `gkpsNavigate(..., {kind:'refresh', replaceUrl:true})`; update the stale `gkpsStage` comment — `static/web/editors.js`
 - [X] T008 [US1] Run the song, reload/history and geometry tests and see them green — `tests/e2e/test_deleted_stage.py`
 
