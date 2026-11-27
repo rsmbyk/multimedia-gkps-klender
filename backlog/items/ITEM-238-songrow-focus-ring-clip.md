@@ -14,7 +14,7 @@ issue: 587
 closed_at: 2026-11-22
 closed_reason: merged into develop (#588)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-238: The song-row focus ring is clipped at the top of the list

@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-26
 closed_reason: merged into develop (PR #625)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-259: Picker popout scrollbars sit at the menu edge

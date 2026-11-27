@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-24
 closed_reason: merged into develop (PR #614)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-251: The new/edit song entry modal paints a scrollbar on its own edge

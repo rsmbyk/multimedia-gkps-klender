@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-24
 closed_reason: merged into develop (PR #615)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-252: The service entry kind mark sits above the row centre

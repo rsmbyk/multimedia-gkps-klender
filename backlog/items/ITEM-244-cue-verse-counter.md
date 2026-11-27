@@ -14,7 +14,7 @@ issue: 599
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #600)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-244: A passage cue does not say where it stands in the passage

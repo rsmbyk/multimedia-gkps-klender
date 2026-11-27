@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #592)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-240: A newly created songbook or song does not open

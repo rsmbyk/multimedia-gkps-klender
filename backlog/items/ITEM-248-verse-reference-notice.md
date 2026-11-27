@@ -14,7 +14,7 @@ issue: 607
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #608)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-248: The referenced-verse notice is missed below the action row

@@ -14,7 +14,7 @@ issue: 611
 closed_at: 2026-11-24
 closed_reason: merged into develop (PR #612)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-250: An empty song hides the whole Verses section instead of naming itself

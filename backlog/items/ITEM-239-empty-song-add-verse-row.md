@@ -14,7 +14,7 @@ issue: 590
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #591)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-239: An empty song paints Add verse twice

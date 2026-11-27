@@ -14,7 +14,7 @@ issue: 626
 closed_at: 2026-11-26
 closed_reason: merged into develop (PR #627)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-260: Search and Media Library rail fetches show pending state

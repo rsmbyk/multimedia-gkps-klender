@@ -14,7 +14,7 @@ issue: 595
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #596)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-242: A Go To with no service under it has no cue

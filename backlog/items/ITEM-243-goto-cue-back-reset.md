@@ -14,7 +14,7 @@ issue: 597
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #598)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-243: Back leaves the Go To information in the cue over an empty stage

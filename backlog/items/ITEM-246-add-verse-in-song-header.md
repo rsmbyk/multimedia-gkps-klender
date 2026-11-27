@@ -14,7 +14,7 @@ issue: 603
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #604)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-246: Add verse sits beside Project in the song header

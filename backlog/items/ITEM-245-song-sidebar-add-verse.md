@@ -14,7 +14,7 @@ issue: 601
 closed_at: 2026-11-23
 closed_reason: merged into develop (PR #602)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-245: Add verse is dead on a song opened from the sidebar

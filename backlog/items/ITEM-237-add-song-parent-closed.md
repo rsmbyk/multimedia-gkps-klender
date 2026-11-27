@@ -14,7 +14,7 @@ issue: 583
 closed_at:
 closed_reason:
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-237: Add song disappears when the songbooks sidebar is closed
