@@ -39,12 +39,17 @@ jobs:
           docker build -f Dockerfile.cloudrun -t "$IMAGE" .
           docker push "$IMAGE"
 
+      - name: Apply database migrations
+        run: |
+          gcloud run jobs execute multimedia-gkps-klender-migrate \
+            --project="$PROJECT_ID" --region="$REGION" --wait --quiet
+
       - name: Deploy the production revision
         run: |
           gcloud run deploy "$SERVICE" \
             --project="$PROJECT_ID" --region="$REGION" --platform=managed \
             --image="$IMAGE" --allow-unauthenticated --port=8080 \
-            --memory=512Mi --cpu=1 --max-instances=3 \
+            --memory=512Mi --cpu=1 --max-instances=2 --concurrency=20 \
             --set-secrets="DATABASE_URL=multimedia-gkps-klender-production-database-url:latest,DJANGO_SECRET_KEY=multimedia-gkps-klender-production-secret-key:latest" \
-            --set-env-vars="DJANGO_DEBUG=False,DJANGO_ALLOWED_HOSTS=*" \
+            --set-env-vars="DJANGO_DEBUG=False,DJANGO_ALLOWED_HOSTS=*,WHITENOISE_MAX_AGE=31536000" \
             --quiet

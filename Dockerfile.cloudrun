@@ -27,5 +27,5 @@ RUN DJANGO_SECRET_KEY=build-time-placeholder python manage.py collectstatic --no
 
 EXPOSE 8080
 
-# Migrations run once per container start; staging is capped at one instance.
-CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn multimedia.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 2 --timeout 120 --access-logfile -"]
+# Migrations run as a Cloud Run job before deploy; the container only serves.
+CMD ["sh", "-c", "exec gunicorn multimedia.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 8 --worker-class gthread --timeout 120 --access-logfile -"]
