@@ -158,6 +158,9 @@ STATICFILES_DIRS = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Hashed static filenames are immutable, so browsers and CDNs can keep them.
+WHITENOISE_MAX_AGE = config('WHITENOISE_MAX_AGE', default=60, cast=int)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
