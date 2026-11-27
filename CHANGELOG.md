@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Opening Alkitab from the rail while Media Library is on stage now fetches the books instead of showing "No books yet."** The library page carries its own section identity, so the first Alkitab click is a section change rather than a toggle over an empty sidebar; the Media Library tile and its pending state are unchanged (ITEM-263, spec 246).
+
 ## [1.37.3] - 2026-11-27
 
 ### Added
