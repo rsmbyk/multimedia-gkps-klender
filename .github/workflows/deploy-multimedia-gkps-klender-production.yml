@@ -14,7 +14,7 @@ env:
   PROJECT_ID: multimedia-gkps-klender-515917
   REGION: asia-southeast2
   REPOSITORY: multimedia-gkps-klender
-  SERVICE: multimedia-gkps-klender-production
+  SERVICE: multimedia-gkps-klender
   IMAGE: asia-southeast2-docker.pkg.dev/multimedia-gkps-klender-515917/multimedia-gkps-klender/production:${{ github.sha }}
 
 jobs:
