@@ -1,6 +1,6 @@
 ---
 id: ITEM-263
-status: in progress
+status: done
 title: 'Bible rail shows No books yet from Media Library'
 type: fix
 priority: P1
@@ -9,10 +9,10 @@ created: 2026-11-27
 updated: 2026-11-27
 spec: '246-media-library-bible-rail'
 branch: fix/246-media-library-bible-rail
-pr:
+pr: 636
 issue: 635
-closed_at:
-closed_reason:
+closed_at: 2026-11-27
+closed_reason: merged into develop (PR #636)
 bump: patch
 release_version:
 ---
