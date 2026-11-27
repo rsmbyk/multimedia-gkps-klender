@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-26
-**slices**: `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-27
+**slices**: `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2065,3 +2065,30 @@ skeleton. (spec 245)
 #### Scenario: arrival and supersede
 - WHEN the page paints, or another tile is clicked while one is pending
 - THEN all pending state clears or retargets, and the arriving tile becomes current
+
+### R63 — Media Library is a destination, not a reading section
+
+The Media Library page SHALL render with `data-section="media-library"` on its document root, both
+on a direct load and when the shell swaps it in from the rail; it SHALL NOT inherit the shell's
+default `alkitab` section. A section rail click from that page SHALL therefore be a section change
+and SHALL fetch that section's root through the shell's existing navigation path. The first Alkitab
+click SHALL paint real book rows in the sidebar and show no empty-list copy. Clicking a section's
+own tile while that section is on stage SHALL keep the toggle behaviour unchanged, and the Media
+Library rail tile's current-page marker and pending state SHALL be unchanged. No endpoint, schema,
+CSS or JavaScript behaviour changes. (spec 246)
+
+#### Scenario: a direct Media Library load
+- WHEN `/media-library/` opens
+- THEN the document section is `media-library` and the library rail tile is marked current
+
+#### Scenario: the first Alkitab click from Media Library
+- WHEN the Alkitab rail tile is clicked while the library is on stage
+- THEN `/bible/` is fetched once, the sidebar shows real book rows, and `No books yet.` is not shown
+
+#### Scenario: another section first
+- WHEN Kidung or Tata Ibadah is clicked from Media Library and Alkitab is clicked afterwards
+- THEN each section root is fetched and the final sidebar shows the books
+
+#### Scenario: a section's own tile
+- WHEN a reading section's rail tile is clicked while that section is on stage
+- THEN the panel toggles without a fetch

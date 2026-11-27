@@ -42,6 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-263](./items/ITEM-263-media-library-bible-rail.md) | Bible rail shows No books yet from Media Library | The library page inherits the shell's default Alkitab section, so the first Alkitab rail click toggles an empty sidebar instead of fetching the books | fix | P1 | S | [246](../specs/246-media-library-bible-rail/spec.md) | `fix/246-media-library-bible-rail` | 2026-11-27 |
 
 
 ## In review
