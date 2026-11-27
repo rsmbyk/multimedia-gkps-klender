@@ -1,0 +1,31 @@
+# Cloud Run runtime image for Multimedia GKPS Klender (staging).
+# Deliberately smaller than the local dev Dockerfile: LibreOffice and the dev
+# extras belong to the local media companion, not to the Django web process.
+FROM python:3.12-slim-trixie
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8080 \
+    DJANGO_DEBUG=False \
+    DJANGO_DEVELOPMENT_MODE=False \
+    DJANGO_ALLOWED_HOSTS=*
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+# gunicorn 20.1 imports pkg_resources; setuptools 84 removed it.
+RUN pip install --no-cache-dir 'setuptools<81' && pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# settings.py skips DATABASE_URL for `collectstatic`, so no DB is needed here.
+RUN DJANGO_SECRET_KEY=build-time-placeholder python manage.py collectstatic --noinput
+
+EXPOSE 8080
+
+# Migrations run once per container start; staging is capped at one instance.
+CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn multimedia.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 2 --timeout 120 --access-logfile -"]
