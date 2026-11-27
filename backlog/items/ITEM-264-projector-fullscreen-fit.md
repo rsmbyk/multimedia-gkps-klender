@@ -1,6 +1,6 @@
 ---
 id: ITEM-264
-status: in_review
+status: done
 title: 'Projector words stay at the windowed size after fullscreen'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: '247-projector-fullscreen-fit'
 branch: fix/247-projector-fullscreen-fit
 pr: 637
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-27
+closed_reason: merged into develop (PR #637)
 bump: patch
 release_version:
 ---

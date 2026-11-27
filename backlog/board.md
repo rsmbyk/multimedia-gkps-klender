@@ -48,12 +48,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-264](./items/ITEM-264-projector-fullscreen-fit.md) | Projector words stay at the windowed size after fullscreen | F key, mouse zone and F11 leave the fitted words small on the bigger stage; a fullscreen signal now re-fits the screen on the stage | fix | P1 | S | [247](../specs/247-projector-fullscreen-fit/spec.md) | [#637](https://github.com/rsmbyk/multimedia-gkps-klender/pull/637) | 2026-11-27 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-264](./items/ITEM-264-projector-fullscreen-fit.md) | Projector words stay at the windowed size after fullscreen | F key, mouse zone and F11 leave the fitted words small on the bigger stage; a fullscreen signal now re-fits the screen on the stage | fix | P1 | S | [247](../specs/247-projector-fullscreen-fit/spec.md) | develop via [#637](https://github.com/rsmbyk/multimedia-gkps-klender/pull/637) | 2026-11-27 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) |develop via [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584)| 2026-11-22 |
 | [ITEM-253](./items/ITEM-253-passage-search-dropdown.md) | Passage entry pickers use searchable dropdowns | Book became the song search field; chapter and verse popovers gained in-menu filters, highlight, keyboard commit and scroll-follow; saved values unchanged | feat | P2 | M | [238](../specs/238-passage-search-pickers/spec.md) |develop via [#618](https://github.com/rsmbyk/multimedia-gkps-klender/pull/618)| 2026-11-24 |
 | [ITEM-263](./items/ITEM-263-media-library-bible-rail.md) | Bible rail shows No books yet from Media Library | The library page inherits the shell's default Alkitab section, so the first Alkitab rail click toggles an empty sidebar instead of fetching the books | fix | P1 | S | [246](../specs/246-media-library-bible-rail/spec.md) | develop via [#636](https://github.com/rsmbyk/multimedia-gkps-klender/pull/636) | 2026-11-27 |

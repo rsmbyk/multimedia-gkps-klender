@@ -18,6 +18,6 @@ writes no new size. The fit walk, typography, controls and endpoints are untouch
 
 ## Records
 
-- Board: ITEM-264 (In review).
+- Board: ITEM-264 (Done).
 - Spec: `specs/247-projector-fullscreen-fit/spec.md`.
 - Fold: `docs/spec/projector.md`, `projector/R14` modified with a fullscreen regression scenario.
