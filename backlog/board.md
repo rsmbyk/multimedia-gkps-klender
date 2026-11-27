@@ -48,6 +48,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-264](./items/ITEM-264-projector-fullscreen-fit.md) | Projector words stay at the windowed size after fullscreen | F key, mouse zone and F11 leave the fitted words small on the bigger stage; a fullscreen signal now re-fits the screen on the stage | fix | P1 | S | [247](../specs/247-projector-fullscreen-fit/spec.md) | [#637](https://github.com/rsmbyk/multimedia-gkps-klender/pull/637) | 2026-11-27 |
 
 ## Done
 
