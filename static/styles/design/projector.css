@@ -447,6 +447,9 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
     display: inline-flex; align-items: center; gap: .18em; margin-left: .26em;
     cursor: url("./cursor-right.svg") 16 16, e-resize; white-space: nowrap;
   }
+  /* The author `display` above outranks the UA [hidden] rule: without this the
+     next button's lone right-arrow icon stays painted when there is no next. */
+  .cue-next[hidden] { display: none; }
   .cue-next:hover { color: #817d74; }
   .cue-next.on, .cue-next:active { color: var(--on); }
   .cue-bait:focus-visible, .cue-next:focus-visible, .cue-translation:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
@@ -455,6 +458,10 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
     display: grid; grid-template-columns: 40% 20% 40%;
   }
   .mouse-zone { background: transparent; }
+  /* An idle empty stage has nothing to step, hide or show: its zones are inert and
+     the cue's separator is dropped, while the screen keeps its fullscreen gesture. */
+  body.projector.empty-stage .mouse-zones { pointer-events: none; }
+  body.projector.empty-stage .cue-separator { display: none; }
   .mouse-zone--previous { cursor: url("./cursor-left.svg") 16 16, w-resize; }
   .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
   .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }

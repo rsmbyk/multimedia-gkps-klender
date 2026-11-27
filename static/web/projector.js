@@ -12,6 +12,33 @@
 (function () {
   'use strict';
 
+  /* Tab after typing commits the highlighted (or first) match, then leaves the field.
+     Read the focus order after choosing: closing the picker makes it inert. */
+  function tabToNextField(event, input, commit) {
+    if (commit) commit();
+    var root = document.querySelector('dialog[open]') || document;
+    var focusable = [].slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]),' +
+      ' select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) {
+      return !el.closest('[inert], .editor__picker-menu') &&
+        (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    });
+    var at = focusable.indexOf(input);
+    var next;
+    if (at >= 0) {
+      next = focusable[at + (event.shiftKey ? -1 : 1)];
+    } else {
+      var following = focusable.length;
+      for (var i = 0; i < focusable.length; i += 1) {
+        if (input.compareDocumentPosition(focusable[i]) & 4) { following = i; break; }
+      }
+      next = event.shiftKey ? focusable[following - 1] : focusable[following];
+    }
+    event.preventDefault();
+    if (next && next.focus) next.focus();
+  }
+
   var body = document.body;
   var channelName = body.dataset.displayChannel || 'gkps-service-display';
   var service = Number(body.dataset.service);
@@ -461,7 +488,15 @@
   function syncEmptyNotice() {
     var notice = screen.querySelector('.projector__empty');
     if (!notice) return;
-    notice.hidden = Boolean(detour) || screens().length > 0;
+    /* One state for the stage with nothing on it: the notice, the cue's stray
+       separator and the mouse zones all follow it. A Go To detour clears it. */
+    var empty = !detour && screens().length === 0;
+    notice.hidden = !empty;
+    body.classList.toggle('empty-stage', empty);
+    if (empty) {
+      window.clearTimeout(cursorTimer);
+      body.classList.remove('cursor-hidden');
+    }
   }
   function read() {
     try {
@@ -906,10 +941,47 @@
     active.querySelector('.screen__line').textContent = variant.line;
   }
 
+  /* A passage cue reads "reference · n/n · edition". The counter lives inside the
+     label span, so #cue-prefix keeps its two flex children and its .2em gap (spec 229). */
+  function appendVerseCounter(label, at, end, trailing) {
+    if (!(at > 0) || !(end >= at)) return false;
+    var counter = document.createElement('span');
+    counter.className = 'cue-verse';
+    counter.textContent = at + '/' + end;
+    label.appendChild(document.createTextNode(' '));
+    label.appendChild(counter);
+    label.appendChild(document.createTextNode(' ·' + (trailing ? ' ' : '')));
+    return true;
+  }
+  function detourLastVerse(currentDetour) {
+    var editions = currentDetour.editions || {};
+    var edition = editions[currentDetour.translation] || editions.TB
+      || editions[Object.keys(editions)[0]];
+    var verses = edition && edition.verses;
+    return verses && verses.length ? verses[verses.length - 1].n : null;
+  }
+
   function renderCue() {
-    if (!cue || !entries.length) return;
+    if (!cue) return;
     clearRunningCueLabels();
+    /* A go to has its own cue even with no service under it, or a service with no
+       entries: check the detour before the empty stage can return (spec 227). */
     if (detour) { renderDetourCue(); return; }
+    if (!entries.length) {
+      /* Back ends the shared state and the stage before it ends the cue's DOM.
+         Clear the detour's label, buttons and Back here, or they stay over an
+         empty service after the go to is gone (spec 228). */
+      cuePrefix.replaceChildren();
+      baitList.replaceChildren();
+      baitList.hidden = true;
+      cueProgress.textContent = '';
+      cueNext.hidden = true;
+      cueNext.classList.remove('on');
+      cueArrow.classList.remove('on');
+      cueNextName.textContent = '';
+      cueNext.setAttribute('aria-label', 'No next entry');
+      return;
+    }
     var entry = entryAt(current);
     if (!entry) return;
     var data = screenData[current] || {};
@@ -932,6 +1004,7 @@
     var label = document.createElement(entry.untitled ? 'i' : 'span');
     if (entry.type === 'text' && entry.untitled) makeRunningCueLabel(label, entry.label);
     else label.textContent = entry.label + (entry.type === 'song' || entry.type === 'passage' ? ' ·' : '');
+    if (entry.type === 'passage') appendVerseCounter(label, data.verse, entry.verse_end, false);
     cuePrefix.appendChild(label);
     if (entry.type === 'passage') {
       var flip = document.createElement('button');
@@ -1098,6 +1171,7 @@
   function revealCursor() {
     body.classList.remove('cursor-hidden');
     window.clearTimeout(cursorTimer);
+    if (body.classList.contains('empty-stage')) return;
     cursorTimer = window.setTimeout(function () { body.classList.add('cursor-hidden'); }, 2000);
   }
   function revealControls() {
@@ -1150,6 +1224,11 @@
       scrollEntryListChoice();
     } else if (event.key === 'Enter') {
       event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
+    } else if (event.key === 'Tab') {
+      var tabChoice = entryListChoice === undefined ? entryListMatches[0] : entryListChoice;
+      tabToNextField(event, entryListSearch, function () {
+        if (tabChoice !== undefined) chooseEntryList(tabChoice);
+      });
     }
   });
   entryList.addEventListener('click', function (event) {
@@ -1436,6 +1515,10 @@
       paintFind();
     } else if (event.key === 'Enter') {
       event.preventDefault(); event.stopPropagation(); chooseFind(findChoice);
+    } else if (event.key === 'Tab') {
+      tabToNextField(event, findInput, function () {
+        if (findRows.length) chooseFind(findChoice === undefined ? 0 : findChoice);
+      });
     } else if (event.key === 'Backspace' && !findInput.value) {
       event.preventDefault(); event.stopPropagation(); closeFind();
     }
@@ -1690,7 +1773,11 @@
     var returnEntry = entryAt(current);
     cuePrefix.replaceChildren();
     var label = document.createElement('span');
-    label.textContent = detour.label + (detour.kind === 'passage' ? ' · ' : ' ·');
+    label.textContent = detour.label + (detour.kind === 'passage' ? ' ·' : ' ·');
+    if (detour.kind === 'passage' && !appendVerseCounter(
+        label, detour.verse, detourLastVerse(detour), true)) {
+      label.appendChild(document.createTextNode(' '));
+    }
     cuePrefix.appendChild(label);
     if (detour.kind === 'passage') {
       var flip = document.createElement('button'); flip.type = 'button';

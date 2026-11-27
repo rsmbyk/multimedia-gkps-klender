@@ -460,7 +460,10 @@ body {
 .editor-add[disabled] { opacity: .45; cursor: not-allowed; }
 .editor-add[hidden] { display: none; }   /* author display beats UA [hidden] */
 .ch__tools .editor-add { margin: 8px 0 0; }
-[data-nav="mini"] .editor-add, [data-nav="closed"] .editor-add { display: none; }
+/* only the first sidebar's controls follow its mini/closed state; the song list's
+   add control belongs to .chapters and stays with the list that is still open */
+[data-nav="mini"] .panel .editor-add,
+[data-nav="closed"] .panel .editor-add { display: none; }
 
 /* the song list's add button: full width, right below the toolbar (spec 005) */
 .ch__add { flex: none; padding: 0 12px 12px; }
@@ -520,6 +523,10 @@ li:hover > .row-delete,
   box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
   display: flex; flex-direction: column;
   max-height: min(86vh, 46rem);
+  /* the UA's auto overflow makes the DIALOG a second scrollport: a collapsed verse
+     panel leaves a few clipped pixels past the box and paints a scrollbar on its
+     rounded edge. .editor__content owns scrolling; clip here only hides overflow. */
+  overflow: clip;
 }
 /* An author display rule beats the UA's rule for a CLOSED dialog, so the dialog
    has to say it again for itself -- otherwise it lays out inside the page and
@@ -535,7 +542,16 @@ li:hover > .row-delete,
 .editor[open].media-closing:has([data-entry-form="media"]) { animation: media-library-out 150ms ease-in both; }
 .editor:has([data-editor-size="large"]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__body { display: flex; flex-direction: column; min-height: 0; flex: 1; }
-.editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 20px 26px; border-bottom: 1px solid var(--divider); font-size: 21px; }
+/* The header row carries the inset and the one divider. The title's own padding and
+   border were moved here: the large selector (0,3,0) outranks `.editor__head .editor__title`
+   (0,2,0), so leaving them on the title drew a second rule 37.5px above this one. */
+.editor:has([data-editor-size="large"]) .editor__head { padding: 20px 26px 14px; }
+.editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 0; border: 0; font-size: 21px; }
+/* The entry form puts its title straight in the content, with no header row.
+   Its large frame still needs the inset and the one rule on the title itself. */
+.editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title {
+  padding: 20px 26px; border-bottom: 1px solid var(--divider);
+}
 .editor:has([data-editor-size="large"]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__form > .editor__field,
 .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin: 14px 26px 0; }
@@ -623,6 +639,7 @@ li:hover > .row-delete,
 .media-library__filters { border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--focus) 28%, var(--divider)); }
 .media-library__chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .media-library__chips button { padding: 7px 11px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; }
+.media-library__chips button:not([aria-pressed="true"]):hover { border-color: var(--focus); background: var(--icon-hover-bg); }
 .media-library__chips button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
 .media-library__chips > span { color: var(--head-ink); }
 #mediaResultCount { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
@@ -651,6 +668,16 @@ li:hover > .row-delete,
 .media-library__remove:hover { background: color-mix(in srgb, var(--danger) 11%, transparent); }
 .media-library__empty { text-align: center; color: var(--head-ink); padding: 55px 20px; }
 .media-library__empty[hidden] { display: none; }
+.media-library__loading-spinner {
+  display: block; box-sizing: border-box;
+  width: 18px; height: 18px; margin: 0 auto 10px;
+  border: 2px solid var(--divider); border-top-color: var(--active-bg);
+  border-radius: 50%; animation: media-load-spin 800ms linear infinite;
+}
+@keyframes media-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .media-library__loading-spinner { animation: none; }
+}
 .media-library__dialog { width: min(490px, calc(100vw - 32px)); max-height: min(86vh, 46rem); padding: 22px; border: 1px solid var(--divider); border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow-dialog); }
 .media-library__dialog::backdrop { background: var(--backdrop); }
 .media-library__dialog h2 { margin: 0 0 14px; font-size: 18px; }
@@ -670,7 +697,13 @@ li:hover > .row-delete,
 @keyframes media-library-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
 @media (prefers-reduced-motion: reduce) { .media-library__dialog[open], .media-library__dialog[open].closing, .media-library__status:not([hidden]), .media-library__status.closing:not([hidden]), .editor[open]:has([data-entry-form="media"]), .editor[open].media-closing:has([data-entry-form="media"]) { animation: none; } }
 @media (max-width: 700px) { .media-library__options { grid-template-columns: repeat(2, minmax(0, 1fr)); } .media-library__sort { width: 100%; } .media-library__sort > button { width: 100%; text-align: left; } }
-@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
+@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .editor:has([data-editor-size="large"]):not(:has(.editor__head)) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
+/* The reference note keeps its one line and drops above the buttons when the row is tight (spec 232). */
+@media (max-width: 650px) {
+  .editor__actions:has(.editor__refnote) { flex-wrap: wrap; row-gap: 10px; }
+  .editor__actions .editor__refnote { flex: 1 0 100%; margin: 0; }
+  .editor__actions:has(.editor__refnote) > button:first-of-type { margin-left: auto; }
+}
 .editor.is-loading {
   width: min(490px, calc(100vw - 32px));
   max-height: min(calc(100dvh - 40px), 46rem);
@@ -841,6 +874,14 @@ li:hover > .row-delete,
   display: flex; justify-content: flex-end; gap: 8px;
   margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
 }
+/* A referenced verse explains its disabled delete in the row itself (spec 232).
+   It is a reason, not an error: no tint, no border, existing tokens only. */
+.editor__refnote {
+  display: flex; align-items: center; align-self: center; gap: 7px; margin: 0 auto 0 0;
+  font: 400 12px/18px var(--font-sans); color: var(--head-ink);
+}
+.editor__refnote svg { width: 15px; height: 15px; flex: none; color: var(--head-ink); }
+.editor__refnote b { font-weight: 700; color: var(--ink); }
 .editor__save, .editor__cancel, .editor__danger {
   height: 38px; padding: 0 18px; border-radius: 9px;
   font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
@@ -857,6 +898,11 @@ li:hover > .row-delete,
 .editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
 .editor__cancel:disabled, .editor__danger:disabled {
   opacity: .5; cursor: not-allowed;
+}
+/* The verse delete is unavailable, not a half-lit danger button (spec 232).
+   This follows the shared rule so the scoped override wins at equal specificity. */
+.editor__delete:disabled {
+  opacity: 1; background: var(--rail-bg); border-color: var(--divider); color: var(--head-ink);
 }
 
 /* A hint rides inside a label without shouting: "(optional)", "all verses". */
@@ -1663,7 +1709,9 @@ li:hover > .row-delete,
   overflow-y: auto;
   overscroll-behavior: contain;
   overflow-anchor: none;
-  padding: 0 0 8px;
+  /* spec 223: reserve room for the browser's outline above the first row —
+     a 1px ring at a 1px offset needs 2px outside the row's box */
+  padding: 3px 0 8px;
   scrollbar-width: none;
 }
 .ch__body::-webkit-scrollbar { display: none; }
@@ -2481,6 +2529,14 @@ kbd {
   padding: 0 16px;
   text-align: center;
 }
+/* spec 221: the nothing-open stage centres the block in the whole stage, not
+   just in the reading column, so its padding and the body's own gaps go away
+   for this one state. */
+.stage:has(.read[data-kind="empty"]) { padding: 0; display: grid; place-items: center; }
+.read[data-kind="empty"] { width: 100%; }
+.read[data-kind="empty"] .read__body { margin-top: 0; padding-bottom: 0; }
+.entry__empty-icon { display: block; color: var(--head-ink); }
+.entry__empty-icon svg { display: block; width: 38px; height: 38px; }
 /* the article takes the stage's height and the body takes the rest of it, so
    the empty block has somewhere to sit that is not the top of the column (the
    header is furniture, not part of the invitation). Its centre lands a quarter
@@ -2506,6 +2562,23 @@ kbd {
   padding-top: 12px;      /* a floor for the band's collapsed case: never flush */
   padding-bottom: 0;      /* nothing follows the empty block to hold a gap for */
   container-type: inline-size;   /* the tile row sizes against the column, not the window */
+}
+/* spec 224: an empty song takes the same quarter-band as an empty Tata Ibadah.
+   The song header is taller and its invitation shorter, so this band has no
+   12px floor — with one the title lands 9px below the reference instead of at it. */
+.read[data-kind="song"]:has(.entry__empty) { display: flex; flex-direction: column; min-height: 100%; }
+.read[data-kind="song"]:has(.entry__empty) .read__head { margin-bottom: 0; }
+.read[data-kind="song"] .read__body:has(> .entry__empty) {
+  display: grid;
+  grid-template-rows: minmax(min-content, 50%);
+  align-content: start;
+  align-items: center;
+  justify-items: center;
+  flex: 1;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  container-type: inline-size;
 }
 .entry__empty-title {
   margin: 0;
@@ -2623,9 +2696,20 @@ kbd {
   max-height: 268px; padding: 8px;
   background: var(--canvas); border: 1px solid var(--divider); border-radius: 10px;
   box-shadow: var(--shadow);
+  /* spec 244: the options' bar reaches the rounded border, so clip its last
+     pixels to the corner instead of painting over it. */
+  overflow: clip;
 }
 .editor__picker-menu[hidden] { display: none; }     /* author display beats [hidden] */
-.editor__picker-options { min-height: 0; overflow: auto; }
+/* spec 244: the menu's 8px padding used to stand between its border and the
+   scrollport, leaving the 5px bar floating inside the popout. Widen the
+   scrollport to the menu's inner edge with a negative margin and take the
+   padding back on its content, so every option, heading and filter keeps its
+   old box. The bottom extends too, so the bar's lane ends at the border. */
+.editor__picker-options {
+  min-height: 0; overflow: auto;
+  margin: 0 -8px -8px; padding: 0 8px 8px;
+}
 .editor__picker-group[hidden] { display: none; }
 .editor__picker-options .editor__hint { margin: 6px 8px; }
 
@@ -2651,6 +2735,7 @@ kbd {
   font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   background: transparent; border: 0; cursor: pointer;
 }
+.editor__picker-option[hidden] { display: none; }    /* author display beats [hidden] */
 .editor__songoption--book {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
@@ -2658,9 +2743,14 @@ kbd {
 .editor__songoption--book .book__n { flex: 1; }
 .editor__songoption--book .book__s[hidden] { display: none; }
 .editor__picker-option:hover, .editor__picker-option:focus-visible,
-.editor__songoption:hover, .editor__songoption:focus-visible {
+.editor__songoption:hover, .editor__songoption:focus-visible,
+.editor__picker-option.is-active, .editor__songoption.is-active {
   background: var(--icon-hover-bg); outline: none;
 }
+/* The passage fields wear the song search's chrome; a disabled one keeps the
+   select-like muted tone instead of looking editable. */
+.editor__songsearch:disabled { color: var(--head-ink); cursor: default; }
+.editor__songsearch:disabled:hover { border-color: var(--divider); }
 .editor__songsearch { width: 100%; }
 /* The song results keep the product's fixed, viewport-capped menu (spec 040), but the
    anchor is the live search field and the cap is the window, not the dialog. */
@@ -2688,6 +2778,15 @@ kbd {
   color: var(--ink);
 }
 .editor__verse-summary[data-invalid="true"] { color: var(--danger); }
+/* A picked song with no live verses keeps the section and shows only its summary row
+   (spec 235): no helper/All-Clear row, no tiles, no readout, and no rule left dangling
+   under the one line that is drawn. */
+.editor__verse-panel[data-empty="true"] .editor__verse-quick,
+.editor__verse-panel[data-empty="true"] .editor__verses,
+.editor__verse-panel[data-empty="true"] .editor__verse-readout { display: none; }
+.editor__verse-panel[data-empty="true"] .editor__verse-summary {
+  margin: 0; padding: 0; border-bottom: 0;
+}
 .editor__verses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
 .editor__verses > div { display: flex; min-width: 0; }
 .editor__verses label {
@@ -2954,6 +3053,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
    text keeps its baseline. The drag copy lives outside #chList and must match. */
 :root[data-section="tatib"] #chList .songrow__c,
 .reorder__ghost .songrow__c { align-self: center; }
+/* spec 237: the kind mark shares the number's centred seat, so a two-line row
+   does not leave its glyph beside the first line of text. */
+:root[data-section="tatib"] #chList .songrow__mark,
+.reorder__ghost .songrow__mark { align-self: center; }
 /* The real row is the sole destination slot. Hide its contents, not its box;
    its tint marks the space without a ring. */
 #chList li.is-dragging {
@@ -3067,6 +3170,9 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .verse-add__btn:hover { color: var(--ink); border-color: var(--focus); }
 .verse-add__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .verse-add__btn svg { width: 15px; height: 15px; }
+/* In the header the Add verse control keeps its dashed identity but matches the
+   Project button's height so the two read as one set (spec 231). */
+.read__project .verse-add__btn--head { height: 34px; padding: 0 12px; }
 @media (max-width: 480px) {
   .v__acts { width: 1.7rem; }
   .v__grip svg, .v__edit svg { width: 15px; height: 15px; }
@@ -3407,4 +3513,125 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
      gesture must belong to the handle rather than to the list's scroll — or a
      drag dies as a scroll the moment the finger moves (spec 138). */
   .toc__grip { opacity: 1; touch-action: none; }
+}
+
+/* ============================================================
+   spec 243 — pending state for rail and sidebar fetches
+   The clicked item dims; a bar runs at the very top edge of each
+   section the fetch will update; a stage write gets a placeholder
+   with the real page anatomy. No spinner or row recolour.
+   ============================================================ */
+.pv-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.gkps-pending-item { pointer-events: none !important; }
+li.gkps-pending-row > .row-edit,
+li.gkps-pending-row > .row-delete,
+li.gkps-pending-row .entry__ctrl,
+li.gkps-pending-row .entry__add-btn,
+li.gkps-pending-row [data-editor-open],
+li.gkps-pending-row [data-editor-delete] {
+  opacity: .45 !important; pointer-events: none !important;
+}
+.rail__btn.gkps-pending-item > svg { opacity: .45; }
+.book.gkps-pending-item, .songrow.gkps-pending-item,
+.ch-num.gkps-pending-item, .panel__mode.gkps-pending-item { opacity: .58; }
+.pv-section-bar, .pv-stagebar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 45;
+  overflow: hidden; background: color-mix(in srgb, var(--active-bg) 20%, transparent);
+}
+.pv-stagebar { z-index: 46; }
+.pv-section-bar::before, .pv-stagebar::before {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 28%;
+  background: var(--active-bg); animation: gkps-pending-slide 1.05s var(--ease-timing) infinite;
+}
+@keyframes gkps-pending-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(460%); }
+}
+.stage { position: relative; }
+.stage[aria-busy="true"] { pointer-events: none !important; }
+.stage[aria-busy="true"] .read { visibility: hidden; }
+/* The search shell's own sections are siblings of the placeholder, not inside
+   `.read`; hide them too so the old logo/field never shows below a shorter
+   destination skeleton. The descendant copy inside the placeholder is scoped
+   separately below and stays visible. */
+.stage[aria-busy="true"].stage--destination-placeholder > .search-home,
+.stage[aria-busy="true"].stage--destination-placeholder > .search-results { visibility: hidden !important; }
+.pv-placeholder {
+  position: absolute; inset: 0 0 auto 0; z-index: 44;
+  padding: var(--stage-pad-top) clamp(24px, 5vw, 64px) 0;
+  background: var(--canvas); color: var(--ink);
+}
+.stage[aria-busy="true"] > .pv-placeholder .read { visibility: visible !important; }
+.pv-placeholder .read {
+  pointer-events: none; visibility: visible !important; display: block !important;
+}
+/* The shell hides Search surfaces on the reading home state; a destination
+   placeholder must still paint while the stage is busy (spec 245). */
+.stage[aria-busy="true"] > .pv-placeholder--destination .search-results,
+.stage[aria-busy="true"] > .pv-placeholder--destination .media-library {
+  display: block !important; visibility: visible !important;
+}
+/* Search home keeps its grid: 1fr / form / 1fr is what centres the input. */
+.stage[aria-busy="true"] > .pv-placeholder--destination .search-home {
+  display: grid !important; visibility: visible !important;
+}
+.pv-ph-logo {
+  display: block; width: 96px; height: 96px; border-radius: 14px;
+  background: var(--icon-hover-bg);
+}
+.pv-ph-bar {
+  display: block; height: 12px; border-radius: 4px;
+  background: var(--divider); opacity: .55;
+}
+.pv-ph-bar--title { height: 24px; width: 62%; }
+.pv-ph-bar--verse { height: 12px; width: 88%; }
+.pv-ph-bar--unused { height: 18px; width: 53%; }
+.pv-ph-bar--button { width: 36px; height: 36px; border-radius: 9px; }
+.pv-ph-bar--input {
+  position: absolute; left: 22px; top: 50%; transform: translateY(-50%);
+  width: 58%; height: 12px; pointer-events: none;
+}
+.pv-ph-bar--icon { width: 23px; height: 23px; border-radius: 6px; }
+.pv-media-count { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
+/* While a fetch is pending the library's controls are skeleton, not content,
+   and the header actions are hidden with their space reserved. */
+.pv-placeholder--destination .media-library__head-actions { visibility: hidden; }
+.pv-placeholder--destination .media-library__intro,
+.pv-placeholder--destination .media-library__chips button,
+.pv-placeholder--destination .pv-media-count,
+.pv-placeholder--destination .media-library__sort button span {
+  position: relative; color: transparent;
+}
+.pv-placeholder--destination .media-library__sort button svg { visibility: hidden; }
+.pv-placeholder--destination .media-library__intro::after,
+.pv-placeholder--destination .media-library__chips button::after,
+.pv-placeholder--destination .pv-media-count::after,
+.pv-placeholder--destination .media-library__sort button span::after {
+  content: ""; position: absolute; border-radius: 4px;
+  background: var(--divider); opacity: .55;
+}
+.pv-placeholder--destination .media-library__intro::after { left: 0; top: 2px; width: 72%; height: 18px; }
+.pv-placeholder--destination .media-library__chips button::after {
+  left: 11px; right: 11px; top: 50%; height: 10px; transform: translateY(-50%);
+}
+.pv-placeholder--destination .pv-media-count::after { left: 0; right: 0; top: 3px; height: 12px; }
+.pv-placeholder--destination .media-library__sort button span::after {
+  left: 0; right: 0; top: 50%; height: 10px; transform: translateY(-50%);
+}
+.pv-ph-bar--sec { height: 18px; width: 78%; margin: 0 0 6px; }
+.pv-ph-bar--line { height: 11px; width: 94%; margin-top: 7px; }
+.pv-ph-bar--line:nth-child(2) { width: 82%; }
+.pv-ph-bar--line:nth-child(3) { width: 67%; }
+.pv-ph-bar--entry { height: 20px; width: 58%; }
+.pv-ph-bar--mid { height: 20px; width: 74%; }
+.pv-ph-bar--short { height: 20px; width: 53%; }
+.pv-ph-bar--sub { height: 10px; width: 28%; }
+@media (max-width: 720px) {
+  .pv-placeholder { padding-left: 18px; padding-right: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pv-section-bar::before, .pv-stagebar::before { animation: none; }
 }

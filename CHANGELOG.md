@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.3] - 2026-11-27
+
+### Added
+
+- **The live entry header now stays pinned at the top when its entry scrolls off-screen.** Once the entry's whole block passes above the runner, a faithful copy of its header holds the top edge with a flat top and round bottom; clicking it returns to the live row without changing what is on air. The bottom pin, Next band and go to are unchanged (spec 242).
+- **A passage cue now shows where it stands in the passage.** The projector prints a `current/end`
+  verse counter after the reference, before the TB/SIM flip: a service passage counts its own verses
+  and a chapter Go To counts against the chapter it loaded (spec 229).
+
+### Changed
+
+- **Add Passage now uses the song search field for Book, and the chapter and verse popovers can be filtered.** Book became the same type-to-filter search combobox as the song picker; Chapter, From verse and To verse keep their button popovers but each menu gained a filter field above its options. The cascade, translation toggle, saved values and To verse's optional state are unchanged. Pressing Tab in any search dropdown now commits the highlighted (or first visible) match and moves focus to the next field; arrow-key highlights scroll their own menu into view, and the chapter and verse popovers open with the stored option highlighted (ITEM-253, spec 238).
+- **Media Library filter pills now answer the pointer.** Unpressed type and Unused pills take the app's focus-border and hover-fill treatment; a pressed pill keeps its accent fill (spec 239).
+- **An empty song now names itself in the song entry's Verses section.** Picking a song with no
+  live verses no longer hides the field: the label and panel stay, collapsed to the single line
+  `This song has no verses`, with no tiles, helper row or separator. No song still hides the field,
+  and songs with verses keep the full picker (spec 235).
+- **Add verse now sits beside Project in the song header.** A song with verses offers the control
+  in the header, immediately left of Project; an empty song keeps only its centred invitation (spec 231).
+
+### Fixed
+
+- **The picker popouts' scrollbars now meet the menu edge.** The Book search and Chapter/verse menus paint their 5px bar against the popout's border instead of floating 9px inside it; option, heading and filter boxes keep their places, and a one-option menu still draws no bar (ITEM-259, spec 244).
+- **Rail and sidebar fetches now show where they are working.** The clicked rail icon dims in place
+  and the row dims with its edit/delete/add controls disabled; a bar runs at the top edge of the
+  section that will refresh. A list-only click leaves the reading page untouched, while a song,
+  passage or service shows a seeded placeholder in that page's real layout. Another click cancels
+  or coexists by write class (ITEM-258, spec 243).
+- **A reordered Tata Ibadah now keeps every entry, with the contents and the stage in agreement.**
+  Saving an entry no longer pushes the break divider to the top of the sidebar, and a drag to the
+  top writes the dropped order once instead of rewinding to the pre-drag order; no section falls
+  out of the stage. The song list still keeps its chosen sort (spec 241).
+- **The large entry dialogs draw their title band again.** New text, Edit text and New media restore the 26px/20px inset and the divider under the title; spec 226's verse header keeps its own single rule, and the compact media Edit form is untouched (ITEM-255, spec 240).
+- **The kind mark in a service entry row now sits at the row's centre.** Its 16px box shares the order number's vertical alignment on one-line, wrapped and song rows, and on the drag copy; the columns, row heights and slot badge stay in place (ITEM-252, spec 237).
+- **The song entry modal no longer paints a scrollbar on its own edge.** The shared editor dialog clips overflow at its rounded edge while the form keeps scrolling inside its content wrapper; the new and edit song forms, the verse-panel animation and the fixed results menu are unchanged (ITEM-251, spec 236).
+- **A newly created Tata Ibadah Template now opens on the reading stage.** Saving a Template lands on `/tatib/<id>/?mode=template` from either Tata Ibadah list, with the same in-place navigation, panel state and restored focus a dated service gets; edits, refusals, generation and copy-as-template are unchanged (spec 234).
+- **The reason a referenced verse cannot be deleted now sits beside the button.** The verse editor's
+  action row leads with `Used in <count> Tata Ibadah — delete unavailable`, the disabled Delete reads
+  neutral instead of faded red, and at narrow widths the note drops above the buttons (spec 232).
+- **The song list keeps its chosen order after a refresh.** Creating, editing or deleting a song, opening a row or returning to Kidung no longer resets an alphabetical sort to last-modified order, and the sort control keeps agreeing with the rows (spec 233).
+- **Add verse works on a song opened from the sidebar without a refresh.** The reading shell boots the verse script at page load instead of relying on a script tag inside the swapped-in song fragment, so Add verse and Edit are bound on the first click (spec 230).
+- **Back clears the Go To from the projector cue when nothing is underneath it.** With no service,
+  or on a service with no entries, leaving a Go To no longer leaves its passage or song label, flip,
+  baits and Back painted on an idle cue (spec 228).
+- **The corner cue keeps naming a Go To when there is nothing underneath it.** A projector with no
+  service, or on a service with no entries, still shows the passage or song label, its translation
+  flip or bait keys, and Back while the Go To is on air (spec 227).
+- **The verse editor's header draws one rule.** `New verse` and `Edit verse n` no longer paint a short line above the header divider; the title sits 16.5px above the single rule, matching the other editors (spec 226).
+- **A newly added songbook or song opens as soon as it is created.** The new songbook is selected
+  with its song list open; the new song opens on the reading stage with its title in the header.
+  Both happen in place, with no second click and no reload; edits and refusals are unchanged
+  (spec 225).
+- **Deleting the song or service you are reading no longer drops you on the search page.** The reading
+  stage stays up with a centred empty-screen icon, "Nothing open." and a short hint, while the parent
+  list stays in the side panels. The state lives in the URL, so a reload keeps it and Back never
+  revisits the removed record (spec 221).
+- **The Add song button stays where the songs list is.** Collapsing only the songbooks sidebar no
+  longer hides the button for the open songbook; it keeps its 38px box and opens the same editor
+  (spec 222).
+- **The focus ring on the first song row is drawn in full.** The list reserves 3px above its first
+  row, so the browser's outline is no longer cut off by the edge of the scrollport (spec 223).
+- **An empty song offers `Add verse` once, at the same height as an empty Tata Ibadah.** The control
+  after the last verse is no longer drawn when there is no last verse, so the empty invitation's own
+  button is the only one; that invitation sits in the same quarter-band as the Tata Ibadah empty
+  state (spec 224).
+
+- **Search and Media Library rail fetches now show where they are working.** The clicked tile locks, the reading stage gets a progress bar and a placeholder built from the destination's own layout; direct Media Library loads show a loading line with a spinner until files arrive (ITEM-260, spec 245).
+
 ## [1.36.6] - 2026-11-22
 
 ### Added

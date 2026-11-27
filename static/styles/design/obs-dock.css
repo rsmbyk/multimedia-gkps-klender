@@ -716,6 +716,35 @@ body.obs-dock {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
 
+/* ---------- the live entry, pinned at the top when its block is above (242) --- */
+
+/* Mirror of spec 208's bottom slot. The real header sticky-pins while its own li
+   straddles the scrollport; this list-level slot is the pinned representation once
+   the whole block is above. It leads the list, so its sticky top is the scrollport
+   edge (the -4 reaches past the body's top padding, as the real header does). */
+.topband-slot {
+  position: sticky;
+  top: -4px;
+  z-index: 4;                            /* over the native top-pinned header */
+  height: 0;                             /* shows/hides without shifting geometry */
+}
+.topband-slot[hidden] { display: none; }
+
+/* Faithful header face: selected fill, flat top (the pinned edge), round bottom.
+   Absolute inside the zero-height slot so the slot's visibility never changes the
+   list's flow — a shown slot would otherwise push the block back above the fold. */
+.topband-slot .entryrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--sidebar-selected-bg);
+  border-radius: 0 0 9px 9px;
+}
+.topband-slot .entryrow:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+
 /* ---------- hover feedback on the states that own a fill -------------------- */
 
 /* The live row and the live screen keep their fill and answer the pointer on top of

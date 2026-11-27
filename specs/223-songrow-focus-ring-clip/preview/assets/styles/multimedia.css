@@ -1,0 +1,25 @@
+.fullPage {
+    height: 100vh;
+}
+
+.growingChild {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+}
+
+.growingChild > .fillRemaining {
+    overflow: hidden;
+    height: 100%;
+}
+
+.growingChild > .scrolling.fillRemaining {
+    overflow: auto;
+}
+
+.unselectable {
+    -webkit-user-select: none;
+    -moz-user-select: -moz-none;
+    -ms-user-select: none;
+    user-select: none;
+}

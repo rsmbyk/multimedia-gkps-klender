@@ -1361,6 +1361,12 @@ class ServiceEntryViewTests(TestCase):
         html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
         self.assertIn('This song has no verses', html)
         self.assertNotIn('Pick a song first', html)
+        # spec 235: the section is present on first paint, collapsed to its summary row
+        match = re.search(r'<div class="editor__verse-panel"[^>]*>', html)
+        tag = match.group(0) if match else ''
+        self.assertNotIn(' hidden', tag)
+        self.assertIn('data-empty="true"', tag)
+        self.assertIn('data-settled="true"', tag)
 
     def test_an_edit_form_keeps_the_verses_an_entry_stored(self):
         """Stored numbers stay choices even when the song has none, so the entry is saveable."""
@@ -2914,6 +2920,16 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('Matius 5:3', screens[1])
         self.assertIn('Berbahagia', screens[1])              # the verse's own title, when it has one
         self.assertIn('ayat 3', screens[1])
+
+    def test_a_scripture_screen_carries_its_verse_and_the_entry_its_bounds(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        response = self.client.get(self.projector_url())
+        entry = response.context['projector_entries'][0]
+        screens = response.context['projector_screens_data']
+        self.assertEqual(entry['verse_start'], 2)
+        self.assertEqual(entry['verse_end'], 3)
+        self.assertEqual([screen.get('verse') for screen in screens], [2, 3, None])
 
     def test_projector_metadata_keeps_entry_bait_and_rest_boundaries(self):
         self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])

@@ -1,0 +1,68 @@
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-editor-delete-confirm="/editor/KIND/0/delete/confirm/" data-editor-delete-url="/editor/KIND/0/delete/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-validate-url="/editor/entry/validate/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true" open="">
+  <div class="editor__content" id="editorContent" aria-live="polite">
+<h2 class="editor__title" id="editorTitle">Edit song</h2>
+<form class="editor__form" data-entry-form="song" data-entry-mode="edit" action="/editor/entry/1778/save/" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="cAaToACGaEZHzGIdyAKLopG5GOM2uyyrYiYW4q7NHY7advkqIYoNdcBduhse86bb">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-search">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <input type="search" id="entry-song-search" class="editor__songsearch" data-menu-anchor="" placeholder="Search songs..." aria-label="Search songs" autocomplete="off" aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-song-menu" value="HAL 414 Eta nasiam">
+      <div class="editor__picker-menu" id="entry-song-menu" hidden="">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="415">
+    </div>
+    
+  </div>
+  <div class="editor__field" data-verse-field="">
+    <label id="entry-verses-label">Verses</label>
+    <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel="" data-settled="true">
+      <div class="editor__verse-panel-inner">
+        <p class="editor__verse-summary" data-verses-summary="">Bait 1–2, 5</p>
+        <div class="editor__verse-quick">
+          <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
+          <span class="editor__verse-actions">
+            <button type="button" data-verse-all="">All</button>
+            <button type="button" data-verse-clear="">Clear</button>
+          </span>
+        </div>
+        <div class="editor__verses" id="entry-verses" data-verses="" data-verse-tiles=""><div>
+    <label class="editor__verse-tile" for="id_verses_0"><input type="checkbox" name="verses" value="1926" id="id_verses_0" checked="" data-number="1">
+<span>1</span></label>
+</div><div>
+    <label class="editor__verse-tile" for="id_verses_1"><input type="checkbox" name="verses" value="1927" id="id_verses_1" checked="" data-number="2">
+<span>2</span></label>
+</div><div>
+    <label class="editor__verse-tile" for="id_verses_2"><input type="checkbox" name="verses" value="1928" id="id_verses_2" data-number="3">
+<span>3</span></label>
+</div><div>
+    <label class="editor__verse-tile" for="id_verses_3"><input type="checkbox" name="verses" value="1929" id="id_verses_3" data-number="4">
+<span>4</span></label>
+</div><div>
+    <label class="editor__verse-tile" for="id_verses_4"><input type="checkbox" name="verses" value="1930" id="id_verses_4" checked="" data-number="5">
+<span>5</span></label>
+</div></div>
+        <p class="editor__verse-readout sr" data-verse-readout="" aria-live="polite">3 of 5 verses · 1–2, 5</p>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close="">Cancel</button>
+  </div>
+</form>
+</div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div></dialog>

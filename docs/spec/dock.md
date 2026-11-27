@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-20
-**slices**: `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-25
+**slices**: `242-dock-top-pin`, `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -530,3 +530,30 @@ centre control's act (R15) — and SHALL NOT write a different screen to the dis
 - GIVEN `prefers-reduced-motion: reduce`
 - WHEN the header's bottom reaches the band
 - THEN the pin lands in that paint with no stale frame (spec 208)
+
+
+### R19 — The live header stays pinned at the top when its block is above the view
+
+When the runner's live entry block is wholly above the scrollport, a faithful clone of its header
+(number, name, verse subtitle, chevron, selected face) SHALL stand in a list-level zero-height slot
+at the head of the list, flush at the top edge with a flat top (0 px) and the header's 9 px bottom
+radius. Before that boundary the native sticky header owns the edge; the two are never shown
+together. A header that loses liveness loses its pin in the same paint, and a go to's `.offstrip`
+is unchanged. The state SHALL be reconciled on every path that moves or resizes the list — scroll,
+sync, the first paint and every frame of a centring glide, morphs, landings and resize — and under
+reduced motion in the same paint. Clicking the pinned copy SHALL re-centre the live row, keep the
+current screen and return to following, writing no display state. (spec 242)
+
+#### Scenario: the live block passes above the fold
+- GIVEN a live entry deep in the service with its block on screen
+- WHEN the list scrolls until the whole block is above the scrollport
+- THEN one faithful copy of its header stands flush at the top edge, flat top and round bottom
+
+#### Scenario: the real header takes the edge back
+- WHEN the block returns to the fold, a crossing changes liveness, or the operator scrolls by hand
+- THEN the pin is gone on that frame and the native sticky header alone is shown
+
+#### Scenario: the pin tracks the glide per frame
+- WHEN the operator clicks the pinned copy
+- THEN on every sampled frame the pin's visibility equals the block's geometry, the live row
+  glides to the centre, the current screen stays on air and following returns

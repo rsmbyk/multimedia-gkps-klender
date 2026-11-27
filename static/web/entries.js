@@ -296,6 +296,72 @@
      their own options from inside; the verse pick is a checklist whose trigger
      reads what is still included. */
 
+  /* Tab after typing commits the highlighted (or first visible) option, then leaves
+     the field. Read the focus order after choosing: the menu closes and the next
+     control (for example Chapter) may only become enabled on that choice. */
+  function tabToNextField(event, input, commit) {
+    if (commit) commit();
+    var root = document.querySelector('dialog[open]') || document;
+    var focusable = [].slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]),' +
+      ' select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) {
+      return !el.closest('[inert], .editor__picker-menu') &&
+        (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    });
+    var at = focusable.indexOf(input);
+    var next;
+    if (at >= 0) {
+      next = focusable[at + (event.shiftKey ? -1 : 1)];
+    } else {
+      var following = focusable.length;
+      for (var i = 0; i < focusable.length; i += 1) {
+        if (input.compareDocumentPosition(focusable[i]) & 4) { following = i; break; }
+      }
+      next = event.shiftKey ? focusable[following - 1] : focusable[following];
+    }
+    event.preventDefault();
+    if (next && next.focus) {
+      /* The optional-verse wrapper is tabbable only to expose its hover note.
+         Once its trigger is enabled, one Tab should land on the control itself. */
+      if (next.classList && next.classList.contains('editor__end-wrap')) {
+        var inner = next.querySelector('[data-picker-trigger], input, button');
+        if (inner && !inner.disabled) next = inner;
+      }
+      next.focus();
+    }
+  }
+
+  /* Keep the keyboard's active option inside the menu's own scroll box, without
+     scrolling the dialog underneath it. */
+  function scrollOptionIntoView(option, viewport) {
+    var row = option.getBoundingClientRect();
+    var view = viewport.getBoundingClientRect();
+    if (row.top < view.top) viewport.scrollTop -= view.top - row.top;
+    else if (row.bottom > view.bottom) viewport.scrollTop += row.bottom - view.bottom;
+  }
+
+  function visibleOptions(list) {
+    return [].slice.call(list.querySelectorAll('[data-picker-option]')).filter(function (option) {
+      return !option.hidden && !option.disabled;
+    });
+  }
+  function activeOptionIndex(list) {
+    var index = Number(list.dataset.activeIndex);
+    return isNaN(index) || index < 0 ? 0 : index;
+  }
+  function setActiveOption(list, index) {
+    var visible = visibleOptions(list);
+    [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
+      option.classList.remove('is-active');
+    });
+    if (!visible.length) { list.dataset.activeIndex = '-1'; return; }
+    index = Math.max(0, Math.min(visible.length - 1, index));
+    list.dataset.activeIndex = String(index);
+    visible[index].classList.add('is-active');
+    scrollOptionIntoView(visible[index], list);
+  }
+
   function pickerOf(scope, name) {
     return scope.querySelector('[data-entry-picker="' + name + '"]');
   }
@@ -308,7 +374,7 @@
     [].slice.call(scope.querySelectorAll('.editor__picker-menu')).forEach(function (menu) {
       menu.hidden = true;
     });
-    triggers(scope).forEach(function (trigger) {
+    [].slice.call(scope.querySelectorAll('[data-picker-trigger], [data-menu-anchor]')).forEach(function (trigger) {
       trigger.setAttribute('aria-expanded', 'false');
     });
   }
@@ -403,6 +469,93 @@
     closeMenus(content);
   });
 
+  /* A search combobox: the field is the trigger and the filter is typed into it.
+     The song picker drives the same contract from wireSongPicker; this helper gives
+     the passage fields the same focus/type/Arrow/Enter/Escape behaviour over options
+     that are already in the modal, so no extra endpoint is needed. */
+  function wireSearchCombo(config) {
+    var input = config.input;
+    var menu = config.menu;
+    var list = config.list;
+    var options = [], active = -1;
+
+    function markActive() {
+      [].slice.call(list.querySelectorAll(config.optionSelector)).forEach(function (option) {
+        option.classList.remove('is-active');
+      });
+      options.forEach(function (option, index) {
+        if (index === active) option.classList.add('is-active');
+      });
+      var current = options[active];
+      if (current) scrollOptionIntoView(current, list);
+    }
+    function showMenu() {
+      /* One menu at a time in a modal, including the button pickers. */
+      if (config.scope) closeMenus(config.scope);
+      menu.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      placeMenu(menu);
+    }
+    function hideMenu() {
+      menu.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    }
+    function refresh() {
+      options = [].slice.call(list.querySelectorAll(config.optionSelector)).filter(function (option) {
+        return !option.hidden && !option.disabled;
+      });
+      if (active >= options.length) active = options.length - 1;
+      if (active < 0 && options.length) active = 0;
+      markActive();
+    }
+    function runQuery() {
+      config.query(input.value.trim(), refresh, showMenu);
+    }
+
+    input.addEventListener('focus', function () {
+      /* Selecting the whole label means typing starts a fresh query. */
+      window.setTimeout(function () {
+        if (document.activeElement === input) input.select();
+      }, 0);
+      runQuery();
+    });
+    input.addEventListener('input', function () {
+      window.clearTimeout(input.dataset.comboTimer);
+      input.dataset.comboTimer = window.setTimeout(runQuery, 140);
+    });
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (menu.hidden) { runQuery(); return; }
+        event.preventDefault();
+        active = Math.max(0, Math.min(options.length - 1,
+          active + (event.key === 'ArrowDown' ? 1 : -1)));
+        markActive();
+      } else if (event.key === 'Enter' && !menu.hidden && active >= 0 && options[active]) {
+        event.preventDefault();
+        config.choose(options[active]);
+      } else if (event.key === 'Tab' && !menu.hidden) {
+        var tabbed = active >= 0 && options[active] ? options[active] : options[0];
+        tabToNextField(event, input, function () {
+          if (tabbed) config.choose(tabbed);
+        });
+      } else if (event.key === 'Escape' && !menu.hidden) {
+        /* Escape closes the menu; it must not clear the chosen label the way a
+           bare search field's native Escape would. */
+        event.preventDefault();
+        event.stopPropagation();
+        hideMenu();
+      }
+    });
+    list.addEventListener('click', function (event) {
+      var option = event.target.closest(config.optionSelector);
+      if (option && !option.disabled && !option.hidden && list.contains(option)) {
+        config.choose(option);
+      }
+    });
+
+    return { refresh: refresh, show: showMenu, hide: hideMenu };
+  }
+
   /* ---------- the scripture cascade -----------------------------------------
      Book -> chapter -> verse. The to-verse list keeps only the numbers that can
      still end a range, and turns the control off (with its hover note) when the
@@ -416,8 +569,8 @@
     var from = scope.querySelector('[name=verse_start]');
     var to = scope.querySelector('[name=verse_end]');
     var wrap = scope.querySelector('[data-end-wrap]');
-    var label = picker.querySelector('[data-picker-label]');
-    var filter = picker.querySelector('input[type="search"]');
+    var bookSearch = scope.querySelector('#entry-book-search');
+    var bookList = scope.querySelector('#entry-book-options');
     var groups = [].slice.call(picker.querySelectorAll('[data-picker-group]'));
     var options = [].slice.call(picker.querySelectorAll('[data-book]'));
     var empty = picker.querySelector('[data-picker-empty]');
@@ -425,6 +578,7 @@
     var editionButtons = translationToggle
       ? [].slice.call(translationToggle.querySelectorAll('[data-edition-option]')) : [];
     if (!select || !chapter || !from || !to) return;
+    if (!bookSearch || !bookList) return;
 
     var verses = [];
 
@@ -455,6 +609,18 @@
       var label = trigger.querySelector('[data-picker-label]');
       if (label) label.textContent = text;
       trigger.disabled = control.disabled;
+      /* The wrapper is tabbable only to expose the hover note of a disabled To
+         verse. When the control is usable, it must not be an extra Tab stop. */
+      var endWrap = picker.closest('[data-end-wrap]');
+      if (endWrap) endWrap.setAttribute('tabindex', control.disabled ? '0' : '-1');
+      var selectedIndex = [].slice.call(list.querySelectorAll('[data-picker-option]'))
+        .map(function (option) { return option.getAttribute('aria-selected'); })
+        .indexOf('true');
+      setActiveOption(list, selectedIndex >= 0 ? selectedIndex : 0);
+      var filter = picker.querySelector('.editor__picker-menu input[type="search"]');
+      if (filter) filter.value = '';
+      var hint = picker.querySelector('[data-picker-empty]');
+      if (hint) hint.hidden = true;
     }
 
     function wireRangeControl(control) {
@@ -473,6 +639,56 @@
     }
 
     [chapter, from, to].forEach(wireRangeControl);
+
+    /* The chapter and verse popovers keep their button trigger but filter their
+       own options from a field inside the menu, like the book picker did. */
+    function wireRangeFilter(control) {
+      var picker = control.closest('.editor__picker');
+      var filter = picker && picker.querySelector('.editor__picker-menu input[type="search"]');
+      var list = picker && picker.querySelector('[data-picker-options]');
+      var hint = picker && picker.querySelector('[data-picker-empty]');
+      if (!filter || !list) return;
+      filter.addEventListener('input', function () {
+        var text = (filter.value || '').trim();
+        var visible = 0;
+        [].slice.call(list.querySelectorAll('[data-picker-option]')).forEach(function (option) {
+          var hit = !text || option.dataset.value.indexOf(text) !== -1;
+          option.hidden = !hit;
+          if (hit) visible += 1;
+        });
+        if (hint) hint.hidden = visible > 0;
+        setActiveOption(list, 0);
+      });
+      filter.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          setActiveOption(list, activeOptionIndex(list) + (event.key === 'ArrowDown' ? 1 : -1));
+          return;
+        }
+        function commit(chosen) {
+          if (!chosen) return;
+          control.value = chosen.dataset.value;
+          control.dispatchEvent(new window.Event('change', { bubbles: true }));
+          var menu = picker.querySelector('.editor__picker-menu');
+          if (menu) menu.hidden = true;
+          var trigger = picker.querySelector('[data-picker-trigger]');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+        if (event.key === 'Enter') {
+          /* The filter lives in the entry form: Enter must pick, not submit. */
+          event.preventDefault();
+          event.stopPropagation();
+          commit(visibleOptions(list)[activeOptionIndex(list)]);
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var chosen = visibleOptions(list)[activeOptionIndex(list)];
+        tabToNextField(event, filter, function () {
+          commit(chosen);
+        });
+      });
+    }
+    [chapter, from, to].forEach(wireRangeFilter);
 
     function numbers(count) {
       var out = '';
@@ -606,21 +822,21 @@
           selected = null;
         }
       }
-      if (selected) label.textContent = bookName(selected, edition) || (chosenBook().textContent || '').trim();
-      else if (updateSelection) label.textContent = 'Choose a book';
+      if (selected) bookSearch.value = bookName(selected, edition) || (chosenBook().textContent || '').trim();
+      else if (updateSelection) bookSearch.value = '';
     }
     function setEdition(edition) {
       if (!translationToggle || edition === activeEdition()) return;
       renderEdition(edition, true);
-      filterBooks();
+      filterBooks(bookSearch.value);
     }
-    function filterBooks() {
-      var query = (filter.value || '').trim().toLowerCase();
+    function filterBooks(query) {
+      var text = (query || '').trim().toLowerCase();
       var visible = 0;
       options.forEach(function (option) {
         var names = [option.dataset.bookNameTb, option.dataset.bookNameSim,
           option.dataset.bookCodeTb, option.dataset.bookCodeSim].join(' ');
-        var hit = !query || names.toLowerCase().indexOf(query) !== -1;
+        var hit = !text || names.toLowerCase().indexOf(text) !== -1;
         option.hidden = !hit;
         if (hit) visible += 1;
       });
@@ -636,9 +852,8 @@
       options.forEach(function (option) {
         option.setAttribute('aria-selected', option === button ? 'true' : 'false');
       });
-      label.textContent = bookName(button, activeEdition()) || button.textContent.trim();
-      filter.value = '';
-      filterBooks();
+      bookSearch.value = bookName(button, activeEdition()) || button.textContent.trim();
+      filterBooks('');
       fillChapters(1);
       loadVerses(select.value, Number(chapter.value) || 1);
     }
@@ -653,9 +868,22 @@
       });
     }
 
+    var bookCombo = wireSearchCombo({
+      scope: scope, input: bookSearch, menu: scope.querySelector('#entry-book-menu'), list: bookList,
+      optionSelector: '[data-book]',
+      query: function (value, refresh, show) {
+        filterBooks(value);
+        refresh();
+        show();
+      },
+      choose: function (option) {
+        pickBook(option);
+        bookCombo.hide();
+      }
+    });
     /* First paint: what the form already held, else a blank cascade to fill in. */
     if (select.value) {
-      label.textContent = (chosenBook().textContent || '').trim();
+      bookSearch.value = (chosenBook().textContent || '').trim();
       fillChapters(chapter.dataset.initial);
       loadVerses(select.value, Number(chapter.value) || 1,
                  from.dataset.initial, to.dataset.initial);
@@ -664,12 +892,9 @@
       from.disabled = true;
       to.disabled = true;
       [chapter, from, to].forEach(renderRangeControl);
+      filterBooks('');
     }
 
-    filter.addEventListener('input', filterBooks);
-    options.forEach(function (option) {
-      option.addEventListener('click', function () { pickBook(option); closeMenus(scope); });
-    });
     chapter.addEventListener('change', function () {
       renderRangeControl(chapter);
       loadVerses(select.value, Number(chapter.value) || 1);
@@ -677,6 +902,9 @@
     from.addEventListener('change', function () {
       renderRangeControl(from);
       syncTo();
+    });
+    to.addEventListener('change', function () {
+      renderRangeControl(to);
     });
   }
 
@@ -729,7 +957,11 @@
     if (all) all.disabled = !boxes.length || checked.length === boxes.length;
     if (clear) clear.disabled = !checked.length;
     if (panel) {
-      var shouldHide = !songPicked || !boxes.length;
+      /* A picked song with no verses keeps the section and shows only its summary row
+         (spec 235); only "no song at all" collapses the whole field. */
+      if (songPicked && !boxes.length) panel.dataset.empty = 'true';
+      else delete panel.dataset.empty;
+      var shouldHide = !songPicked;
       if (shouldHide) {
         panel.dataset.settled = 'false';
         panel.hidden = true;
@@ -773,6 +1005,7 @@
       options.forEach(function (option, index) {
         option.classList.toggle('is-active', index === active);
       });
+      if (options[active]) scrollOptionIntoView(options[active], list);
     }
     function showMenu() {
       menu.hidden = false;
@@ -859,6 +1092,11 @@
       } else if (event.key === 'Enter' && !menu.hidden && active >= 0) {
         event.preventDefault();
         choose(options[active]);
+      } else if (event.key === 'Tab' && !menu.hidden) {
+        var tabbed = active >= 0 && options[active] ? options[active] : options[0];
+        tabToNextField(event, search, function () {
+          if (tabbed) choose(tabbed);
+        });
       } else if (event.key === 'Escape' && !menu.hidden) {
         event.stopPropagation();
         hideMenu();

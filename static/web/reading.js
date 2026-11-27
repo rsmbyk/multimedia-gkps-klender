@@ -831,7 +831,8 @@
         var href = tile.getAttribute('href') || '';
         navigate(tile.href, {
           kind: activeSection === 'alkitab' ? 'bible-book'
-            : /\/tatib\//.test(href) ? 'service' : 'lists'
+            : /\/tatib\//.test(href) ? 'service' : 'lists',
+          source: tile
         });
       });
     }
@@ -846,7 +847,7 @@
           target = new window.URL(stageInfo.url, window.location.href).pathname
             + new window.URL(mode.href, window.location.href).search;
         }
-        navigate(target, { kind: 'mode' });
+        navigate(target, { kind: 'mode', source: mode });
       });
     }
   }
@@ -897,7 +898,10 @@
         }
         if (link.classList.contains('ch-num') || link.classList.contains('songrow')) {
           event.preventDefault();
-          navigate(link.href, { kind: link.classList.contains('ch-num') ? 'chapter' : 'song' });
+          navigate(link.href, {
+            kind: link.classList.contains('ch-num') ? 'chapter' : 'song',
+            source: link
+          });
         }
     });
   }
@@ -1027,12 +1031,18 @@
 
   /* ---------- song-list order: recently updated <-> alphabetical ---------- */
   function songRowEls() {
+    /* A song row carries the sorter's data; a Tata Ibadah contents row is also a
+       `.songrow` but carries only its anchor and label, so the sorter must not treat
+       it as a song (spec 233 / R57: a list with no song rows is never reordered). */
     return Array.prototype.filter.call(chList.children, function (li) {
-      return li.querySelector('.songrow');
+      var row = li.querySelector('.songrow');
+      return !!row && row.hasAttribute('data-t') && row.hasAttribute('data-o')
+        && row.hasAttribute('data-m');
     });
   }
   function applySongOrder() {
     var rows = songRowEls();
+    if (rows.length < 2) return;
     rows.sort(function (x, y) {
       var rx = x.querySelector('.songrow');
       var ry = y.querySelector('.songrow');
@@ -1049,9 +1059,15 @@
       var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
       return recent || (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
     });
-    var frag = document.createDocumentFragment();
-    rows.forEach(function (li) { frag.appendChild(li); });
-    chList.appendChild(frag);
+    /* Keep every non-song row where it is: only the song rows trade places. */
+    var slots = new Set(rows);
+    var cursor = 0;
+    var children = Array.prototype.map.call(chList.children, function (li) {
+      return slots.has(li) ? rows[cursor++] : li;
+    });
+    children.forEach(function (li, index) {
+      if (chList.children[index] !== li) chList.insertBefore(li, chList.children[index] || null);
+    });
     updateChInds();
   }
   function syncSortBtn() {
@@ -1312,9 +1328,12 @@
       /* the phone's menu is the rail: choosing a section keeps it underneath
          the list that slides over it (spec 138) */
       if (mqNarrow.matches) root.dataset.rail = 'open';
-      if (name !== activeSection) {
-        /* another section: fetch its root and morph the shell in place */
-        navigate(btn.getAttribute('href'), { kind: 'rail', section: name });
+      var railFetchPending = activeFetches.some(function (f) {
+        return !f.done && f.kind === 'rail';
+      });
+      if (name !== activeSection || railFetchPending) {
+        /* another section — or a rail fetch still in flight: the new tile wins */
+        navigate(btn.getAttribute('href'), { kind: 'rail', section: name, source: btn });
         return;
       }
       if (root.dataset.nav === 'open') {
@@ -1374,8 +1393,6 @@
      swaps the sidebar / list / stage fragments, so the push and wipe
      transitions run instead of a full reload. The links keep their real
      hrefs: without JS (or when a fetch fails) the browser navigates. */
-  var navBusy = false;
-  var pendingNavigation = null;
   var navigationGeneration = 0;
   var SEARCH_LAST = 'gkps-search-last-tab';
   var TAB_KEY = 'gkps-search-tab-id';
@@ -1470,47 +1487,364 @@
   }, {passive: true});
   window.addEventListener('pagehide', saveSearchSnapshot);
 
-  function releaseNavigation(success, resolve) {
-    navBusy = false;
-    if (resolve) resolve(!!success);
-    if (!pendingNavigation) return;
-    var next = pendingNavigation;
-    pendingNavigation = null;
-    navigate(next.url, next.opts).then(next.resolve);
+  /* ---------- spec 243: pending state owned by navigate() --------------- */
+  var activeFetches = [];
+  var STAGE_KINDS = ['chapter', 'song', 'service', 'result', 'more',
+                     'search', 'results', 'refresh', 'media-library'];
+  function writesStage(kind) { return STAGE_KINDS.indexOf(kind) >= 0; }
+  function sectionsFor(kind) {
+    if (kind === 'rail') return ['panel', 'chapters'];
+    if (writesStage(kind)) return ['stage'];
+    return ['chapters'];
+  }
+  function liveRegion() {
+    var live = document.querySelector('.gkps-nav-live');
+    if (!live) {
+      live = document.createElement('div');
+      live.className = 'gkps-nav-live pv-sr';
+      live.setAttribute('role', 'status');
+      live.setAttribute('aria-live', 'polite');
+      live.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(live);
+    }
+    return live;
+  }
+  function announce(message) {
+    var live = liveRegion();
+    live.textContent = '';
+    window.setTimeout(function () { live.textContent = message; }, 0);
+  }
+  function seedFrom(source, kind) {
+    var data = {name: '', no: '', eyebrow: '', query: ''};
+    if (!source) return data;
+    if (kind === 'results') {
+      var last = lastSearchSnapshot();
+      data.query = last
+        ? (new window.URL(last.snapshot.url, window.location.href).searchParams.get('q') || '') : '';
+      data.name = data.query || 'Search';
+      return data;
+    }
+    if (kind === 'media-library') {
+      data.name = 'Media Library';
+      return data;
+    }
+    if (source.classList && source.classList.contains('rail__btn')) {
+      var railName = source.querySelector('.rail__name');
+      data.name = railName ? railName.textContent.trim() : source.getAttribute('aria-label') || '';
+      data.eyebrow = 'section';
+    } else if (source.classList && source.classList.contains('ch-num')) {
+      var current = document.querySelector('.book[aria-current="true"]');
+      data.name = current ? current.dataset.name || '' : '';
+      data.no = source.textContent.trim();
+    } else if (source.classList && source.classList.contains('songrow')) {
+      var shown = source.querySelector('.songrow__t');
+      var code = source.querySelector('.songrow__c');
+      data.name = shown ? shown.textContent.trim() : '';
+      data.eyebrow = code ? code.textContent.trim() : source.dataset.num || '';
+      if (!data.eyebrow) {
+        var songbook = document.querySelector('#panelBody .book[aria-current="true"] .book__n');
+        data.eyebrow = songbook ? songbook.textContent.trim() : '';
+      }
+    } else {
+      if (kind === 'service') {
+        var serviceName = source.querySelector('.book__n');
+        data.name = serviceName ? serviceName.textContent.trim() : source.dataset.name || '';
+        data.eyebrow = 'Tata Ibadah';
+      } else {
+        data.name = source.dataset.name || '';
+      }
+      if (!data.name) {
+        var label = source.querySelector('.book__n, .rail__name');
+        data.name = label ? label.textContent.trim() : '';
+      }
+      var shortCode = source.querySelector('.book__a');
+      data.no = shortCode ? shortCode.textContent.trim() : '';
+    }
+    return data;
+  }
+  function placeholderFor(kind, data) {
+    var ph = document.createElement('div');
+    ph.className = (kind === 'results' || kind === 'media-library')
+      ? 'pv-placeholder pv-placeholder--destination' : 'pv-placeholder';
+    if (kind === 'results') {
+      var home = !data.query;
+      ph.id = home ? 'pvPh-search-home' : 'pvPh-results';
+      if (home) {
+        ph.innerHTML = '<section class="search-home" aria-label="Search GKPS Klender">'
+          + '<div class="search-home__inner"><span class="search-home__logo pv-ph-logo" '
+          + 'aria-hidden="true"></span><form class="search-home__form" role="search" action="#">'
+          + '<input class="search-home__input" type="search" value="" placeholder="" readonly>'
+          + '<span class="pv-ph-bar pv-ph-bar--input" aria-hidden="true"></span>'
+          + '<button class="search-home__submit" type="button" aria-label="Search">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+          + 'stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/>'
+          + '<path d="m15.5 15.5 5 5"/></svg></button></form></div></section>';
+      } else {
+        var resultRow = function (title, meta, excerpt) {
+          return '<li><a class="result-row" data-kind="passage" href="#">'
+            + '<span class="result-row__title">' + title + '</span>'
+            + '<span class="result-row__meta">' + meta + '</span>'
+            + (excerpt ? '<span class="result-row__excerpt">' + excerpt + '</span>' : '')
+            + '</a></li>';
+        };
+        var barTitle = '<span class="pv-ph-bar pv-ph-bar--title"></span>';
+        var barSub = '<span class="pv-ph-bar pv-ph-bar--sub"></span>';
+        var barVerse = '<span class="pv-ph-bar pv-ph-bar--verse"></span>';
+        ph.innerHTML = '<div class="search-results">'
+          + '<p class="search-results__intro">Results for <b class="pv-ph-query"></b></p>'
+          + '<section class="result-group" data-kind="passage"><div class="result-group__head">'
+          + '<h2 class="result-group__title">Passage</h2>'
+          + '<span class="result-group__count">3 results</span></div><ul class="result-list">'
+          + resultRow('Yohanes 3:16', 'Yohanes · 3',
+                      'Karena demikianlah Allah mengasihi isi dunia…')
+          + resultRow(barTitle, barSub, barVerse) + resultRow(barTitle, barSub, barVerse)
+          + '</ul><a class="result-more" href="#">Show more</a></section>'
+          + '<section class="result-group" data-kind="song"><div class="result-group__head">'
+          + '<h2 class="result-group__title">Song</h2>'
+          + '<span class="result-group__count">2 results</span></div><ul class="result-list">'
+          + resultRow(barTitle, barSub, '') + resultRow(barTitle, barSub, '')
+          + '</ul></section></div>';
+        ph.querySelector('.pv-ph-query').textContent = data.query;
+      }
+      return ph;
+    }
+    if (kind === 'media-library') {
+      ph.id = 'pvPh-media-library';
+      var mediaIcon = '<span class="pv-ph-bar pv-ph-bar--icon"></span>';
+      function mediaSub() { return '<span class="pv-ph-bar pv-ph-bar--sub"></span>'; }
+      function mediaTitle() { return '<span class="pv-ph-bar pv-ph-bar--title"></span>'; }
+      var fileRow = function () {
+        return '<div class="media-library__file">'
+          + '<div class="media-library__file-icon">' + mediaIcon + '</div>'
+          + '<div class="media-library__file-main">'
+          + '<div class="media-library__filename">' + mediaTitle() + '</div>'
+          + '<div class="media-library__meta">' + mediaSub() + '</div>'
+          + '<div class="media-library__unused">' + unusedBar + '</div></div>'
+          + '<div class="media-library__cloud"><span class="pv-ph-bar pv-ph-bar--button" '
+          + 'aria-hidden="true"></span></div>'
+          + '<span class="pv-ph-bar pv-ph-bar--button" aria-hidden="true"></span>'
+          + '</div>';
+      };
+      var unusedBar = '<span class="pv-ph-bar pv-ph-bar--unused"></span>';
+      var actionButtons = '<div class="media-library__head-actions">'
+        + '<button type="button" class="media-library__icon-btn"></button>'
+        + '<button type="button" class="media-library__icon-btn"></button>'
+        + '<button type="button" class="media-library__icon-btn"></button></div>';
+      ph.innerHTML = '<article class="read" data-kind="media-library">'
+        + '<header class="read__head"><div class="read__head-top">' + actionButtons + '</div>'
+        + '<div class="read__row"><h1 class="read__title">Media Library</h1></div></header>'
+        + '<div class="read__body"><div class="media-library">'
+        + '<p class="media-library__intro">Files available on this computer. '
+        + 'Add a file while editing a Tata Ibadah entry, or choose one already in this library.</p>'
+        + '<div class="media-library__filters"><div class="media-library__chips" role="group" '
+        + 'aria-label="File type filters">'
+        + '<button type="button" aria-pressed="false">Images</button>'
+        + '<button type="button" aria-pressed="false">Audio</button>'
+        + '<button type="button" aria-pressed="false">Video</button>'
+        + '<button type="button" aria-pressed="false">PDF</button>'
+        + '<button type="button" aria-pressed="false">Slides</button>'
+        + '<span aria-hidden="true">·</span>'
+        + '<button type="button" aria-pressed="false">Unused</button></div>'
+        + '<p class="pv-media-count">Loading files…</p>'
+        + '<div class="media-library__sort"><button type="button" '
+        + 'aria-label="Sort files: Upload date, newest" aria-expanded="false">'
+        + '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" '
+        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + '<path d="M5.5 3.5v13m0-13-2.5 2.5m2.5-2.5L8 6m6.5 10.5v-13m0 13-2.5-2.5m2.5 2.5L17 14"/>'
+        + '</svg><span>Upload date · newest</span></button></div></div>'
+        + fileRow() + fileRow() + fileRow()
+        + '</div></div></article>';
+      return ph;
+    }
+    var articleKind = kind === 'song' ? 'song' : kind === 'service' ? 'tatib' : 'bible';
+    ph.id = 'pvPh-' + articleKind;
+    var rows = articleKind === 'song' ? 3 : 5;
+    var bar = '<span class="pv-ph-bar pv-ph-bar--line"></span>';
+    var body = '';
+    if (articleKind === 'tatib') {
+      body = '<div class="entry__start"><span class="entry__start-inner">'
+        + '<button type="button" class="entry__add-btn">+ Text</button>'
+        + '<button type="button" class="entry__add-btn">+ Song</button>'
+        + '<button type="button" class="entry__add-btn">+ Passage</button>'
+        + '</span></div>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--entry"></span></h2>'
+        + '<p class="read__sub"><span class="pv-ph-bar pv-ph-bar--sub"></span></p></section>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--mid"></span></h2></section>'
+        + '<section class="tatib__item"><h2 class="read__sec">'
+        + '<span class="pv-ph-bar pv-ph-bar--short"></span></h2></section>';
+    } else {
+      var verse = '';
+      for (var n = 1; n <= rows; n++) {
+        verse += '<p class="v"><span class="v__n">' + n + '</span>'
+          + '<span class="v__text">' + (articleKind === 'song' ? bar + bar + bar : bar)
+          + '</span></p>';
+      }
+      body = (articleKind === 'bible'
+        ? '<h2 class="read__sec"><span class="pv-ph-bar pv-ph-bar--sec"></span></h2>' : '')
+        + verse;
+    }
+    ph.innerHTML = '<article class="read" data-kind="' + articleKind + '">'
+      + '<header class="read__head"><div class="read__head-top">'
+      + '<p class="read__eyebrow pv-ph-eyebrow" hidden></p></div>'
+      + '<div class="read__row"><h1 class="read__title">'
+      + '<span class="pv-ph-name"></span> <span class="read__no pv-ph-no" hidden></span>'
+      + '</h1></div></header><div class="read__body">' + body + '</div></article>';
+    ph.querySelector('.pv-ph-name').textContent = data.name || 'Loading…';
+    var no = ph.querySelector('.pv-ph-no');
+    if (data.no) { no.textContent = data.no; no.hidden = false; }
+    var eyebrow = ph.querySelector('.pv-ph-eyebrow');
+    if (data.eyebrow) { eyebrow.textContent = data.eyebrow; eyebrow.hidden = false; }
+    return ph;
+  }
+  function barFor(section) {
+    var host = section === 'panel' ? panel : section === 'chapters' ? chaptersEl : stage;
+    var cls = section === 'stage' ? 'pv-stagebar' : 'pv-section-bar';
+    var existing = host.querySelector(':scope > .' + cls);
+    if (existing) return existing;
+    var bar = document.createElement('div');
+    bar.className = cls;
+    if (section === 'panel') bar.id = 'pvPanelBar';
+    if (section === 'chapters') bar.id = 'pvChBar';
+    bar.setAttribute('aria-hidden', 'true');
+    host.insertBefore(bar, host.firstChild);
+    return bar;
+  }
+  function clearBars(sections) {
+    sections.forEach(function (section) {
+      var host = section === 'panel' ? panel : section === 'chapters' ? chaptersEl : stage;
+      var cls = section === 'stage' ? '.pv-stagebar' : '.pv-section-bar';
+      var bar = host.querySelector(':scope > ' + cls);
+      if (bar && !activeFetches.some(function (f) {
+        return !f.done && f.bars.indexOf(section) >= 0;
+      })) bar.remove();
+    });
+  }
+  function clearStageFor(record) {
+    if (activeFetches.some(function (f) {
+      return f !== record && !f.done && f.writes;
+    })) return;
+    stage.removeAttribute('aria-busy');
+    stage.classList.remove('stage--destination-placeholder');
+    var ph = stage.querySelector(':scope > .pv-placeholder');
+    if (ph) ph.remove();
+  }
+  var PENDING_CONTROLS = '.row-edit, .row-delete, [data-editor-open], '
+    + '[data-editor-delete], .entry__ctrl, .entry__add-btn, .verse-add__btn';
+  function setRowControls(source, disabled) {
+    var row = source && source.closest ? source.closest('li') : null;
+    if (!row) return;
+    if (disabled) row.classList.add('gkps-pending-row');
+    else row.classList.remove('gkps-pending-row');
+    row.querySelectorAll(PENDING_CONTROLS).forEach(function (control) {
+      if (disabled) {
+        if (control.hasAttribute('data-gkps-pending-disabled')) return;
+        control.setAttribute('data-gkps-pending-disabled', '1');
+        control.setAttribute('aria-disabled', 'true');
+        if (control.tagName === 'BUTTON' || control.tagName === 'INPUT') {
+          if (!control.hasAttribute('disabled')) control.setAttribute('disabled', '');
+        } else if (control.hasAttribute('tabindex')) {
+          control.setAttribute('data-gkps-pending-tabindex', control.getAttribute('tabindex'));
+          control.setAttribute('tabindex', '-1');
+        } else {
+          control.setAttribute('tabindex', '-1');
+        }
+      } else if (control.hasAttribute('data-gkps-pending-disabled')) {
+        control.removeAttribute('data-gkps-pending-disabled');
+        control.removeAttribute('aria-disabled');
+        if (control.hasAttribute('disabled')) control.removeAttribute('disabled');
+        if (control.hasAttribute('data-gkps-pending-tabindex')) {
+          control.setAttribute('tabindex', control.getAttribute('data-gkps-pending-tabindex'));
+          control.removeAttribute('data-gkps-pending-tabindex');
+        } else {
+          control.removeAttribute('tabindex');
+        }
+      }
+    });
+  }
+  function lockItem(source) {
+    if (!source || !source.setAttribute) return;
+    source.setAttribute('aria-disabled', 'true');
+    source.classList.add('gkps-pending-item');
+    setRowControls(source, true);
+  }
+  function unlockItem(source) {
+    if (!source || !source.removeAttribute) return;
+    source.removeAttribute('aria-disabled');
+    source.classList.remove('gkps-pending-item');
+    setRowControls(source, false);
+  }
+  function cancelFetch(record) {
+    record.cancelled = true;
+    if (record.controller) record.controller.abort();
+    record.finish(false);
   }
 
   function navigate(url, opts) {
     if (!url) return Promise.resolve(false);
     opts = opts || {};
-    var resolveCompletion;
-    var completion = new Promise(function (resolve) { resolveCompletion = resolve; });
-    if (navBusy) {
-      if (!opts.historyTraversal) saveSearchSnapshot();
-      if (pendingNavigation) pendingNavigation.resolve(false);
-      pendingNavigation = {url: url, opts: opts, resolve: resolveCompletion};
-      return completion;
+    var kind = opts.kind || 'lists';
+    var writes = writesStage(kind);
+    if (opts.source && opts.source.getAttribute
+        && opts.source.getAttribute('aria-disabled') === 'true') {
+      return Promise.resolve(false);
     }
     if (!opts.historyTraversal) saveSearchSnapshot();
-    navBusy = true;
-    var generation = ++navigationGeneration;
-    var finished = false;
-    function finish(success) {
-      if (finished) return;
-      finished = true;
-      releaseNavigation(success, resolveCompletion);
+
+    activeFetches.slice().forEach(function (fetch) {
+      if (fetch.done) return;
+      /* Cancel by default. Keep the live fetch only when it writes to the
+         reading page and the new click does not. */
+      if (!(fetch.writes && !writes)) cancelFetch(fetch);
+    });
+
+    var resolveCompletion;
+    var completion = new Promise(function (resolve) { resolveCompletion = resolve; });
+    var sections = sectionsFor(kind);
+    var record = {
+      source: opts.source, kind: kind, writes: writes, bars: sections,
+      controller: typeof AbortController === 'function' ? new AbortController() : null,
+      cancelled: false, done: false,
+      finish: null
+    };
+    var seed = seedFrom(opts.source, kind);
+    sections.forEach(function (section) { barFor(section); });
+    if (writes) {
+      stage.setAttribute('aria-busy', 'true');
+      stage.appendChild(placeholderFor(kind, seed));
+      stage.classList.add('stage--destination-placeholder');
     }
-    function isSuperseded() { return !!pendingNavigation; }
+    lockItem(opts.source);
+    activeFetches.push(record);
+    announce('Opening ' + (seed.name || 'page'));
+    navigationGeneration++;
+    var generation = navigationGeneration;
+
+    function finish(success) {
+      if (record.done) return;
+      record.done = true;
+      unlockItem(record.source);
+      clearBars(record.bars);
+      clearStageFor(record);
+      activeFetches = activeFetches.filter(function (f) { return f !== record; });
+      if (success) announce((seed.name || 'Page') + ' opened');
+      resolveCompletion(!!success);
+    }
+    record.finish = finish;
     function fail(error) {
+      if (record.cancelled) { finish(false); return; }
       if (window.console && console.error) console.error('in-page navigation failed:', error);
-      if (!isSuperseded() && navigator.onLine && !opts.noLocationFallback) {
+      if (navigator.onLine && !opts.noLocationFallback) {
         window.location.href = url;
+        return;
       }
       finish(false);
     }
-    function applyFresh(doc, kind) {
-      if (!doc || isSuperseded()) { finish(false); return false; }
+    function applyFresh(doc, freshKind) {
+      if (record.cancelled || generation !== navigationGeneration) { finish(false); return false; }
       try {
-        applyPage(doc, url, Object.assign({}, opts, kind ? {kind: kind} : {}));
+        applyPage(doc, url, Object.assign({}, opts, freshKind ? {kind: freshKind} : {}));
         finish(true);
         return true;
       } catch (error) {
@@ -1519,18 +1853,16 @@
       }
     }
     function fromServer() {
-      return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
-      .then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text();
-      })
-      .then(function (html) {
-        applyFresh(new window.DOMParser().parseFromString(html, 'text/html'));
-      });
-    }
-    if (opts.forceServer) {
-      fromServer().catch(fail);
-      return completion;
+      var init = { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } };
+      if (record.controller) init.signal = record.controller.signal;
+      return fetch(url, init)
+        .then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.text();
+        })
+        .then(function (html) {
+          applyFresh(new window.DOMParser().parseFromString(html, 'text/html'));
+        });
     }
     fromServer().catch(fail);
     return completion;
@@ -1578,6 +1910,10 @@
 
   function applyPage(doc, url, opts) {
     opts = opts || {};
+    /* The arriving page is reconciled in this same task; reveal the old search
+       sections before focusLandingSearch() runs, so the incoming field can take
+       focus instead of being hidden by the pending-state rule. */
+    stage.classList.remove('stage--destination-placeholder');
     var fresh = doc.documentElement.dataset;
     /* spec 220: the state being left. The landing taking focus, and handing it back
        when results open, are both transitions rather than destinations. */
@@ -1611,7 +1947,7 @@
     var currentChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
-      || kind === 'refresh';
+      || kind === 'refresh' || kind === 'media-library';
     /* A page opened from a second-level list -- and the in-place refresh that follows a save --
        updates the reading stage while keeping the operator's first-panel open/mini choice.
        Every server reading page is rendered with nav="open", so copying that value over a
@@ -1654,6 +1990,9 @@
     var freshSort = doc.querySelector('#songSort');
     if (freshSort) songSortBtn.hidden = freshSort.hidden;
     reconcileChildren(chList, doc.querySelector('#chList'));
+    /* A refreshed list arrives in the server's last-modified order. Re-apply the
+       operator's chosen order so a create, edit or delete cannot silently reset it. */
+    applySongOrder();
 
     /* state */
     activeSection = fresh.section || activeSection;
@@ -1853,7 +2192,8 @@
     if (opts.replaceUrl) {
       history.replaceState({gkps: true, url: url, kind: kind}, '', url);
     } else if (!opts.skipHistory) {
-      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results'];
+      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results',
+                    'media-library'];
       if (pushes.indexOf(kind) !== -1) {
         history.pushState({gkps: true, url: url, kind: kind,
           searchId: fresh.home === 'results' ? searchId() : null}, '', url);
@@ -2051,10 +2391,15 @@
   function openSearch(event) {
     event.preventDefault();
     var last = lastSearchSnapshot();
-    navigate(last ? last.snapshot.url : '/', {kind: 'results',
+    navigate(last ? last.snapshot.url : '/', {kind: 'results', source: railSearch,
       restoreSearchId: last && last.id});
   }
   railSearch.addEventListener('click', openSearch);
+  if (railMediaLibrary) railMediaLibrary.addEventListener('click', function (event) {
+    event.preventDefault();
+    navigate(railMediaLibrary.getAttribute('href'),
+             {kind: 'media-library', source: railMediaLibrary});
+  });
   var railLogo = document.querySelector('.rail__logo');
   if (railLogo) railLogo.addEventListener('click', function (event) {
     event.preventDefault();
@@ -2067,17 +2412,40 @@
     /* A generate slot is validated, not saved (spec 167): nothing on the page changed,
        and re-reading it would replace the modal the operator is working in. */
     if (event.detail && event.detail.slotEntry) return;
-    /* Spec 209: a newly created dated service is the destination, so open it on the stage
-       through the shell's own navigation -- one fetch, no document reload. The arriving page
-       supplies the child pane; `service` keeps the operator's panel choice as it is on a click. */
+    /* Specs 209/234: a newly created Tata Ibadah is the destination, dated or template.
+       Both open through the shell's own navigation -- one fetch, no document reload. The
+       arriving page supplies the child pane; `service` keeps the operator's panel choice.
+       A template carries ?mode=template so its own list and mode button agree. */
     if (event.detail && event.detail.kind === 'tatib' && event.detail.created
-        && event.detail.record_kind === 0) {
-      navigate('/tatib/' + event.detail.id + '/', {kind: 'service', forceServer: true})
+        && (event.detail.record_kind === 0 || event.detail.record_kind === 1)) {
+      var bornUrl = '/tatib/' + event.detail.id + '/'
+        + (event.detail.record_kind === 1 ? '?mode=template' : '');
+      navigate(bornUrl, {kind: 'service', forceServer: true})
         .then(function (ok) {
           /* The restored focus belongs to the lists/refresh kinds only; a create opens with
              `service`, so restore it here the same way the refresh path does (spec 025). */
           if (ok) restoreRequestedFocus({focusKind: 'tatib', what: event.detail.id});
         });
+      return;
+    }
+    /* Spec 225: a newly created songbook or song opens as its row would -- the
+       songbook becomes current with its song list open, the song goes on the
+       reading stage. Both use the shell's own navigation, so neither reloads. */
+    if (event.detail && event.detail.created
+        && (event.detail.kind === 'songbook' || event.detail.kind === 'song')) {
+      var bornHref = event.detail.kind === 'songbook'
+        ? '/songs/book/' + event.detail.id + '/'
+        : '/songs/' + event.detail.id + '/';
+      navigate(bornHref, {
+        kind: event.detail.kind === 'songbook' ? 'lists' : 'song',
+        forceServer: true
+      }).then(function (ok) {
+        /* The saved row keeps the quiet focus a normal save restores (spec 025);
+           a stage-opening kind does not do that on its own (as in spec 209). */
+        if (ok) restoreRequestedFocus({
+          focusKind: event.detail.kind, what: event.detail.id
+        });
+      });
       return;
     }
     /* In-page navigation does not change location. Refresh the section that
@@ -2109,9 +2477,9 @@
     if (event.detail) event.detail.viewUpdate = viewUpdate;
   });
 
-  /* Sidebar deletes (spec 190): the editor flow asks the shell where the stage
-     is and, when the deleted record was the one on stage, swaps to the parent
-     list with the history entry replaced instead of appended. */
+  /* Sidebar deletes (spec 190, 221): the editor flow asks the shell where the
+     stage is and, when the deleted record was the one on stage, swaps to the
+     parent list in the nothing-open state, replacing the history entry. */
   window.gkpsStage = function () {
     return { section: stageSection(), tile: stageInfo.tile,
              song: stageInfo.song, url: stageInfo.url };

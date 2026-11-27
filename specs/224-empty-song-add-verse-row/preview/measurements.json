@@ -1,0 +1,70 @@
+{
+  "empty_song": {
+    "url": "/songs/1731/",
+    "add_button_count": 1,
+    "add_row_count": 0,
+    "add_row": null,
+    "add_row_button": null,
+    "empty_invitation": {
+      "x": 933.2,
+      "y": 253.9,
+      "width": 365.5,
+      "height": 128
+    },
+    "empty_button": {
+      "x": 1060.1,
+      "y": 343.9,
+      "width": 111.8,
+      "height": 38
+    },
+    "verse_rows": 0,
+    "empty_title": {
+      "x": 980.2,
+      "y": 253.9,
+      "width": 271.6,
+      "height": 26
+    }
+  },
+  "song_with_verses": {
+    "url": "/songs/1387/",
+    "add_button_count": 1,
+    "add_row_count": 1,
+    "add_row": {
+      "x": 856,
+      "y": 681.3,
+      "width": 520,
+      "height": 38
+    },
+    "add_row_button": {
+      "x": 900,
+      "y": 681.3,
+      "width": 111.8,
+      "height": 38
+    },
+    "empty_invitation": null,
+    "empty_button": null,
+    "verse_rows": 3,
+    "empty_title": null
+  },
+  "tatib_empty": {
+    "url": "/tatib/145/",
+    "add_button_count": 0,
+    "add_row_count": 0,
+    "add_row": null,
+    "add_row_button": null,
+    "empty_invitation": {
+      "x": 981.3,
+      "y": 253.5,
+      "width": 389.4,
+      "height": 142
+    },
+    "empty_button": null,
+    "verse_rows": 0,
+    "empty_title": {
+      "x": 1049.4,
+      "y": 253.5,
+      "width": 253.1,
+      "height": 26
+    }
+  }
+}

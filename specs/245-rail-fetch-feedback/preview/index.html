@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rail fetch feedback — choose an option</title>
+<style>
+body { margin: 0; padding: 36px 28px; background: #171816; color: #F7F5F1;
+  font: 15px/1.55 ui-sans-serif, system-ui, sans-serif; }
+h1 { font-size: 26px; margin: 0 0 8px; }
+p { max-width: 760px; color: #B9B8B2; }
+ol { padding-left: 20px; max-width: 860px; }
+li { margin: 18px 0; }
+a { color: #8FD0AC; }
+b { color: #F7F5F1; }
+code { font-size: 13px; color: #D7D4CC; }
+</style></head>
+<body>
+<h1>Rail fetch feedback — three options</h1>
+<p>Each page is the real reading shell from spec 243's accepted preview, in dark mode, with
+a simulated delayed response. Click the actual Search or Media Library rail tile, or the
+buttons in the top bar. Use the delay buttons to watch the pending state at 0 ms / 1.2 s /
+2.5 s; the readout shows computed values. Arrow keys and the links move between options.</p>
+<ol>
+<li><a href="combined.html">Combined — rail lock + reading-page bar + a little placeholder</a><br>
+The chosen shape: the clicked Search or Media Library tile dims and locks, a 3px bar runs
+at the top edge of the reading stage, and the stage carries a placeholder built from the
+destination's own markup — result groups and rows for Search results (or the centred logo
+and input when Search opens home), intro, filter chips, grouped file rows and cloud/remove
+controls for Media Library. Both tiles fetch in place, so the rail and sidebars stay usable.</li>
+<li><a href="option-a.html">Option A — full-page lock + viewport bar</a><br>
+The clicked tile dims and locks; a 3px bar runs at the very top of the window for the whole
+document load. The reading stage keeps whatever it showed. No placeholder.</li>
+<li><a href="option-b.html">Option B — in-page parity</a><br>
+Both rail tiles become in-page fetches through the shell's navigation. The tile locks, a 3px
+bar runs at the stage's top edge, `aria-busy` is set and a seeded Search / Media Library
+placeholder appears in the real page layout.</li>
+<li><a href="option-c.html">Option C — placeholder only</a><br>
+Keep today's lock and bar rules untouched (Search has a stage bar; Media Library is still a
+full page load with a viewport bar) and add only the seeded placeholder while the page is
+fetched.</li>
+</ol>
+</body></html>

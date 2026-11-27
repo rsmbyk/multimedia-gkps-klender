@@ -309,6 +309,40 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [self.solo.verse_set.get(number=1).pk])
 
+    def test_an_empty_song_shows_only_the_verse_summary(self):
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('.entry__empty-btn', has_text='Add Song').click()
+        page.wait_for_selector('dialog[open]')
+        panel = page.locator('[data-verse-panel]')
+        # no song: the whole section is gone, as before
+        self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
+        page.fill('#entry-song-search', 'kosong')
+        page.wait_for_selector('#entry-song-options [data-song]')
+        page.locator('#entry-song-options [data-song]').first.click()
+        page.wait_for_function("document.querySelector('[data-verse-panel]').dataset.empty === 'true'")
+        page.wait_for_function("document.querySelector('[data-verse-panel]').dataset.settled === 'true'")
+        # the section is named and holds only the summary line
+        expect(page.locator('#entry-verses-label')).to_be_visible()
+        expect(page.locator('[data-verses-summary]')).to_have_text('This song has no verses')
+        expect(page.locator('.editor__verse-quick')).to_be_hidden()
+        expect(page.locator('#entry-verses')).to_be_hidden()
+        expect(page.locator('.editor__verse-readout')).to_be_hidden()
+        expect(page.locator('[data-verses-summary]')).to_have_css('border-bottom-width', '0px')
+        height = panel.bounding_box()['height']
+        self.assertGreater(height, 25)
+        self.assertLess(height, 60)
+        self.assertEqual(page.locator('#entry-verses input[type=checkbox]').count(), 0)
+        # swapping to a song with verses brings the full picker back with no stale mark
+        page.fill('#entry-song-search', 'kuasa')
+        page.wait_for_selector('#entry-song-options [data-song]')
+        page.locator('#entry-song-options [data-song]').first.click()
+        page.wait_for_function("!document.querySelector('[data-verse-panel]').dataset.empty")
+        expect(page.locator('#entry-verses')).to_be_visible()
+        expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
+        expect(page.locator('[data-verses-summary]')).to_have_css('border-bottom-width', '1px')
+        self._close_browser()
+
     def test_a_song_with_no_verses_is_named_and_cannot_be_saved(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('.entry__empty-btn', has_text='Add Song').click()
@@ -319,8 +353,10 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.fill('#entry-song-search', 'kosong')
         page.wait_for_selector('#entry-song-options [data-song]')
         page.locator('#entry-song-options [data-song]').first.click()
-        # a song with no verses keeps the section hidden and offers no menu
-        self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
+        # a song with no verses keeps the section named, with only its summary line
+        expect(page.locator('[data-verses-summary]')).to_have_text('This song has no verses')
+        page.wait_for_function("document.querySelector('[data-verse-panel]').dataset.settled === 'true'")
+        self.assertGreater(panel.bounding_box()['height'], 25)
         self.assertEqual(page.locator('#entry-verses input[type=checkbox]').count(), 0)
         # saving anyway names the song, not the missing checks
         page.click('.editor__save')

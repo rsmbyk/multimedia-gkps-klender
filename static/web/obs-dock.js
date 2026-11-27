@@ -333,6 +333,14 @@
   liveBandSlot.hidden = true;
   var liveBandSrcRow = null;   /* the header node the slot's copy was cloned from */
 
+  /* Spec 242: the mirror of the bottom pin. The live header top-pins natively only
+     while its own li is still on screen; a list-level slot at the FRONT of the list
+     holds a faithful clone once the whole block has gone above the scrollport, so
+     the header stays pinned at the top for as long as the entry is off-screen. */
+  var topBandSlot = el('li', 'topband-slot');
+  topBandSlot.hidden = true;
+  var topBandSrcRow = null;
+
   function bandText(entry) {
     var parts = entry.type === 'song' ? songParts(entry) : null;
     if (parts) return parts.reference ? parts.reference + ' — ' + parts.title : parts.title;
@@ -341,6 +349,8 @@
 
   function renderList() {
     entryList.replaceChildren();
+    /* Spec 242: the top pin's slot leads the list; the two bottom slots trail it. */
+    entryList.appendChild(topBandSlot);
     dock.entries.forEach(function (entry, index) {
       var item = el('li', 'entryli');
       item.dataset.index = String(index);
@@ -686,6 +696,10 @@
 
   function glideRow(node) {
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    /* A click may have moved the list since the last scroll frame (the clamp in
+       sync, or a pending centre): reconcile the pin states in this paint, before
+       the first eased frame, so no stale header is carried into the glide. */
+    updatePins();
     if (reduceMotion.matches) { runBody.scrollTop += rowOffset(node); updatePins(); return; }
     var start = null;
     var started = performance.now();
@@ -980,8 +994,30 @@
     liveBandSlot.style.bottom = (bandRect ? box.bottom - bandRect.top : 0) + 'px';
   }
 
-  /* The two pin states read together on every geometry path (FR-002/FR-008). */
-  function updatePins() { updateStuck(); updateLiveBand(); }
+  /* Spec 242: the top half of the pin pair. The real header sticky-pins at the
+     top while its li is on screen; the list-level slot takes over once that whole
+     block is above the scrollport. At that boundary the clone stands exactly where
+     the real header was pinned — one visible header, never a second band. */
+  function updateTopBand() {
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
+    var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (!row) { topBandSlot.hidden = true; return; }
+    var box = runBody.getBoundingClientRect();
+    var show = liveEntry.getBoundingClientRect().bottom <= box.top + 0.5 &&
+      row.getBoundingClientRect().top <= box.top + 0.5;
+    topBandSlot.hidden = !show;
+    if (!show) return;
+    if (topBandSrcRow !== row) {
+      var clone = row.cloneNode(true);
+      clone.setAttribute('aria-current', 'false');
+      clone.removeAttribute('aria-controls');
+      topBandSlot.replaceChildren(clone);
+      topBandSrcRow = row;
+    }
+  }
+
+  /* The three pin states read together on every geometry path (FR-002/FR-008). */
+  function updatePins() { updateStuck(); updateLiveBand(); updateTopBand(); }
 
   function updateBand() {
     var box = runBody.getBoundingClientRect();
@@ -1445,6 +1481,7 @@
         row.classList.remove('is-stuck');
       });
       liveBandSlot.hidden = true;
+      topBandSlot.hidden = true;
       runNote.hidden = true;
       return;
     }
@@ -1562,11 +1599,11 @@
       focusPanel();
       return;
     }
-    var liveStrip = event.target.closest('.liveband-slot');
+    var liveStrip = event.target.closest('.liveband-slot, .topband-slot');
     if (liveStrip) {
-      /* The strip's click is the centre control's own act (spec 208, owner
-         ruling): back to the live row, the current screen kept, following
-         returned — it never projects a different screen. */
+      /* Either pinned strip is the centre control's own act (spec 208 / 242):
+         back to the live row, the current screen kept, following returned — it
+         never projects a different screen. */
       setFollowing(true);
       var stripNode = liveNode();
       if (stripNode) centerRow(stripNode);
@@ -1652,6 +1689,12 @@
       find.choice = (find.choice + (key === 'ArrowDown' ? 1 : -1) + find.rows.length)
         % find.rows.length;
       paintFind();
+      return;
+    }
+    if (key === 'Tab') {
+      /* Commit the marked match; the dock keeps its keyboard on the panel when
+         closeFind resolves, which is the next target after the find field. */
+      if (find.rows.length) chooseFind(find.choice === undefined ? 0 : find.choice);
       return;
     }
     if (key === 'Enter') { event.preventDefault(); event.stopPropagation(); chooseFind(find.choice); return; }

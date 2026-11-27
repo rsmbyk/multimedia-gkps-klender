@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verse reference notice — preview</title>
+<style>
+/*__TOKENS__*/
+/*__EDITOR_CSS__*/
+
+/* ---- preview chrome (not part of the product) ---- */
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+.stage {
+  position: relative; min-height: calc(100vh - 150px); display: flex;
+  align-items: center; justify-content: center; padding: 90px 16px 70px;
+  background: color-mix(in srgb, var(--canvas) 62%, var(--backdrop));
+}
+.editor { top: auto !important; left: auto !important; margin: 0 !important; }
+.toolbar, .readout {
+  position: fixed; left: 0; right: 0; z-index: 10; display: flex; gap: 8px;
+  align-items: center; flex-wrap: wrap; padding: 10px 16px;
+  background: var(--rail-bg); border-bottom: 1px solid var(--divider);
+  color: var(--ink); font: 500 12px/1.3 var(--font-sans);
+}
+.toolbar { top: 0; }
+.readout { bottom: 0; border-bottom: 0; border-top: 1px solid var(--divider); font-family: ui-monospace, monospace; color: var(--head-ink); }
+.toolbar strong { font-weight: 700; margin-right: 4px; }
+.toolbar button {
+  height: 30px; padding: 0 11px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--divider); background: var(--canvas); color: var(--ink);
+  font: 600 12px/1 var(--font-sans);
+}
+.toolbar button.on { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.toolbar .sep { width: 1px; height: 22px; background: var(--divider); margin: 0 4px; }
+
+/* ---- the proposed notices ---- */
+.ref-note svg { flex: none; }
+.variant-current .ref-note { margin: 5px 0 0; }
+
+/* A — neutral callout between the field and the actions */
+.variant-a .ref-note {
+  margin: 12px 26px 0; padding: 11px 12px; display: flex; gap: 10px; align-items: flex-start;
+  border: 1px solid var(--divider); border-radius: 9px; background: var(--rail-bg);
+  font: 400 12px/18px var(--font-sans); color: var(--head-ink);
+}
+.variant-a .ref-note svg { width: 18px; height: 18px; margin-top: 1px; color: var(--head-ink); }
+.variant-a .ref-note strong { display: block; font: 600 13px/1.35 var(--font-sans); color: var(--ink); }
+.variant-a .ref-note span { display: block; margin-top: 2px; font: 400 12px/18px var(--font-sans); color: var(--head-ink); }
+.variant-a .editor__actions { margin-top: 10px; }
+
+/* B — one line in the action row, left of the buttons; button reads neutral */
+.variant-b .editor__actions { display: flex; align-items: center; justify-content: flex-start; }
+.variant-b .ref-note {
+  margin-right: auto; display: flex; align-items: center; gap: 7px;
+  font: 400 12px/18px var(--font-sans); color: var(--head-ink);
+}
+.variant-b .ref-note svg { width: 15px; height: 15px; color: var(--head-ink); }
+.variant-b .ref-note b { font-weight: 700; color: var(--ink); }
+.variant-b .editor__danger:disabled {
+  opacity: 1; background: var(--rail-bg); border-color: var(--divider); color: var(--head-ink);
+}
+@media (max-width: 650px) {
+  .variant-b .editor__actions { flex-wrap: wrap; row-gap: 10px; }
+  .variant-b .ref-note { flex: 1 0 100%; margin-right: 0; }
+  .variant-b .editor__actions > button:first-of-type { margin-left: auto; }
+}
+
+/* C — banner under the header, danger-tinted; neutral button */
+.variant-c .ref-note {
+  margin: 12px 26px 0; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+  border: 1px solid color-mix(in srgb, var(--danger) 26%, var(--divider));
+  border-left: 3px solid var(--danger); border-radius: 8px;
+  background: color-mix(in srgb, var(--danger) 7%, var(--canvas));
+  font: 500 12.5px/1.4 var(--font-sans); color: var(--ink);
+}
+.variant-c .ref-note svg { width: 17px; height: 17px; color: var(--danger); }
+.variant-c .editor__danger:disabled {
+  opacity: 1; background: var(--rail-bg); border-color: var(--divider); color: var(--head-ink);
+}
+</style>
+</head>
+<body class="variant-current">
+
+<div class="toolbar">
+  <strong>Notice</strong>
+  <button data-variant="current" class="on">Current</button>
+  <button data-variant="a">A · Callout</button>
+  <button data-variant="b">B · Inline</button>
+  <button data-variant="c">C · Banner</button>
+  <span class="sep"></span>
+  <strong>Used in</strong>
+  <button data-count="1" class="on">1</button>
+  <button data-count="3">3</button>
+  <span class="sep"></span>
+  <button data-theme="light" class="on">Light</button>
+  <button data-theme="dark">Dark</button>
+</div>
+
+<dialog class="editor" open>
+  <div class="editor__content">
+    <div class="editor__body" data-kind="verse" data-target="42">
+      <div class="editor__head">
+        <h2 class="editor__title" id="editorTitle">Edit verse 3</h2>
+      </div>
+      <form class="editor__form" data-editor-size="large" onsubmit="return false">
+        <div class="editor__field" data-editor-grow>
+          <label for="verseLyric">Lyrics</label>
+          <textarea id="verseLyric" name="lyric">O Tuhan, ENGKAU yang kekal
+Di surga dan di bumi
+Kasih-Mu yang tidak berkesudahan
+Kami puji nama-Mu</textarea>
+        </div>
+        <div class="editor__actions">
+          <button class="editor__danger editor__delete" type="button" data-verse-delete disabled>Delete verse</button>
+          <button class="editor__save" type="submit">Save</button>
+          <button class="editor__cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<div class="readout" id="readout">measuring…</div>
+
+<script>
+(function () {
+  var body = document.body;
+  var form = document.querySelector('.editor__form');
+  var actions = document.querySelector('.editor__actions');
+  var head = document.querySelector('.editor__head');
+  var field = document.querySelector('[data-editor-grow]');
+  var note = null;
+  var current = 'current';
+  var count = 1;
+
+  var icons = {
+    info: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.4"/><path d="M10 9v4.4M10 6.5v.2"/></svg>',
+    lock: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.4" y="8.6" width="11.2" height="8" rx="1.8"/><path d="M7 8.6V6.4a3 3 0 0 1 6 0v2.2"/></svg>',
+    warn: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.8 18 16.6H2z"/><path d="M10 8v3.4M10 13.8v.2"/></svg>'
+  };
+  function noun(n) { return n + ' Tata Ibadah'; }
+
+  function buildNote() {
+    if (note) note.remove();
+    note = document.createElement('div');
+    note.className = current === 'current' ? 'ref-note editor__help' : 'ref-note';
+    note.setAttribute('role', 'note');
+    if (current === 'current') {
+      note.innerHTML = 'This verse is used in ' + noun(count) + ', so it cannot be deleted here.';
+      form.appendChild(note);
+    } else if (current === 'a') {
+      note.innerHTML = icons.info + '<div><strong>Delete unavailable</strong><span>Used in ' + noun(count) + '.</span></div>';
+      form.insertBefore(note, actions);
+    } else if (current === 'b') {
+      note.innerHTML = icons.lock + '<span>Used in <b>' + count + '</b> Tata Ibadah — delete unavailable</span>';
+      /* the note is the first flex child of the action row, buttons stay right */
+      actions.insertBefore(note, actions.firstChild);
+    } else {
+      note.innerHTML = icons.warn + '<span>This verse is named in ' + noun(count) + '. It cannot be deleted until it is removed there.</span>';
+      form.insertBefore(note, field);
+    }
+  }
+
+  function measure() {
+    var out = [];
+    function box(label, el) {
+      if (!el) return;
+      var r = el.getBoundingClientRect(), s = getComputedStyle(el);
+      out.push(label + ' ' + Math.round(r.width) + '×' + Math.round(r.height) +
+        ' @ y' + Math.round(r.top) + ' | font ' + s.fontSize + '/' + s.lineHeight +
+        ' | bg ' + s.backgroundColor + ' | ink ' + s.color);
+    }
+    box('note', note);
+    box('delete', document.querySelector('[data-verse-delete]'));
+    var s = getComputedStyle(document.querySelector('[data-verse-delete]'));
+    out.push('delete opacity ' + s.opacity + ' border ' + s.borderColor);
+    var d = document.querySelector('.editor').getBoundingClientRect();
+    out.push('dialog ' + Math.round(d.width) + '×' + Math.round(d.height));
+    document.getElementById('readout').textContent = out.join('   ·   ');
+  }
+
+  function render() {
+    body.className = 'variant-' + current + (document.documentElement.dataset.theme === 'dark' ? ' is-dark' : '');
+    buildNote();
+    measure();
+  }
+
+  document.querySelectorAll('[data-variant]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-variant]').forEach(function (b) { b.classList.remove('on'); });
+      btn.classList.add('on'); current = btn.dataset.variant; render();
+    });
+  });
+  document.querySelectorAll('[data-count]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-count]').forEach(function (b) { b.classList.remove('on'); });
+      btn.classList.add('on'); count = Number(btn.dataset.count); render();
+    });
+  });
+  document.querySelectorAll('[data-theme]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.documentElement.dataset.theme = btn.dataset.theme;
+      document.querySelectorAll('[data-theme]').forEach(function (b) { b.classList.remove('on'); });
+      btn.classList.add('on'); render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
