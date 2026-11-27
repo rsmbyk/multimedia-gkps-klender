@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.3] - 2026-11-27
+
 ### Added
 
 - **The live entry header now stays pinned at the top when its entry scrolls off-screen.** Once the entry's whole block passes above the runner, a faithful copy of its header holds the top edge with a flat top and round bottom; clicking it returns to the live row without changing what is on air. The bottom pin, Next band and go to are unchanged (spec 242).

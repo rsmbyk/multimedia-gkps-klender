@@ -14,7 +14,7 @@ issue: 623
 closed_at: 2026-11-26
 closed_reason: merged into develop (PR #624)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-258: A slow rail or sidebar fetch gives no sign of work

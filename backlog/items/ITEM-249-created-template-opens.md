@@ -14,7 +14,7 @@ issue: 609
 closed_at: 2026-11-24
 closed_reason: merged into develop (PR #610)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-249: A newly created Template does not open on the reading stage

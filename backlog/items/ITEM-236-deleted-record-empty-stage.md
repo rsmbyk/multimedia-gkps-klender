@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-22
 closed_reason: merged into develop (PR #585)
 bump: patch
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-236: Deleting the open song or service falls back to the search page

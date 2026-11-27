@@ -14,7 +14,7 @@ issue: 621
 closed_at: 2026-11-25
 closed_reason: merged into develop (PR #622)
 bump: minor
-release_version:
+release_version: 1.37.3
 ---
 
 # ITEM-257: The live entry header leaves the top when its block goes off-screen
