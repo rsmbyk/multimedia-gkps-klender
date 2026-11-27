@@ -1,6 +1,6 @@
 ---
 id: ITEM-237
-status: in-review
+status: done
 title: 'Add song disappears when the songbooks sidebar is closed'
 type: fix
 priority: P1
