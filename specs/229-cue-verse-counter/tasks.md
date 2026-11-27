@@ -62,5 +62,5 @@ counter before and after.
 
 ## Phase 6 — Delivery (owner's word only)
 
-- [ ] T010 Close `ITEM-244` and record the PR in its card and the board row; apply `bump: patch`
+- [X] T010 Close `ITEM-244` and record the PR in its card and the board row; apply `bump: patch`
       (VERSION and the `## [Unreleased]` line) in the pre-merge commit.

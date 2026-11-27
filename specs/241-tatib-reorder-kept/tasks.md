@@ -34,7 +34,7 @@
 - [X] T013 Re-run `multimedia.web.tests` after `collectstatic`; compare its single failure with unmodified develop.
 - [X] T014 Re-run `tests/e2e/test_reading.py` and `tests.e2e.test_entries`; compare failures with unmodified develop.
 - [X] T015 Drive the live preview at `http://127.0.0.1:8791/tatib/322/` and record the measured before/after in `preview/README.md`.
-- [ ] T016 Write `analysis.md` with artifact SHAs, metrics, findings and history.
-- [ ] T017 Converge: compare the present code with the traceability table and append `converge.md`.
-- [ ] T018 Fold: write the `R57` modification and the `R58` block into `docs/spec/reading.md` and record `fold.md`.
-- [ ] T019 Open `ITEM-256`, move the board row, and report; commit only after a green suite (GIT-06).
+- [X] T016 Write `analysis.md` with artifact SHAs, metrics, findings and history.
+- [X] T017 Converge: compare the present code with the traceability table and append `converge.md`.
+- [X] T018 Fold: write the `R57` modification and the `R58` block into `docs/spec/reading.md` and record `fold.md`.
+- [X] T019 Open `ITEM-256`, move the board row, and report; commit only after a green suite (GIT-06).
