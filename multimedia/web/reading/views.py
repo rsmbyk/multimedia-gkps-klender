@@ -47,6 +47,7 @@ from multimedia.web.reading.formatting import format_verses
 from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
 from multimedia.web.reading import voices
+from multimedia.web.reading import freshness
 from multimedia.web.reading import versions as version_guard
 
 TESTAMENT_LABELS = {
@@ -135,6 +136,44 @@ def _empty_stage(request):
 def _empty_stage_context(empty):
     """The nothing-open stage's copy; no stored state or model is involved."""
     return {'read_name': '', 'read_hint': 'Choose a song or service from the list.'} if empty else {}
+
+
+# ---------- freshness polls (spec 258) ----------
+
+def freshness_page(request):
+    """The current version of the service or song an open page is showing."""
+    kind = request.GET.get('kind')
+    pk = request.GET.get('id')
+    if kind == 'service':
+        row = tatib_models.TataIbadah.objects.filter(
+            pk=pk, is_active=True, kind=tatib_models.TataIbadahKind.SERVICE).first()
+    elif kind == 'song':
+        row = song_models.Song.objects.active().filter(pk=pk, book__is_deleted=False).first()
+    else:
+        row = None
+    if row is None:
+        raise Http404('Unknown freshness target.')
+    return JsonResponse({'version': row.version})
+
+
+def freshness_songbooks(request):
+    rows = song_models.Book.objects.active().order_by('-is_hymn_book', 'name')
+    return JsonResponse({'fingerprint': freshness.list_fingerprint(rows)})
+
+
+def freshness_songs(request):
+    book = get_object_or_404(song_models.Book.objects.active(), pk=request.GET.get('book'))
+    rows = song_models.Song.objects.active().filter(book=book).order_by(
+        'number', 'sub_number', 'title')
+    return JsonResponse({'fingerprint': freshness.list_fingerprint(rows)})
+
+
+def freshness_services(request):
+    mode = request.GET.get('mode') or 'service'
+    kind = (tatib_models.TataIbadahKind.TEMPLATE if mode == 'template'
+            else tatib_models.TataIbadahKind.SERVICE)
+    rows = tatib_models.TataIbadah.objects.filter(is_active=True, kind=kind).order_by('pk')
+    return JsonResponse({'fingerprint': freshness.list_fingerprint(rows)})
 
 
 # ---------- sidebar editors (spec 005) ----------
@@ -2559,6 +2598,8 @@ class SongDetailView(TemplateView):
             'named_service_count': named_count,
             'is_hymn_book': book.is_hymn_book,
             'read_kind': 'song',
+            'read_page_id': song.pk,
+            'read_page_version': song.version,
             'read_eyebrow': citation,
             'read_name': song.title or citation,
             'read_no': '',
@@ -2626,6 +2667,8 @@ class TatibView(TemplateView):
             'items': items,
             'has_entries': any(block.get('entry') for block in items),
             'read_kind': 'tatib' if service else '',
+            'read_page_id': service.pk if service else '',
+            'read_page_version': service.version if service else '',
             'read_name': service.name if service else '',
             'read_no': '',
         })

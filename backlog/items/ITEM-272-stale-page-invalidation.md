@@ -1,19 +1,19 @@
 ---
 id: ITEM-272
-status: backlog
+status: done
 title: 'Invalidate a stale service or song page and offer reload'
 type: feat
 priority: P1
 effort: L
 created: 2026-11-28
 updated: 2026-11-28
-spec:
-branch:
-pr:
+spec: specs/258-live-reading-freshness/spec.md
+branch: feat/258-live-reading-freshness
+pr: 661
 issue:
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #661)
+bump: patch
 release_version:
 ---
 

@@ -17,6 +17,12 @@ urlpatterns = [
     path('search', reading_views.SearchView.as_view(), name='web-search'),
     path('search/', RedirectView.as_view(url='/search', query_string=True), name='web-search-legacy'),
 
+    # Freshness polls (spec 258): read-only version and list fingerprints.
+    path('freshness/page/', reading_views.freshness_page, name='web-freshness-page'),
+    path('freshness/songbooks/', reading_views.freshness_songbooks, name='web-freshness-songbooks'),
+    path('freshness/songs/', reading_views.freshness_songs, name='web-freshness-songs'),
+    path('freshness/services/', reading_views.freshness_services, name='web-freshness-services'),
+
     # Alkitab reading.
     path('bible/', reading_views.BibleView.as_view(), name='web-bible'),
     path('bible/<int:book_id>/', reading_views.BibleView.as_view(), name='web-bible-book'),
