@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **The projector's words now follow the stage when switching between full screen and windowed.** A fullscreen transition that grows or shrinks the stage re-fits the screen on the stage on the next frame, by the F key, a mouse zone or F11; the Go To detour is fitted too, and the cue, controls and existing resize answer are unchanged (ITEM-264, spec 247).
+- **A Go To detour now follows the stage on a resize as well.** When the stage changes while a passage Go To is on screen — the browser's own F11, or a fullscreen signal that arrives before the viewport grows — the detour's words are re-fitted to the new stage instead of keeping the windowed size (ITEM-266, spec 249).
 - **Opening Alkitab from the rail while Media Library is on stage now fetches the books instead of showing "No books yet."** The library page carries its own section identity, so the first Alkitab click is a section change rather than a toggle over an empty sidebar; the Media Library tile and its pending state are unchanged (ITEM-263, spec 246).
 
 ## [1.37.3] - 2026-11-27
