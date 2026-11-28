@@ -22,8 +22,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-215](./items/ITEM-215-dock-follow-known-red.md) | Two dock-follow "must not centre" E2E tests are red on develop | Exact `scrollTop == start` assertions fail when a re-read or the Next band hiding clamps the scroll down ~one row; identical on `85319b73`, the behaviour is correct | fix | P1 | S | — | 2026-11-19 |
 | [ITEM-217](./items/ITEM-217-unit-lane-known-red.md) | Eight unit-lane tests are red on develop | The legacy tatib payload, image/video projection contracts, rendered voices, three slot endpoints and the shortcuts sheet fail identically on `4b25e796` with the slice's change reverted; 543 tests, 8 failures after collectstatic | fix | P1 | M | — | 2026-11-19 |
 | [ITEM-261](./items/ITEM-261-scripture-fragment-filter-placeholder-red.md) | Scripture fragment test still expects the old book filter placeholder | `assertContains` still looks for `placeholder="Filter books..."`; identical on develop | fix | P1 | S | — | 2026-11-26 |
-| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | — | 2026-11-28 |
-| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | — | 2026-11-28 |
 | [ITEM-274](./items/ITEM-274-projector-version-aware-transitions.md) | Projector follows service changes without losing the live place | Identity-aware keep/reset/fallback rules driven by the service version | feat | P1 | L | — | 2026-11-28 |
 | [ITEM-275](./items/ITEM-275-dock-version-aware-transitions.md) | OBS dock follows service changes with the same rules | The dock mirrors the projector's transitions while painting only changed rows | feat | P1 | L | — | 2026-11-28 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
@@ -36,6 +34,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | 2026-11-28 |
+| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | 2026-11-28 |
 
 ## Ready
 

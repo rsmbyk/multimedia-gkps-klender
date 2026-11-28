@@ -1,14 +1,14 @@
 ---
 id: ITEM-273
-status: backlog
+status: speccing
 title: 'Sidebars sync external changes without losing order or filter'
 type: feat
 priority: P1
 effort: L
 created: 2026-11-28
 updated: 2026-11-28
-spec:
-branch:
+spec: specs/258-live-reading-freshness/spec.md
+branch: feat/258-live-reading-freshness
 pr:
 issue:
 closed_at:

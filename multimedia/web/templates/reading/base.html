@@ -34,6 +34,10 @@
 <link rel="stylesheet" href="{% static 'styles/design/generate.css' %}">
 </head>
 <body>
+<div class="freshness-badge" id="freshnessBadge" role="status" hidden>
+  <span>This page was edited elsewhere.</span>
+  <button type="button" data-freshness-reload>Reload</button>
+</div>
 
 <!-- ============================================================
      The phone's toolbar (spec 138). Hidden above 720px by the
@@ -224,7 +228,7 @@
       </svg>
     </button>
 
-    <div class="panel__body" id="panelBody" tabindex="0">
+    <div class="panel__body" id="panelBody" tabindex="0" data-freshness-scope="panel">
       {% block panel_body %}{% endblock %}
     </div>
 
@@ -353,7 +357,7 @@
       </svg>
     </button>
 
-    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList">{% block ch_rows %}{% endblock %}</ul></div>
+    <div class="ch__body" id="chBody" tabindex="0" data-freshness-scope="list" data-book-id="{{ editor_book_id|default:'' }}"><ul id="chList">{% block ch_rows %}{% endblock %}</ul></div>
 
     <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -434,7 +438,7 @@
    {% block search_results %}{% endblock %}
  </section>
 
- <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1"{% if read_hint %} data-kind="empty"{% elif read_kind %} data-kind="{{ read_kind }}"{% endif %}>
+ <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1" data-page-kind="{{ read_kind }}" data-page-id="{{ read_page_id }}" data-page-version="{{ read_page_version }}"{% if read_hint %} data-kind="empty"{% elif read_kind %} data-kind="{{ read_kind }}"{% endif %}>
  {% if not read_hint %}<header class="read__head">
    <div class="read__head-top">
     <p class="read__eyebrow" id="readEyebrow"{% if not read_eyebrow %} hidden{% endif %}>{{ read_eyebrow|default:'' }}</p>
@@ -493,5 +497,6 @@
 <script src="{% static 'web/reorder.js' %}"></script>
 <script src="{% static 'web/songs_verse.js' %}"></script>
 <script src="{% static 'web/preview.js' %}"></script>
+<script src="{% static 'web/freshness.js' %}"></script>
 </body>
 </html>

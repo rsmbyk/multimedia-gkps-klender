@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" data-section="tatib">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — 258 live reading freshness</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+  body { display: block; padding-bottom: 24px; }
+  html, body { height: auto; }
+  .preview-bar {
+    position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; gap: 8px;
+    align-items: center; box-sizing: border-box; width: 100%; padding: 10px 16px;
+    border-bottom: 1px solid var(--divider); background: var(--canvas);
+  }
+  .preview-bar__label { margin-right: 8px; font: 600 12px/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink); }
+  .preview-bar button {
+    height: 32px; padding: 0 12px; border: 1px solid var(--divider); border-radius: 8px;
+    background: none; color: var(--ink); font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+  }
+  .preview-bar button[aria-pressed="true"] { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+  .preview-bar button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .sheet { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; padding: 96px 16px 24px; }
+  .stage { min-height: 480px; }
+  .sidebar { border-left: 1px solid var(--divider); padding-left: 16px; }
+  .sidebar ul { list-style: none; margin: 0; padding: 0; }
+  .sidebar li { margin-bottom: 2px; }
+  .sidebar .songrow { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 8px; }
+
+  /* Candidate rules for this slice. */
+  .freshness-badge {
+    position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 30;
+    display: flex; gap: 10px; align-items: center; padding: 8px 10px 8px 14px;
+    border: 1px solid var(--divider); border-radius: 10px; background: var(--canvas);
+    box-shadow: 0 6px 24px rgba(0,0,0,.16); color: var(--ink);
+    font: 600 12px/1.4 var(--font-sans);
+  }
+  .freshness-badge[hidden] { display: none; }
+  .freshness-badge button {
+    height: 30px; padding: 0 12px; border: 0; border-radius: 8px;
+    background: var(--active-bg); color: var(--active-ink);
+    font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+  }
+  .entry__acts { opacity: 1 !important; }  /* preview keeps hover-only controls visible */
+  [data-invalid="true"] .entry__add-btn,
+  [data-invalid="true"] .entry__ctrl { opacity: .45; pointer-events: none; cursor: not-allowed; }
+  @keyframes freshness-row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .row-enter { animation: freshness-row-in 180ms cubic-bezier(.2,.8,.2,1) both; }
+  @media (max-width: 800px) {
+    .sheet { grid-template-columns: 1fr; }
+    .sidebar { border-left: 0; padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-bar" role="toolbar" aria-label="Preview states">
+  <span class="preview-bar__label">Freshness states</span>
+  <button type="button" data-state="current" aria-pressed="true">Current page</button>
+  <button type="button" data-state="invalid" aria-pressed="false">Invalidated</button>
+  <button type="button" data-state="sidebar" aria-pressed="false">Sidebar insert</button>
+  <button type="button" data-theme="light" aria-pressed="true">Light</button>
+  <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+</div>
+
+<div class="freshness-badge" id="badge" role="status" hidden>
+  <span>This page was edited elsewhere.</span>
+  <button type="button">Reload</button>
+</div>
+
+<main class="sheet" data-read="on">
+  <section class="stage" id="stage" data-invalid="false">
+    <article class="read" data-kind="tatib">
+      <p class="read__eyebrow">TATA IBADAH</p>
+      <h1 class="read__name">Ibadah Minggu</h1>
+      <div class="entry__acts">
+        <button type="button" class="entry__ctrl" data-entry-edit="1"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="1"><span class="entry__ctrl-label">Delete</span></button>
+      </div>
+      <section class="tatib__item tatib__item--entry">
+        <h2 class="read__sec">Votum</h2>
+        <p class="tatib__tx">Pertolongan kita.</p>
+      </section>
+      <p class="entry__acts">
+        <button type="button" class="entry__add-btn" data-entry-open="text">+ Text</button>
+        <button type="button" class="entry__add-btn" data-entry-open="song">+ Song</button>
+        <button type="button" class="entry__add-btn" data-entry-open="scripture">+ Passage</button>
+        <button type="button" class="entry__add-btn" data-entry-open="media">+ Media</button>
+      </p>
+    </article>
+  </section>
+
+  <aside class="sidebar" aria-label="Service entries">
+    <ul id="entries">
+      <li><a class="songrow" href="#"><span class="songrow__c">1</span><span class="songrow__t">Votum</span></a></li>
+      <li><a class="songrow" href="#"><span class="songrow__c">2</span><span class="songrow__t">Kidung</span></a></li>
+      <li id="newRow" hidden><a class="songrow" href="#"><span class="songrow__c">3</span><span class="songrow__t">Doa</span></a></li>
+    </ul>
+  </aside>
+</main>
+
+<script>
+(function () {
+  var stateButtons = Array.prototype.slice.call(document.querySelectorAll('.preview-bar button[data-state]'));
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('.preview-bar button[data-theme]'));
+  var stage = document.getElementById('stage');
+  var badge = document.getElementById('badge');
+  var newRow = document.getElementById('newRow');
+  function setState(state) {
+    stateButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-state') === state)); });
+    stage.setAttribute('data-invalid', String(state === 'invalid'));
+    if (state === 'invalid') badge.removeAttribute('hidden'); else badge.setAttribute('hidden', '');
+    if (state === 'sidebar') {
+      newRow.removeAttribute('hidden');
+      newRow.classList.remove('row-enter');
+      void newRow.offsetWidth;
+      newRow.classList.add('row-enter');
+    } else {
+      newRow.setAttribute('hidden', '');
+      newRow.classList.remove('row-enter');
+    }
+  }
+  stateButtons.forEach(function (b) { b.addEventListener('click', function () { setState(b.getAttribute('data-state')); }); });
+  themeButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.documentElement.setAttribute('data-theme', b.getAttribute('data-theme'));
+      themeButtons.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+  setState('current');
+})();
+</script>
+</body>
+</html>

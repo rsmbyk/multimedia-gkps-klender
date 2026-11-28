@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-28
-**slices**: `254-entity-versioning`, `256-enter-confirms-delete`, `255-use-template-progress-persist`, `257-modal-scroll-containment`, `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `258-live-reading-freshness`, `254-entity-versioning`, `256-enter-confirms-delete`, `255-use-template-progress-persist`, `257-modal-scroll-containment`, `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2267,3 +2267,45 @@ with `<count>` from the distinct-service count, and SHALL disable Delete with th
 #### Scenario: unreferenced song
 - WHEN the song's delete confirmation opens
 - THEN no note renders and Delete is enabled
+
+
+### R72 — An open page notices a stale version
+
+Service and song pages SHALL poll the page-version endpoint every 10 s while visible. When the server's
+version differs from the version the page loaded, the page SHALL close its dialogs and disable, in place,
+all add, edit, delete, reorder and Project controls on that page. A failed poll SHALL change nothing and
+a later poll SHALL recover.
+
+#### Scenario: a second client writes
+- WHEN the server version moves ahead while the page is open
+- THEN the page becomes stale within 10 s and no control remains actionable
+
+#### Scenario: no change
+- WHEN the polled version still matches
+- THEN the page and its controls are untouched
+
+### R73 — Sidebars follow external list changes
+
+The songbook, song and service sidebars SHALL poll their scoped fingerprint endpoints every 10 s and,
+on a change, fetch the fresh fragment and reconcile rows by id: update changed rows, remove deleted rows
+and insert new rows at the position dictated by the current filter and sort with an animation. Filter
+text, sort choice, scroll offset and panel state SHALL survive reconciliation. A template added while
+dated services are shown SHALL NOT appear in that list.
+
+#### Scenario: a row edited elsewhere
+- WHEN the fingerprint changes because one row changed
+- THEN only that row updates and neighbouring row nodes are preserved
+
+#### Scenario: a new song in alphabetical order
+- WHEN a song starting with G is added while the songs sidebar is sorted alphabetically
+- THEN the new row is inserted at its alphabetical position, not at the top
+
+### R74 — The stale badge reloads only the page
+
+A stale page SHALL show a top-centre badge saying the page was edited elsewhere, with a Reload button
+that re-fetches the current URL and swaps the page content in place without a browser reload. The badge
+SHALL stay until that reload completes.
+
+#### Scenario: Reload
+- WHEN the operator presses Reload
+- THEN the page content is current, the badge is gone and the document was not reloaded

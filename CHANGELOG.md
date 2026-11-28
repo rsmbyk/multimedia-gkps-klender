@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.15] - 2026-11-28
+
+### Added
+- Open service and song pages detect a stale version within 10 s, disable their edit controls and offer an in-place Reload badge.
+- Sidebars reconcile external edits, deletions and insertions by row id, preserving filter, sort and scroll.
+
+
 ## [1.37.13] - 2026-11-28
 
 ### Added
