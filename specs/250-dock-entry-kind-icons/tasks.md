@@ -7,4 +7,4 @@
 - [x] Run the new module and the targeted chevron/wrap/pin cases.
 - [x] Measure the live page at 420×800, dark, 1× and record the numbers in `spec.md` §UI/UX.
 - [x] Fold `dock/R20` into `docs/spec/dock.md` after acceptance.
-- [x] Raise ITEM-266, bump `VERSION` to 1.37.6, write the changelog line and commit delivery.
+- [x] Raise ITEM-267, bump `VERSION` to 1.37.7, write the changelog line and commit delivery.

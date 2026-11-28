@@ -42,7 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-266](./items/ITEM-266-dock-entry-kind-icons.md) | Each OBS dock entry header shows its kind | Entry headers now carry the product's 16px kind mark immediately left of their chevron; breaks stay bare and the live header keeps its mark | feat | P2 | S | [250](../specs/250-dock-entry-kind-icons/spec.md) | `feat/250-dock-entry-kind-icons` | 2026-11-28 |
+| [ITEM-267](./items/ITEM-267-dock-entry-kind-icons.md) | Each OBS dock entry header shows its kind | Entry headers now carry the product's 16px kind mark immediately left of their chevron; breaks stay bare and the live header keeps its mark | feat | P2 | S | [250](../specs/250-dock-entry-kind-icons/spec.md) | `feat/250-dock-entry-kind-icons` | 2026-11-28 |
 
 
 ## In review

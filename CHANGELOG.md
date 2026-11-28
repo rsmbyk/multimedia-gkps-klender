@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Every entry header in the OBS dock now shows its kind beside the chevron.** A passage carries an open book, a song a note, media a play-frame, and text three rules — the marks the reading page already uses, seated immediately left of the chevron. A section break stays bare, a wrapped header keeps both centred, and the live header keeps its mark after the chevron hides (ITEM-266, spec 250).
+- **Every entry header in the OBS dock now shows its kind beside the chevron.** A passage carries an open book, a song a note, media a play-frame, and text three rules — the marks the reading page already uses, seated immediately left of the chevron. A section break stays bare, a wrapped header keeps both centred, and the live header keeps its mark after the chevron hides (ITEM-267, spec 250).
 
 ### Fixed
 

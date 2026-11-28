@@ -1,5 +1,5 @@
 ---
-id: ITEM-266
+id: ITEM-267
 status: in progress
 title: 'Each OBS dock entry header shows its kind'
 type: feat
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-266: Each OBS dock entry header shows its kind
+# ITEM-267: Each OBS dock entry header shows its kind
 
 ## Summary
 
