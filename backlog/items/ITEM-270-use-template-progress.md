@@ -1,6 +1,6 @@
 ---
 id: ITEM-270
-status: in_review
+status: done
 title: 'Use template progress survives a close'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: 253-use-template-progress
 branch: feat/253-use-template-progress
 pr: 651
 issue: 650
-closed_at:
-closed_reason:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #651)
 bump: patch
 release_version:
 ---

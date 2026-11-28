@@ -48,12 +48,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-270](./items/ITEM-270-use-template-progress.md) | Use template progress survives a close | Settled slots are kept per template in browser session storage; a dirty close says the work is saved and can be resumed | feat | P2 | M | [253](../specs/253-use-template-progress/spec.md) | [#651](https://github.com/rsmbyk/multimedia-gkps-klender/pull/651) | 2026-11-28 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-270](./items/ITEM-270-use-template-progress.md) | Use template progress survives a close | Settled slots are kept per template in browser session storage; a dirty close says the work is saved and can be resumed | feat | P2 | M | [253](../specs/253-use-template-progress/spec.md) | develop via [#651](https://github.com/rsmbyk/multimedia-gkps-klender/pull/651) | 2026-11-28 |
 | [ITEM-269](./items/ITEM-269-empty-date-group.md) | Empty date groups survive the last delete | A date bucket's heading stays after its last service is removed; the same client path also serves the Templates and songbook groups | fix | P1 | S | [252](../specs/252-empty-date-group/spec.md) | develop via [#649](https://github.com/rsmbyk/multimedia-gkps-klender/pull/649) | 2026-11-28 |
 | [ITEM-268](./items/ITEM-268-cloudrun-csrf-origin.md) | Cloud Run writes pass CSRF | Django now reads the proxy's HTTPS header, so every add/edit/delete POST reaches its view instead of failing the CSRF origin check | fix | P0 | S | [251](../specs/251-cloudrun-csrf-origin/spec.md) | develop via [#644](https://github.com/rsmbyk/multimedia-gkps-klender/pull/644) | 2026-11-28 |
 | [ITEM-265](./items/ITEM-265-dock-top-pin-early.md) | The live entry header pins at the top as soon as it is clipped | The pinned copy now takes over at the header's own top edge instead of after the whole block clears; one header is painted with no takeover hop | fix | P2 | S | [248](../specs/248-dock-top-pin-early/spec.md) | develop via [#640](https://github.com/rsmbyk/multimedia-gkps-klender/pull/640) | 2026-11-28 |

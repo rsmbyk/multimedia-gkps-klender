@@ -42,4 +42,4 @@ row gets a failing test before its implementation, per TDD-01.
 ## Delivery (from the repo's declared parts)
 
 - [X] T021 [DELIVERY] Fold `reading/R65` into `docs/spec/reading.md`, append the `CHANGELOG.md` line and apply the declared `patch` at delivery
-- [ ] T022 [DELIVERY] Move `ITEM-270` to `In review` then `Done` in the same PR, with `Refs` to the anchor issue
+- [X] T022 [DELIVERY] Move `ITEM-270` to `In review` then `Done` in the same PR, with `Refs` to the anchor issue

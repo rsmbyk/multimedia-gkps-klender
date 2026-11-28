@@ -17,7 +17,7 @@ slot resolutions with no warning, so an accidental dismissal meant starting over
 - **Verification**: 22 test · 0 inspection · 0 manual
 - **Convergence**: Converged in 1 pass · accepted gaps: none
 - **Folded**: `docs/spec/reading.md` — R65 added (R64 was already taken by spec 252)
-- **Board**: `ITEM-270` → In review
+- **Board**: `ITEM-270` → Done (develop via #651)
 - **Refs** #650
 
 The new module `tests/e2e/test_use_template_progress` passes 15/15, and the existing
