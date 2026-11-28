@@ -32,7 +32,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-270](./items/ITEM-270-use-template-progress.md) | Use template progress survives a close | Settled slots are kept per template in browser session storage; a dirty close says the work is saved and can be resumed | feat | P2 | M | [253](../specs/253-use-template-progress/spec.md) | 2026-11-28 |
 
 ## Ready
 
@@ -49,6 +48,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-270](./items/ITEM-270-use-template-progress.md) | Use template progress survives a close | Settled slots are kept per template in browser session storage; a dirty close says the work is saved and can be resumed | feat | P2 | M | [253](../specs/253-use-template-progress/spec.md) | [#651](https://github.com/rsmbyk/multimedia-gkps-klender/pull/651) | 2026-11-28 |
 
 ## Done
 
