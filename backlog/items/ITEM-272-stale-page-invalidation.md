@@ -1,6 +1,6 @@
 ---
 id: ITEM-272
-status: speccing
+status: in review
 title: 'Invalidate a stale service or song page and offer reload'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-28
 updated: 2026-11-28
 spec: specs/258-live-reading-freshness/spec.md
 branch: feat/258-live-reading-freshness
-pr:
+pr: 661
 issue:
 closed_at:
 closed_reason:

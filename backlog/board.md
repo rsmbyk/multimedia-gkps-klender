@@ -34,8 +34,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | 2026-11-28 |
-| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | 2026-11-28 |
 
 ## Ready
 
@@ -52,6 +50,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
+| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
 
 ## Done
 
