@@ -2564,3 +2564,94 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(back['font'], windowed['font'], (windowed, back))
         self.assertEqual(back['key'], windowed['key'], (windowed, back))
 
+    # Spec 249: a Go To detour is a screen on the stage and must follow a stage resize.
+
+    def _open_long_goto(self, page):
+        wait_for_goto(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mzm 23')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        page.keyboard.press('Enter')
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').classList.contains('is-active')",
+            timeout=6000)
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def _detour_reading(self, page):
+        return page.evaluate("""() => {
+          const detour = document.querySelector('.projector-detour');
+          const lines = detour && detour.querySelector('.screen__lines');
+          const stage = document.getElementById('projectorScreens');
+          return {active: Boolean(detour && detour.classList.contains('is-active')),
+                  font: lines ? parseFloat(getComputedStyle(lines).fontSize) : null,
+                  key: detour && detour.dataset.fitted,
+                  stageHeight: stage.clientHeight,
+                  path: location.pathname + location.search};
+        }""")
+
+    def _grow_viewport(self, page, signal_first=False):
+        if signal_first:
+            page.evaluate("() => document.dispatchEvent(new Event('fullscreenchange'))")
+            page.wait_for_timeout(80)
+        cdp = page.context.new_cdp_session(page)
+        cdp.send("Emulation.setDeviceMetricsOverride",
+                 {"width": 1920, "height": 1080, "deviceScaleFactor": 1, "mobile": False})
+        page.wait_for_timeout(320)
+        return cdp
+
+    def _restore_viewport(self, page, cdp):
+        cdp.send("Emulation.setDeviceMetricsOverride",
+                 {"width": 1440, "height": 900, "deviceScaleFactor": 1, "mobile": False})
+        page.wait_for_timeout(320)
+
+    def test_a_goto_detour_refits_on_a_resize(self):
+        """FR-001 / FR-003 / US1-AC1, AC2: the detour follows the stage in both directions."""
+        page = self._page(self._long_projector_url())
+        self._open_long_goto(page)
+        page.wait_for_timeout(200)
+        before = self._detour_reading(page)
+        cdp = self._grow_viewport(page)
+        grown = self._detour_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._detour_reading(page)
+        page.close()
+        self.assertTrue(before['active'] and grown['active'] and back['active'])
+        self.assertGreater(grown['stageHeight'], before['stageHeight'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertNotEqual(grown['key'], before['key'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+        self.assertEqual(back['key'], before['key'], (before, back))
+        for reading in (before, grown, back):
+            self.assertEqual(reading['path'], self._long_projector_url())
+
+    def test_a_fullscreen_signal_before_resize_still_fits_the_detour(self):
+        """FR-002 / US1-AC3: an early fullscreen frame cannot freeze the detour's size."""
+        page = self._page(self._long_projector_url())
+        self._open_long_goto(page)
+        page.wait_for_timeout(200)
+        before = self._detour_reading(page)
+        cdp = self._grow_viewport(page, signal_first=True)
+        grown = self._detour_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._detour_reading(page)
+        page.close()
+        self.assertTrue(grown['active'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+
+    def test_a_resize_without_a_detour_keeps_service_screens(self):
+        """FR-004 / US1-AC4: the guard case is green on the base as well as the slice."""
+        page = self._fullscreen_page()
+        before = self._fit_reading(page)
+        cdp = self._grow_viewport(page)
+        grown = self._fit_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._fit_reading(page)
+        page.close()
+        self.assertGreater(grown['stageHeight'], before['stageHeight'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+        self.assertEqual(back['key'], before['key'], (before, back))
+
+
