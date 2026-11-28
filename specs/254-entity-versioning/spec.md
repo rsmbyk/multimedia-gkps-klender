@@ -119,13 +119,13 @@
 | FR-003 | Every write to an existing tracked row SHALL carry the version the writer opened; a mismatch SHALL return HTTP 409 and write nothing. | `versioning/R3` |
 | FR-004 | The version comparison and the write SHALL be performed under a row lock inside one transaction. | `versioning/R4` |
 | FR-005 | Creating a new tracked row SHALL NOT require an expected version for the new row, but a create inside a service SHALL check the parent service's version. | `versioning/R5` |
-| FR-006 | A service's version SHALL increase when its own fields change, when an entry or legacy item inside it is created, edited, deleted or reordered, and when any referenced song or verse changes. | `reading/R64` |
+| FR-006 | A service's version SHALL increase when its own fields change, when an entry or legacy item inside it is created, edited, deleted or reordered, and when any referenced song or verse changes. | `reading/R68` |
 | FR-007 | A song or verse change SHALL increase the version of every dated service and template whose song entry names a live verse of that song. | `versioning/R6` |
 | FR-008 | A referenced verse SHALL NOT be deletable; this refusal stays authoritative at the server. | `reading/R40` |
-| FR-009 | A songbook SHALL NOT be soft-deleted when any of its songs has a live verse named by a song-kind service entry. | `reading/R65` |
-| FR-010 | A song SHALL NOT be soft-deleted when any of its live verses is named by a song-kind service entry. | `reading/R65` |
-| FR-011 | The notice for all three refusals SHALL read `Used in <count> Tata Ibadah — delete unavailable`, where `<count>` is the number of **distinct** Tata Ibadah records, including templates, that name a live verse of the target. | `reading/R66` |
-| FR-012 | The song and songbook delete confirmation dialogs SHALL show the notice and disable their Delete when the count is greater than zero; the verse edit modal SHALL keep its existing note and disabled Delete. | `reading/R66` |
+| FR-009 | A songbook SHALL NOT be soft-deleted when any of its songs has a live verse named by a song-kind service entry. | `reading/R69` |
+| FR-010 | A song SHALL NOT be soft-deleted when any of its live verses is named by a song-kind service entry. | `reading/R69` |
+| FR-011 | The notice for all three refusals SHALL read `Used in <count> Tata Ibadah — delete unavailable`, where `<count>` is the number of **distinct** Tata Ibadah records, including templates, that name a live verse of the target. | `reading/R70` |
+| FR-012 | The song and songbook delete confirmation dialogs SHALL show the notice and disable their Delete when the count is greater than zero; the verse edit modal SHALL keep its existing note and disabled Delete. | `reading/R70` |
 | FR-013 | The conflict response body SHALL carry a stable machine-readable error and a human-readable message; presentation of that response is out of scope for this slice. | `versioning/R7` |
 | FR-014 | Existing rows SHALL be migrated to version 1 without changing any other stored value. | `versioning/R1` |
 | FR-015 | Every write path that touches a tracked row SHALL use the same version rule, including the legacy item endpoints and the service template generate/copy paths. | `versioning/R3` |
