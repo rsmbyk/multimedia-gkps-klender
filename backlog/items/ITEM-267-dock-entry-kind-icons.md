@@ -14,7 +14,7 @@ issue: 642
 closed_at: 2026-11-28
 closed_reason: merged into develop (PR #641)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-267: Each OBS dock entry header shows its kind

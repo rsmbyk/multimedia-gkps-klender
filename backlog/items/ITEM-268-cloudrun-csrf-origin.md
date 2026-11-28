@@ -14,7 +14,7 @@ issue: 643
 closed_at: 2026-11-28
 closed_reason: merged into develop (PR #644)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-268: Cloud Run writes pass CSRF

@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-27
 closed_reason: merged into develop (PR #637)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-264: Projector words stay at the windowed size after fullscreen
