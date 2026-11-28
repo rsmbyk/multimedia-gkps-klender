@@ -1,6 +1,6 @@
 ---
-id: ITEM-265
-status: in_review
+id: ITEM-266
+status: done
 title: 'Go To detour words stay at the old size after fullscreen'
 type: fix
 priority: P1
@@ -11,13 +11,13 @@ spec: '249-goto-fullscreen-fit'
 branch: fix/249-goto-fullscreen-fit
 pr: 638
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-27
+closed_reason: merged into develop (PR #638)
 bump: patch
 release_version:
 ---
 
-# ITEM-265: Go To detour words stay at the old size after fullscreen
+# ITEM-266: Go To detour words stay at the old size after fullscreen
 
 ## Summary
 

@@ -5,7 +5,7 @@
 **Created**: 2026-11-27
 **Status**: Accepted
 **Input**: "i just tested it again, and it does not work for goto"
-**Demand**: `ITEM-265` (card opened at delivery)
+**Demand**: `ITEM-266` (card opened at delivery)
 **Capability**: `projector/R14` — modified block, regression note on spec 247's fix
 
 Spec 247 taught the projector to re-fit the screen on the stage on `fullscreenchange` and on a
@@ -112,7 +112,7 @@ Numbers are from `preview/probe.py`.
 - The compare server serves the merged spec-247 build (`c72b5ee3`); the slice is based on that same
   commit, so the only source difference is the resize handler.
 - The production change is already in the worktree as the gate-1 preview, uncommitted.
-- `ITEM-265` and version `1.37.6` are the next free IDs at the time the branch was cut; both are
+- `ITEM-266` and version `1.37.6` are the next free IDs at the time the branch was cut; both are
   rechecked before delivery.
 - Known gap left open: the bundled-faces-ready path clears the detour's key but does not fit the
   detour while it is up. Not the reported trigger; recorded rather than widened into this slice.

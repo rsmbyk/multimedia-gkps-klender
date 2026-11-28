@@ -54,9 +54,9 @@ gate-1 preview; red tasks revert that one file under a trap that restores it on 
 
 ## Phase 5 — Delivery (owner's words only)
 
-- [ ] T012 On `push`: push the branch, open the draft PR, move `ITEM-265` to `In review` in its own
+- [ ] T012 On `push`: push the branch, open the draft PR, move `ITEM-266` to `In review` in its own
       commit with `status` and `pr:`, run the full browser suite and compare failure names with the
       base.
-- [ ] T013 On `merge`: apply version `1.37.6` and the changelog line, close `ITEM-265` as `Done`
+- [ ] T013 On `merge`: apply version `1.37.6` and the changelog line, close `ITEM-266` as `Done`
       with `closed_at`, `closed_reason` and the board's `develop via [#N]` row in the pre-merge
       delivery commit, update the PR body in place, then squash-merge with that same body.

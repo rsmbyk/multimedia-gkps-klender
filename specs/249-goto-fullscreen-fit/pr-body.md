@@ -18,6 +18,6 @@ stage-screen fit after `render()`, so the detour follows the same stage geometry
 
 ## Records
 
-- Board: ITEM-265 (In review).
+- Board: ITEM-266 (Done).
 - Spec: `specs/249-goto-fullscreen-fit/spec.md`.
 - Fold: `docs/spec/projector.md`, `projector/R14` modified with a Go To regression scenario.

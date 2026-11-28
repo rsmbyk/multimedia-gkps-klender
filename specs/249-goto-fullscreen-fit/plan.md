@@ -84,7 +84,7 @@ specs/249-goto-fullscreen-fit/
 static/web/projector.js                      resize fits the stage screen too
 tests/e2e/test_projector.py                  three new cases beside the Go To/fit cases
 docs/spec/projector.md                       R14 regression note at Converge/Fold
-backlog/board.md + backlog/items/ITEM-265    card opened at delivery
+backlog/board.md + backlog/items/ITEM-266    card opened at delivery
 VERSION + CHANGELOG.md                       patch bumped in the delivery commit
 ```
 
