@@ -27,7 +27,7 @@ class TataIbadahItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.TataIbadahItem
-        fields = '__all__'
+        exclude = ('version',)
 
 
 class TataIbadahSerializer(serializers.ModelSerializer):
@@ -39,7 +39,7 @@ class TataIbadahSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.TataIbadah
-        fields = '__all__'
+        exclude = ('version',)
 
     def create(self, validated_data):
         validated_data.pop('kind', None)

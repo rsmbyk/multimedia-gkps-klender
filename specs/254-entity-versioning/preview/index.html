@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en" data-section="kidung">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — 254 entity versioning deletion notice</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+  /* Preview-only chrome: the shipped body is a flex shell; this page is a sheet. */
+  html, body { height: auto; }
+  body { display: block; padding: 0 0 32px; }
+  .preview-bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    width: 100%; box-sizing: border-box; padding: 10px 16px;
+    border-bottom: 1px solid var(--divider); background: var(--canvas);
+  }
+  .preview-bar__label { margin-right: 8px; font: 600 12px/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink); }
+  .preview-bar button {
+    height: 32px; padding: 0 12px; border: 1px solid var(--divider); border-radius: 8px;
+    background: none; color: var(--ink); font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+  }
+  .preview-bar button[aria-pressed="true"] { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+  .preview-bar button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* Candidate rule for this slice: the delete confirmation needs room for the note on one line. */
+  .editor[data-panel="song"], .editor[data-panel="songbook"], .editor[data-panel="clear"] {
+    width: min(560px, calc(100vw - 32px));
+  }
+  .preview-hint { margin: 14px 16px; font: 400 12px/18px var(--font-sans); color: var(--head-ink); }
+  .preview-hint[hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="preview-bar" role="toolbar" aria-label="Preview states">
+  <span class="preview-bar__label">Delete-refusal states</span>
+  <button type="button" data-show="song" aria-pressed="true">Song · 2 services</button>
+  <button type="button" data-show="songbook" aria-pressed="false">Songbook · 1</button>
+  <button type="button" data-show="verse" aria-pressed="false">Verse modal</button>
+  <button type="button" data-show="clear" aria-pressed="false">Unreferenced control</button>
+  <button type="button" data-theme="light" aria-pressed="true">Light</button>
+  <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+</div>
+<p class="preview-hint">Each state uses the product's real dialog markup and classes. The notice is the existing verse-modal note; only the count now means distinct Tata Ibadah records, and the same note moves into the song and songbook delete confirmations.</p>
+
+<!-- Song delete confirmation with a non-zero distinct-service count -->
+<dialog class="editor" id="songPanel" data-panel="song" aria-labelledby="songTitle">
+  <div class="editor__content">
+    <div class="editor__body" data-kind="song" data-delete-id="315">
+      <h2 id="songTitle" class="sr">Delete song: Ibadah Pace Probe</h2>
+      <p>Delete <strong>Ibadah Pace Probe</strong>?</p>
+      <form class="editor__form" method="post" action="#">
+        <div class="editor__actions">
+          <p class="editor__refnote" id="songRefNote" role="note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.4" y="8.6" width="11.2" height="8" rx="1.8"/><path d="M7 8.6V6.4a3 3 0 0 1 6 0v2.2"/></svg><span>Used in <b>2</b> Tata Ibadah — delete unavailable</span></p>
+          <button class="editor__danger" type="submit" disabled aria-describedby="songRefNote">Delete song</button>
+          <button class="editor__cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <p class="editor__status sr" role="status"></p>
+  </div>
+</dialog>
+
+<!-- Songbook delete confirmation with a non-zero distinct-service count -->
+<dialog class="editor" id="bookPanel" data-panel="songbook" aria-labelledby="bookTitle">
+  <div class="editor__content">
+    <div class="editor__body" data-kind="songbook" data-delete-id="41">
+      <h2 id="bookTitle" class="sr">Delete songbook: Kumpulan Kidung</h2>
+      <p>Delete <strong>Kumpulan Kidung</strong>?</p>
+      <form class="editor__form" method="post" action="#">
+        <div class="editor__actions">
+          <p class="editor__refnote" id="bookRefNote" role="note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.4" y="8.6" width="11.2" height="8" rx="1.8"/><path d="M7 8.6V6.4a3 3 0 0 1 6 0v2.2"/></svg><span>Used in <b>1</b> Tata Ibadah — delete unavailable</span></p>
+          <button class="editor__danger" type="submit" disabled aria-describedby="bookRefNote">Delete songbook</button>
+          <button class="editor__cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <p class="editor__status sr" role="status"></p>
+  </div>
+</dialog>
+
+<!-- Verse edit modal: same note, now counting distinct services -->
+<dialog class="editor" id="versePanel" data-panel="verse" aria-labelledby="verseTitle">
+  <div class="editor__content">
+    <div class="editor__body" data-kind="verse" data-editor-size="large">
+      <h2 id="verseTitle" class="sr">Edit verse 2</h2>
+      <div class="editor__field">
+        <label for="verseLyric">Verse 2</label>
+        <textarea id="verseLyric" rows="5" readonly>Riap ma hita jongjong.</textarea>
+      </div>
+      <div class="editor__actions">
+        <p class="editor__refnote" id="verseReferenceNote" role="note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.4" y="8.6" width="11.2" height="8" rx="1.8"/><path d="M7 8.6V6.4a3 3 0 0 1 6 0v2.2"/></svg><span>Used in <b>2</b> Tata Ibadah — delete unavailable</span></p>
+        <button class="editor__danger editor__delete" type="button" data-verse-delete data-verse-row="42" disabled aria-describedby="verseReferenceNote">Delete verse</button>
+        <button class="editor__save" type="button">Save</button>
+        <button class="editor__cancel" type="button">Cancel</button>
+      </div>
+    </div>
+    <p class="editor__status sr" role="status"></p>
+  </div>
+</dialog>
+
+<!-- Control: no referencing service, so the confirmation is unchanged -->
+<dialog class="editor" id="clearPanel" data-panel="clear" aria-labelledby="clearTitle">
+  <div class="editor__content">
+    <div class="editor__body" data-kind="song" data-delete-id="216">
+      <h2 id="clearTitle" class="sr">Delete song: Unused Kidung</h2>
+      <p>Delete <strong>Unused Kidung</strong>?</p>
+      <form class="editor__form" method="post" action="#">
+        <div class="editor__actions">
+          <button class="editor__danger" type="submit">Delete song</button>
+          <button class="editor__cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <p class="editor__status sr" role="status"></p>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var stateButtons = Array.prototype.slice.call(document.querySelectorAll('.preview-bar button[data-show]'));
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('.preview-bar button[data-theme]'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('dialog[data-panel]'));
+  function show(wanted) {
+    panels.forEach(function (p) {
+      if (p.getAttribute('data-panel') === wanted) {
+        if (!p.open) p.showModal();
+      } else if (p.open) p.close();
+    });
+  }
+  stateButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      stateButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+      show(button.getAttribute('data-show'));
+    });
+  });
+  themeButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.documentElement.setAttribute('data-theme', button.getAttribute('data-theme'));
+      themeButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+    });
+  });
+  show('song');
+})();
+</script>
+</body>
+</html>

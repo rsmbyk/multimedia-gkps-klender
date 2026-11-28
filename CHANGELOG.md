@@ -7,15 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.13] - 2026-11-28
+
 ### Added
 
 - **Use template progress is kept per template and resumed for seven days.** Settled slots, the step, the name and the date are written to this browser's local storage as they change and restored when that template's Use template reopens; the record lasts seven days from the last change, and a template with a live draft marks its Use template button with a corner dot whose accessible name says a draft is saved. Closing a modal with saved work by Cancel, the backdrop or Escape now says the progress is saved for seven days, with Stay and Leave; a clean modal still closes silently, and Create clears the draft (ITEM-270, spec 253; ITEM-276, spec 255).
+- Entity versions on services, legacy items, entries, songs, songbooks and verses; stale writes are refused with a 409 carrying the current version.
+- A shared delete refusal for referenced verses, songs and songbooks, counting distinct Tata Ibadah including templates.
 
 ### Fixed
 
 - **Deleting the last item of a grouped sidebar no longer leaves its heading behind.** Service date buckets, the Templates group and the songbook groups now retire their whole section with the last row; under a filter the group hides until the filter is cleared, and a fresh render no longer emits an empty bucket or Templates group (ITEM-269, spec 252).
 - **Enter now accepts an open delete confirmation.** Pressing Enter deletes from the sidebar, stage, verse or Media Library removal confirmation wherever focus sits; one press is one deletion, and non-destructive confirmations keep their own keys (ITEM-278, spec 256).
 - **An open modal no longer passes the wheel to the page behind it.** When a modal's own view reaches its end — or has nothing to scroll — the document stays still, and a nested picker no longer moves the editor under it; every modal scrollport keeps its own range, layout and focus behaviour (ITEM-277, spec 257).
+
+### Changed
+
+- The delete confirmation is 560px wide so its reference note stays on one line.
 
 ## [1.37.9] - 2026-11-28
 

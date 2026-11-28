@@ -20,6 +20,7 @@ class SoftDeleteManager(models.Manager.from_queryset(SoftDeleteQuerySet)):
 
 
 class SoftDeleteModel(models.Model):
+    version = models.PositiveIntegerField(default=1, editable=False)
     is_deleted = models.BooleanField(default=False, db_index=True)
     deleted_at = models.DateTimeField(null=True, blank=True, editable=False)
     deleted_by = models.ForeignKey(

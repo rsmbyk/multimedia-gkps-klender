@@ -3756,3 +3756,131 @@ class SlotKindBadgeTests(TestCase):
             title='Votum', text='Pertolongan kita')
         html = self.client.get(reverse('web-tatib-service', args=[dated.pk])).content.decode()
         self.assertNotIn('class="slot__badge"', html)
+
+
+class EntityVersionFieldTests(TestCase):
+    """Spec 254 FR-001, FR-002, FR-014: every tracked row carries a version."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.book = songs.Book.objects.create(name='Kidung Harian', short_name='KH')
+        cls.song = songs.Song.objects.create(book=cls.book, number=1, title='Satu')
+        cls.verse = songs.Verse.objects.create(song=cls.song, number=1, lyric='Bait satu')
+        cls.service = tatib.TataIbadah.objects.create(name='Ibadah', date=date(2026, 11, 1))
+        cls.item = tatib.TataIbadahItem.objects.create(
+            tatib=cls.service, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembukaan', text='Doa', order_number=1)
+        cls.entry = tatib.ServiceEntry.objects.create(
+            tatib=cls.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
+            title='Votum', text='Pertolongan kita')
+
+    def test_all_six_tracked_models_start_at_version_one(self):
+        for row in (self.book, self.song, self.verse, self.service, self.item, self.entry):
+            with self.subTest(row=type(row).__name__):
+                row.refresh_from_db()
+                self.assertEqual(row.version, 1)
+
+    def test_identical_save_leaves_the_version_alone(self):
+        self.song.title = 'Satu'
+        self.song.save()
+        self.song.refresh_from_db()
+        self.assertEqual(self.song.version, 1)
+
+
+class EntityVersionGuardTests(TestCase):
+    """Spec 254 FR-003, FR-013, SC-001: a stale write is refused without a write."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.book = songs.Book.objects.create(name='Kidung Harian', short_name='KH')
+
+    def _save(self, version):
+        return self.client.post(reverse('web-editor-save', kwargs={
+            'kind': 'songbook', 'pk': self.book.pk}),
+            {'name': 'Kidung Baru', 'expected_version': version})
+
+    def test_stale_write_returns_409_and_changes_nothing(self):
+        first = self._save(1)
+        self.assertEqual(first.status_code, 200, first.content[:300])
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.version, 2)
+        stale = self._save(1)
+        self.assertEqual(stale.status_code, 409)
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.name, 'Kidung Baru')
+        self.assertEqual(self.book.version, 2)
+
+    def test_conflict_body_carries_the_current_version(self):
+        self._save(1)
+        stale = self._save(1)
+        self.assertEqual(json.loads(stale.content)['current_version'], 2)
+        self.assertEqual(json.loads(stale.content)['error'], 'conflict')
+
+
+class ServiceVersionPropagationTests(TestCase):
+    """Spec 254 FR-005–FR-007, SC-003: child and song writes move the service version."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.book = songs.Book.objects.create(name='Kidung Harian', short_name='KH')
+        cls.song = songs.Song.objects.create(book=cls.book, number=1, title='Satu')
+        cls.first = songs.Verse.objects.create(song=cls.song, number=1, lyric='Bait satu')
+        cls.second = songs.Verse.objects.create(song=cls.song, number=2, lyric='Bait dua')
+        cls.service = tatib.TataIbadah.objects.create(name='Ibadah', date=date(2026, 11, 1))
+        cls.entry = tatib.ServiceEntry.objects.create(
+            tatib=cls.service, kind=tatib.ServiceEntryKind.SONG, order_number=1,
+            song=cls.song, verses=[cls.first.pk, cls.second.pk])
+
+    def test_entry_edit_bumps_the_service_version(self):
+        response = self.client.post(reverse('web-entry-save', args=[self.entry.pk]), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk,
+            'verses': [str(self.first.pk)], 'title': 'Diubah',
+            'expected_version': self.entry.version,
+            'expected_parent_version': self.service.version})
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.version, 2)
+
+    def test_verse_reorder_bumps_every_referencing_service(self):
+        response = self.client.post(reverse('web-verse-reorder'), data=json.dumps({
+            'song': self.song.pk, 'ordered_ids': [self.second.pk, self.first.pk],
+            'expected_version': self.song.version,
+            'expected_verse_versions': {str(self.first.pk): self.first.version,
+                                        str(self.second.pk): self.second.version}}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.version, 2)
+
+
+class DeleteReferenceGuardTests(TestCase):
+    """Spec 254 FR-008–FR-011, SC-004, SC-005: a referenced target stays live."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.book = songs.Book.objects.create(name='Kidung Harian', short_name='KH')
+        cls.song = songs.Song.objects.create(book=cls.book, number=1, title='Satu')
+        cls.verse = songs.Verse.objects.create(song=cls.song, number=1, lyric='Bait satu')
+        cls.service = tatib.TataIbadah.objects.create(name='Ibadah', date=date(2026, 11, 1))
+        cls.template = tatib.TataIbadah.objects.create(name='Template')
+        for order, service in enumerate((cls.service, cls.service, cls.template), 1):
+            tatib.ServiceEntry.objects.create(
+                tatib=service, kind=tatib.ServiceEntryKind.SONG, order_number=order,
+                song=cls.song, verses=[cls.verse.pk])
+
+    def test_referenced_song_and_songbook_delete_are_refused(self):
+        for kind, pk in (('song', self.song.pk), ('songbook', self.book.pk)):
+            with self.subTest(kind=kind):
+                response = self.client.post(reverse('web-editor-delete', args=[kind, pk]),
+                                            {'expected_version': 1})
+                self.assertEqual(response.status_code, 400)
+        self.song.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertFalse(self.song.is_deleted)
+        self.assertFalse(self.book.is_deleted)
+
+    def test_the_notice_counts_distinct_services_including_templates(self):
+        response = self.client.get(reverse('web-editor-delete-confirm',
+                                           args=['song', self.song.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Used in <b>2</b> Tata Ibadah — delete unavailable')

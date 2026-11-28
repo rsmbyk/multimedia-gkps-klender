@@ -532,6 +532,9 @@ li:hover > .row-delete,
    has to say it again for itself -- otherwise it lays out inside the page and
    steals width from the reading column. */
 .editor:not([open]) { display: none; }
+/* Spec 254: the delete confirmation carries a one-line reference note beside its
+   two actions; 560px is the measured minimum for both song and songbook wording. */
+.editor:has([data-editor-delete-form]) { width: min(560px, calc(100vw - 32px)); }
 .editor::backdrop { background: var(--backdrop); }
 /* An open dialog is a layer over the reading page. A wheel that reaches the end of the
    dialog's own scrollport — or lands on chrome with no scrollport — must not start

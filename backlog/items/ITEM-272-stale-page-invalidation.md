@@ -1,0 +1,41 @@
+---
+id: ITEM-272
+status: backlog
+title: 'Invalidate a stale service or song page and offer reload'
+type: feat
+priority: P1
+effort: L
+created: 2026-11-28
+updated: 2026-11-28
+spec:
+branch:
+pr:
+issue:
+closed_at:
+closed_reason:
+bump:
+release_version:
+---
+
+# ITEM-272: Invalidate a stale service or song page and offer reload
+
+## Summary
+
+An open service or song page SHALL poll its object's version every 10 s; when the server is ahead it closes the page's dialogs, disables add/edit/delete, reorder and project in place, and shows a top-centre badge saying the page was edited elsewhere with a Reload button that re-fetches only the current page.
+
+## Notes
+
+- Depends on the version field and 409 guard from ITEM-271.
+- The poll is presentation only; the server guard prevents the lost write.
+- Reload uses the existing in-place navigation refresh, not a browser reload.
+
+## Acceptance sketch
+
+- A change made on another computer invalidates the open page within 10 s.
+- All page dialogs, including the copy-confirm layer, are closed on invalidation.
+- Reload restores the page without a full browser reload.
+
+## Links
+
+- Spec:
+- Related items: ITEM-271

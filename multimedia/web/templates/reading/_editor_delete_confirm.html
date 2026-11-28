@@ -7,8 +7,10 @@
         data-editor-delete-form="1" data-editor-delete-kind="{{ kind }}"
         data-editor-delete-id="{{ target_id }}">
     {% csrf_token %}
+    <input type="hidden" name="expected_version" value="{{ expected_version }}">
+    {% if reference_count %}<p class="editor__refnote" id="deleteReferenceNote" role="note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.4" y="8.6" width="11.2" height="8" rx="1.8"/><path d="M7 8.6V6.4a3 3 0 0 1 6 0v2.2"/></svg><span>Used in <b>{{ reference_count }}</b> Tata Ibadah — delete unavailable</span></p>{% endif %}
     <div class="editor__actions">
-      <button class="editor__danger" type="submit" data-enter-delete>Delete {{ noun }}</button>
+      <button class="editor__danger" type="submit" data-enter-delete{% if reference_count %} disabled aria-describedby="deleteReferenceNote"{% endif %}>Delete {{ noun }}</button>
       <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
     </div>
   </form>

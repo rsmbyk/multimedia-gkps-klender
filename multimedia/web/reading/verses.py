@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_protect
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 from multimedia.web.reading import editors
+from multimedia.web.reading import versions as version_guard
 
 
 def _guard(request):
@@ -77,9 +78,15 @@ def verse_new(request):
     if not lyric:
         return JsonResponse({'error': 'The lyric cannot be blank.'}, status=400)
     live = list(song.verse_set.filter(is_deleted=False).order_by('number'))
-    with transaction.atomic():
-        verse = song_models.Verse.objects.create(
-            song=song, number=(live[-1].number + 1 if live else 1), lyric=lyric)
+    try:
+        with transaction.atomic():
+            version_guard.locked(type(song), song.pk, version_guard.expected(request))
+            verse = song_models.Verse.objects.create(
+                song=song, number=(live[-1].number + 1 if live else 1), lyric=lyric)
+            version_guard.bump(song)
+            version_guard.bump_referencing_services(song)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'verse': verse.pk, 'number': verse.number})
 
 
@@ -99,8 +106,18 @@ def verse_save(request, pk):
     # Stale write: the verse or its song is gone since the modal opened.
     if verse.song_id != request.POST.get('song', str(verse.song_id)) and 'song' in body:
         pass  # stale song check handled below
-    verse.lyric = lyric
-    verse.save(update_fields=['lyric'])
+    try:
+        with transaction.atomic():
+            current = version_guard.locked(
+                type(verse), verse.pk, version_guard.expected(request))
+            if current.lyric != lyric:
+                verse.lyric = lyric
+                verse.version = current.version + 1
+                verse.save(update_fields=['lyric', 'version'])
+                version_guard.bump(song)
+                version_guard.bump_referencing_services(song)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'verse': verse.pk, 'number': verse.number})
 
 
@@ -127,10 +144,17 @@ def verse_delete(request, pk):
         return JsonResponse(
             {'error': 'This verse is used in a Tata Ibadah.', 'count': referencing},
             status=400)
-    with transaction.atomic():
-        verse.soft_delete(deleted_by=request.user if request.user.is_authenticated else None)
-        live = list(song.verse_set.filter(is_deleted=False).order_by('number'))
-        _renumber(live)
+    try:
+        with transaction.atomic():
+            current = version_guard.locked(
+                type(verse), verse.pk, version_guard.expected(request))
+            current.soft_delete(deleted_by=request.user if request.user.is_authenticated else None)
+            live = list(song.verse_set.filter(is_deleted=False).order_by('number'))
+            _renumber(live)
+            version_guard.bump(song)
+            version_guard.bump_referencing_services(song)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'verse': verse.pk})
 
 
@@ -153,7 +177,21 @@ def verse_reorder(request):
         return JsonResponse(
             {'error': 'The order does not match the song\'s live verses.'}, status=400)
     by_id = {verse.pk: verse for verse in live}
-    with transaction.atomic():
-        ordered = [by_id[pk] for pk in ordered_ids]
-        _renumber(ordered)
+    wanted_verses = body.get('expected_verse_versions') or {}
+    try:
+        with transaction.atomic():
+            version_guard.locked(type(song), song.pk, version_guard.expected(request))
+            for verse in live:
+                wanted = wanted_verses.get(str(verse.pk))
+                if wanted is not None:
+                    version_guard.guard(verse, int(wanted))
+            ordered = [by_id[pk] for pk in ordered_ids]
+            if [verse.pk for verse in live] != ordered_ids:
+                _renumber(ordered)
+                version_guard.bump(song)
+                version_guard.bump_referencing_services(song)
+    except (version_guard.VersionConflict, TypeError, ValueError) as exc:
+        if isinstance(exc, version_guard.VersionConflict):
+            return version_guard.conflict_response(exc)
+        return JsonResponse({'error': 'Invalid expected versions.'}, status=400)
     return JsonResponse({'ok': True, 'order': ordered_ids})
