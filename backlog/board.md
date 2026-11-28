@@ -48,6 +48,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-265](./items/ITEM-265-goto-fullscreen-fit.md) | Go To detour words stay at the old size after fullscreen | The resize path fitted service screens only; the Go To detour now follows the stage on F11 and on a fullscreen signal before the resize | fix | P1 | S | [249](../specs/249-goto-fullscreen-fit/spec.md) | [#638](https://github.com/rsmbyk/multimedia-gkps-klender/pull/638) | 2026-11-27 |
 
 ## Done
 
