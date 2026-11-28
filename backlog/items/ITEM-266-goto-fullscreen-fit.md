@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-27
 closed_reason: merged into develop (PR #638)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-266: Go To detour words stay at the old size after fullscreen

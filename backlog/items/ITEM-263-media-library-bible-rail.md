@@ -14,7 +14,7 @@ issue: 635
 closed_at: 2026-11-27
 closed_reason: merged into develop (PR #636)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-263: Bible rail shows No books yet from Media Library

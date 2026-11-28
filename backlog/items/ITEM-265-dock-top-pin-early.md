@@ -14,7 +14,7 @@ issue: 639
 closed_at: 2026-11-28
 closed_reason: merged into develop (PR #640)
 bump: patch
-release_version:
+release_version: 1.37.9
 ---
 
 # ITEM-265: The live entry header pins at the top as soon as it is clipped
