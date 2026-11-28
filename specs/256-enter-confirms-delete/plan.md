@@ -5,7 +5,7 @@
 `1d8f904e` during Specify — see D008)
 **Bump**: `patch` — declared here, shown at gate 2, applied only in the pre-merge delivery commit.
 `VERSION` will be re-read at Fold; the base in this worktree is 1.37.11 and develop is 1.37.12, so
-sibling slice 254 has since claimed 1.37.13, so this slice takes 1.37.14; re-check again at merge.
+sibling slice 254 first claimed 1.37.13; develop then advanced with spec 255, which merged at 1.37.13 and took R67. This slice keeps 1.37.14 and folded as R68.
 **Preview**: `specs/256-enter-confirms-delete/preview/` — live, measured before gate 1; values frozen
 in the spec's `## UI/UX`.
 

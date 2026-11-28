@@ -5,11 +5,11 @@
 **Tasks**: `specs/256-enter-confirms-delete/tasks.md`
 
 **Date**: 2026-11-28
-**Artifacts read (sha256)**: `spec.md` `518414338aecbb87468611dbbb009eaa727b08a5cc18baecd4497e9055e153b4` ·
-`plan.md` `0fb4b3ccec59c5fe2439203849943e856be0da001faf7c302738bf264bf74707` ·
-`tasks.md` `bcf1c91b1d05c8f2451289ca74e124466dc932f8232e351188f13929aec9cf55` ·
-`checklists/requirements.md` `62b46ef693e4d3c1573090d19bd982b3a0d530530838dda488e50c6ab0ee6c9b` ·
-`research.md` `3b1af95135c908cd2a76d7aaf2024e7648c03250f447cea86fa71e38be2aa0df`
+**Artifacts read (sha256)**: `spec.md` `68baf1a45e4df5e9f56697a6bf382909a4f4bca7e66b3d6436439ff787e9bb6e` ·
+`plan.md` `2ec750363ce6d2452259862c11cd6b15efdce28b7c30ee2733f985feb9420165` ·
+`tasks.md` `71f4a21d8f063240263b8a7b04ff5e6752f7375282cb096ba5b34b2be4926939` ·
+`checklists/requirements.md` `254eae96ee3b08a7f7c403eae4adde2f70886fa1866aa82e36291fdf8649d817` ·
+`research.md` `7005851fc15eacd27054d820d4f01d5d3d27bb887b01ab36e80766a43fb85804`
 **Metrics**: 7 FR · 4 SC · 6 story scenarios = 17 traceability rows · 17 accounted for ·
 10 `test` · 7 `inspection` · 0 `manual` · CRITICAL 0 · HIGH 1 · MED 0 · LOW 2
 

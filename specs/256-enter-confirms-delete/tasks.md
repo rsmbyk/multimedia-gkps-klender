@@ -43,7 +43,7 @@
 
 - [X] T012 rebase the slice onto `origin/develop` and re-read ITEM id, `R<n>` and `VERSION`
 - [ ] T013 card ITEM-278 → In review, then Done in the same PR that delivers the code
-- [X] T014 Fold `reading/R67` into `docs/spec/reading.md`; patch `VERSION` and `CHANGELOG.md`
+- [X] T014 Fold `reading/R68` into `docs/spec/reading.md`; patch `VERSION` and `CHANGELOG.md`
 - [ ] T015 squash-merge with PR title/body; no push before the owner's word
 
 ## Phase 8 — Convergence

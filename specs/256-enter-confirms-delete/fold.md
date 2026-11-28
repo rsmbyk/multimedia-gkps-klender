@@ -5,7 +5,7 @@
 
 ## Capabilities touched
 
-- `docs/spec/reading.md` — one `added` operation: `R67`, "Enter accepts an open delete confirmation",
+- `docs/spec/reading.md` — one `added` operation: `R68`, "Enter accepts an open delete confirmation",
   with three scenarios. Header prepended `256-enter-confirms-delete` to `slices`; `last folded` was
   already 2026-11-28.
 
@@ -13,7 +13,7 @@
 
 | Operation | Target | Detail |
 | --- | --- | --- |
-| added | `reading/R67` | Key rule, guard list, five named surfaces and three scenarios |
+| added | `reading/R68` | Key rule, guard list, five named surfaces and three scenarios |
 | code | `static/web/enter-delete.js` | One capture-phase handler with hidden/closed/disabled/repeat/modifier guards |
 | code | four marked controls + `reading/base.html` | Marker attributes on destructive buttons; one script tag |
 | test | `tests/e2e/test_enter_delete_confirm.py` | Four Playwright pins; red before implementation, green after |
@@ -31,4 +31,4 @@
 
 - Tracker anchor, PR number, the card's `In review` / `Done` moves, `VERSION` and `CHANGELOG.md` are
   delivery steps waiting for separate owner words. `VERSION` is still 1.37.12 here; the post-rebase
-  re-check found sibling slice 254 holding 1.37.13, so the delivery commit takes 1.37.14.
+  re-check found sibling slice 254 holding 1.37.13; develop then advanced with spec 255, which merged at 1.37.13 and took R67. This slice therefore takes 1.37.14 and its rule was renumbered R68 during the merge resolution.

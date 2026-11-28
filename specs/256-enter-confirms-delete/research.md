@@ -94,7 +94,7 @@
 ## D009 — Version claim moved after the re-check
 
 - **Decision**: take `1.37.14` at Fold, not the `1.37.13` guessed when the Plan was written.
-- **Rationale**: at the post-rebase re-check, sibling slice 254's worktree and branch carry `VERSION` 1.37.13; 1.37.14 was free in every worktree and branch.
+- **Rationale**: sibling slice 254 first carried `VERSION` 1.37.13; develop then advanced with spec 255, which merged at 1.37.13 and claimed R67. 1.37.14 and R68 were free at the pre-merge re-check.
 - **Alternatives considered**: keep 1.37.13 and let the two slices collide at merge — rejected; the pre-merge re-check exists to catch exactly this.
 - **Provenance**: research.
 

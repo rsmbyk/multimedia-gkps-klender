@@ -109,14 +109,14 @@ class UseTemplateProgressE2ETests(StaticLiveServerTestCase):
 
     def record(self, template):
         return self.page.evaluate(
-            """key => { const raw = sessionStorage.getItem(key); return raw ? JSON.parse(raw) : null; }""",
+            """key => { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }""",
             KEY_PREFIX + str(template.pk))
 
     def all_records(self):
         return self.page.evaluate(
-            """prefix => { const out = {}; for (let i = 0; i < sessionStorage.length; i++) {
-                const k = sessionStorage.key(i);
-                if (k.startsWith(prefix)) out[k] = JSON.parse(sessionStorage.getItem(k));
+            """prefix => { const out = {}; for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith(prefix)) out[k] = JSON.parse(localStorage.getItem(k));
               } return out; }""", KEY_PREFIX)
 
     def close_via(self, how):
@@ -158,7 +158,7 @@ class UseTemplateProgressE2ETests(StaticLiveServerTestCase):
             '[data-generate-date]',
             "el => { el.value = '2026-12-06'; el.dispatchEvent(new Event('change', {bubbles: true})); }")
         record = self.record(self.template_a)
-        self.assertEqual(record['v'], 1)
+        self.assertEqual(record['v'], 2)
         self.assertEqual(record['step'], 2)
         self.assertEqual(set(record['settled']), {str(self.fill_a.pk), str(self.choice_a.pk)})
         self.assertEqual(record['name'], 'Ibadah Uji')
@@ -228,13 +228,13 @@ class UseTemplateProgressE2ETests(StaticLiveServerTestCase):
         self.settle_choice()
         self.leave()
         key = KEY_PREFIX + str(self.template_a.pk)
-        raw = self.page.evaluate('key => sessionStorage.getItem(key)', key)
+        raw = self.page.evaluate('key => localStorage.getItem(key)', key)
         self.stop_browser()
         tatib.ServiceEntry.objects.filter(pk=self.choice_a.pk).delete()
         self.start_browser()
         # a new browser session, but restore the saved record to test the stale id
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.template_a.pk]))
-        self.page.evaluate('([key, raw]) => sessionStorage.setItem(key, raw)', [key, raw])
+        self.page.evaluate('([key, raw]) => localStorage.setItem(key, raw)', [key, raw])
         self.page.click('[data-generate-open]')
         expect(self.page.locator('#generateModal')).to_be_visible()
         self.assertEqual(self.page.locator('.g-row--slot').count(), 1)
@@ -251,7 +251,7 @@ class UseTemplateProgressE2ETests(StaticLiveServerTestCase):
                 self.close_via(how)
                 expect(self.page.locator('[data-generate-leave]')).to_be_visible()
                 text = self.page.locator('[data-generate-leave]').inner_text()
-                self.assertIn('saved in this browser session', text)
+                self.assertIn('saved on this browser for seven days', text)
                 self.assertIn('pick up where you left off', text)
                 self.page.click('[data-leave-stay]')
                 self.page.click('[data-generate-close]')

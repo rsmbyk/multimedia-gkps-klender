@@ -25,7 +25,7 @@ CHK002 yes (focus rule separate from hidden/disabled/repeat/modifier guards); CH
 surfaces, retired modals excluded with measured reason); CHK004 yes (once and default suppressed);
 CHK005 yes (POST counts versus click counter); CHK006 yes (counts, visibility, no geometry claims);
 CHK007 yes (`probe.py` and `tests.e2e.test_enter_delete_confirm`); CHK008 yes (six assumptions including
-chronology); CHK009 yes (copy/leave/generate/screen-mode named); CHK010 yes (one `reading/R67`).
+chronology); CHK009 yes (copy/leave/generate/screen-mode named); CHK010 yes (one `reading/R68`).
 No failing item; no second iteration needed.
 
 **[Gap]** — none identified.

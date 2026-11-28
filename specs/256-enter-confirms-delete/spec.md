@@ -78,13 +78,13 @@ read a click counter attached to `#mediaConfirmRemove`: before 0, after 1.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | On an open destructive confirmation, Enter activates that confirmation's destructive control. | `reading/R67` |
-| FR-002 | The activation does not depend on which element has focus inside the open confirmation. | `reading/R67` |
-| FR-003 | The destructive control is marked in markup (`data-enter-delete`) so non-destructive confirmations are not caught. | `reading/R67` |
-| FR-004 | A hidden layer, a closed `<dialog>`, a disabled control, a repeated keydown and a modified chord (Shift/Ctrl/Alt/Meta) never activate the control. | `reading/R67` |
-| FR-005 | One Enter press triggers exactly one activation; the default key action is suppressed so a focused control cannot fire twice. | `reading/R67` |
-| FR-006 | The covered surfaces are the sidebar record, stage entry, stage old row, verse and Media Library removal confirmations. | `reading/R67` |
-| FR-007 | Escape, Cancel clicks and scrim dismissal keep their existing behaviour. | `reading/R67` |
+| FR-001 | On an open destructive confirmation, Enter activates that confirmation's destructive control. | `reading/R68` |
+| FR-002 | The activation does not depend on which element has focus inside the open confirmation. | `reading/R68` |
+| FR-003 | The destructive control is marked in markup (`data-enter-delete`) so non-destructive confirmations are not caught. | `reading/R68` |
+| FR-004 | A hidden layer, a closed `<dialog>`, a disabled control, a repeated keydown and a modified chord (Shift/Ctrl/Alt/Meta) never activate the control. | `reading/R68` |
+| FR-005 | One Enter press triggers exactly one activation; the default key action is suppressed so a focused control cannot fire twice. | `reading/R68` |
+| FR-006 | The covered surfaces are the sidebar record, stage entry, stage old row, verse and Media Library removal confirmations. | `reading/R68` |
+| FR-007 | Escape, Cancel clicks and scrim dismissal keep their existing behaviour. | `reading/R68` |
 
 ### Key Entities
 

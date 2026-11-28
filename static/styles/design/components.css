@@ -957,6 +957,15 @@ dialog[open],
 }
 .read__project-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .read__project-btn[hidden] { display: none; }         /* author display beats [hidden] */
+/* A template with a saved draft marks its Use template button (spec 255): a 7px dot inset
+   3px from the top-right. The span is aria-hidden; the button's accessible name carries the
+   state, so the mark is never colour-only. */
+.read__project-btn--primary { position: relative; }
+.read__draft-dot {
+  display: none; position: absolute; top: 3px; right: 3px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--active-ink);
+}
+.read__project-btn[data-draft="true"] .read__draft-dot { display: block; }
 .read__project[data-displaying="true"] .read__project-btn[data-project-open] {
   color: var(--ink); border-color: var(--ink);
 }

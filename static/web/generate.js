@@ -149,42 +149,86 @@
   var chooserOpener = null;
   var escapeHandled = false;   // the keydown path already answered this Escape
 
-  /* ---------- progress kept for this template in the browser session ---------- */
-  /* One key per template: two templates never share work, and a Create clears only
-     the template it generated. Storage is best-effort -- a browser that refuses it
-     still gets a working modal, just without a resume. */
+  /* ---------- progress kept for this template on this browser, for seven days ---------- */
+  /* One key per template: two templates never share work, and a Create clears only the
+     template it generated. localStorage outlives the browser session; savedAt carries the
+     seven-day rule because the web storage API has no expiry of its own. Storage is
+     best-effort -- a browser that refuses it still gets a working modal, just no resume. */
   var STORAGE_PREFIX = 'gkps:generate:';
+  var LIFETIME = 7 * 24 * 60 * 60 * 1000;
 
   function storageKey() {
     return modal && modal.dataset.generateTatib
       ? STORAGE_PREFIX + modal.dataset.generateTatib : '';
   }
-  function save() {
-    var key = storageKey();
-    if (!key) return;
+  function liveRecord(id) {
+    if (!id) return null;
+    var key = STORAGE_PREFIX + id;
     try {
-      window.sessionStorage.setItem(key, JSON.stringify({
-        v: 1,
-        step: Number(modal.dataset.step || 1),
-        settled: settled,
-        name: nameInput ? nameInput.value : '',
-        date: dateInput ? dateInput.value : ''
-      }));
-    } catch (error) { /* storage unavailable: the modal itself still works */ }
-  }
-  function saved() {
-    var key = storageKey();
-    if (!key) return null;
-    try {
-      var raw = window.sessionStorage.getItem(key);
+      var raw = window.localStorage.getItem(key);
       if (!raw) return null;
       var value = JSON.parse(raw);
-      if (!value || value.v !== 1 || !value.settled || typeof value.settled !== 'object') return null;
+      if (!value || value.v !== 2 || !value.savedAt ||
+          !value.settled || typeof value.settled !== 'object') return null;
+      if (Date.now() - value.savedAt > LIFETIME) {
+        window.localStorage.removeItem(key);
+        return null;
+      }
       return value;
     } catch (error) { return null; }
   }
+  function save() {
+    var key = storageKey();
+    try {
+      window.localStorage.setItem(key, JSON.stringify({
+        v: 2,
+        step: Number(modal.dataset.step || 1),
+        settled: settled,
+        name: nameInput ? nameInput.value : '',
+        date: dateInput ? dateInput.value : '',
+        savedAt: Date.now()
+      }));
+    } catch (error) { /* storage unavailable: the modal itself still works */ }
+    paintMark();
+  }
+  function saved() {
+    return modal && modal.dataset.generateTatib
+      ? liveRecord(modal.dataset.generateTatib) : null;
+  }
   function clearSaved() {
-    try { window.sessionStorage.removeItem(storageKey()); } catch (error) {}
+    var key = storageKey();
+    try { if (key) window.localStorage.removeItem(key); } catch (error) {}
+    try { if (key) window.sessionStorage.removeItem(key); } catch (error) {}
+    paintMark();
+  }
+  /* A record left unopened would otherwise sit in storage for ever, and the button mark is
+     read from storage: an expired key would paint a mark the modal then refuses to restore. */
+  function pruneExpired() {
+    try {
+      for (var i = window.localStorage.length - 1; i >= 0; i--) {
+        var key = window.localStorage.key(i);
+        if (!key || key.indexOf(STORAGE_PREFIX) !== 0) continue;
+        var value = null;
+        try { value = JSON.parse(window.localStorage.getItem(key)); } catch (error) {}
+        if (!value || value.v !== 2 || !value.savedAt ||
+            Date.now() - value.savedAt > LIFETIME) {
+          window.localStorage.removeItem(key);
+        }
+      }
+    } catch (error) { /* storage unavailable: nothing to sweep */ }
+  }
+  /* The stage's Use template button says a draft exists before the modal is opened. The dot
+     is aria-hidden; the accessible name carries the state so the mark is not colour-only. */
+  function paintMark() {
+    var button = document.querySelector('[data-generate-open]');
+    if (!button) return;
+    if (liveRecord(button.dataset.generateTatib)) {
+      button.dataset.draft = 'true';
+      button.setAttribute('aria-label', 'Use template, draft saved');
+    } else {
+      if (button.dataset.draft) delete button.dataset.draft;
+      button.removeAttribute('aria-label');
+    }
   }
   function dirty() {
     return settledCount() > 0 || !!saved();
@@ -584,6 +628,13 @@
   }
 
   if (sync()) refresh();
+  pruneExpired();
+  paintMark();
+  /* The reading shell swaps the stage in place; the new button must get its mark at once. */
+  document.addEventListener('shell:page', function () {
+    pruneExpired();
+    paintMark();
+  });
   centreSteps();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(centreSteps);
 })();
