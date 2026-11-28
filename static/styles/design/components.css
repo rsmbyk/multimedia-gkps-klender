@@ -536,6 +536,22 @@ li:hover > .row-delete,
    two actions; 560px is the measured minimum for both song and songbook wording. */
 .editor:has([data-editor-delete-form]) { width: min(560px, calc(100vw - 32px)); }
 .editor::backdrop { background: var(--backdrop); }
+/* An open dialog is a layer over the reading page. A wheel that reaches the end of the
+   dialog's own scrollport — or lands on chrome with no scrollport — must not start
+   scrolling the page behind it. Contain each scrollport so a nested picker cannot
+   scroll the editor under it, and hold the document still while any dialog is open
+   (spec 257). */
+:root:has(dialog[open]) { overflow: hidden; }
+dialog[open],
+.editor__content,
+.editor__date-calendar,
+.editor__picker-options,
+.media-entry__panel--library,
+.preview__body,
+.media-transfers__list,
+.service-media__list,
+.generate__body,
+.choose__list { overscroll-behavior: contain; }
 /* The scroll belongs in here, not on the page behind: a dialog taller than the
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */
@@ -944,6 +960,15 @@ li:hover > .row-delete,
 }
 .read__project-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .read__project-btn[hidden] { display: none; }         /* author display beats [hidden] */
+/* A template with a saved draft marks its Use template button (spec 255): a 7px dot inset
+   3px from the top-right. The span is aria-hidden; the button's accessible name carries the
+   state, so the mark is never colour-only. */
+.read__project-btn--primary { position: relative; }
+.read__draft-dot {
+  display: none; position: absolute; top: 3px; right: 3px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--active-ink);
+}
+.read__project-btn[data-draft="true"] .read__draft-dot { display: block; }
 .read__project[data-displaying="true"] .read__project-btn[data-project-open] {
   color: var(--ink); border-color: var(--ink);
 }

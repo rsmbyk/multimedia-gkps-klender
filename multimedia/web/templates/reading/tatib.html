@@ -12,6 +12,7 @@
   {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
   {% if is_template %}
   <button type="button" class="read__project-btn read__project-btn--primary" data-generate-open
+          data-generate-tatib="{{ service_id }}"
           data-generate-url="{% url 'web-tatib-generate' service_id %}"
           data-generate-name="{{ service.name }}">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -21,6 +22,7 @@
       <path d="M16.2 10.2v5.6M13.4 13h5.6"/>
     </svg>
     <span>Use template</span>
+    <span class="read__draft-dot" aria-hidden="true"></span>
   </button>
   {% else %}
   <button type="button" class="read__project-btn read__project-btn--icon" data-project-window

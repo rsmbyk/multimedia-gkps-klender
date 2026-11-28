@@ -141,7 +141,10 @@ class SongSortRetainedTests(StaticLiveServerTestCase):
         assert self.order(page) == ['Alpha', 'Beta', 'Zebra'], self.order(page)
         self._row(page, 'Zebra').locator('.songrow').click()
         page.wait_for_function("document.documentElement.dataset.read === 'on'", timeout=10000)
-        expect(page.locator('.read__title')).to_contain_text('Zebra')
+        # Two article titles can be mounted while the shell swaps stages; the
+        # outgoing one is still painted for a frame. Name the incoming article
+        # instead of asserting on an ambiguous locator (spec 252 finding A3).
+        expect(page.locator('.read__title').filter(has_text='Zebra')).to_have_count(1)
         assert self.order(page) == ['Alpha', 'Beta', 'Zebra'], self.order(page)
         expect(self._sort(page)).to_have_attribute('data-order', 'title')
 

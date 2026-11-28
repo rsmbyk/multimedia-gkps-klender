@@ -1,0 +1,11 @@
+{"case":"date-bucket","state":"before","recent":1,"older":1,"allGroups":2,"headings":["Last 30 days","Earlier this year"],"visibleBooks":3}
+{"case":"date-bucket","state":"after-last-delete","recent":0,"older":1,"allGroups":1,"headings":["Earlier this year"],"visibleBooks":1}
+{"case":"date-bucket","state":"after-reload","recent":0,"older":1,"allGroups":1,"headings":["Earlier this year"],"visibleBooks":1}
+{"case":"templates","state":"before","recent":0,"older":0,"allGroups":1,"headings":["Templates"],"visibleBooks":2}
+{"case":"templates","state":"after-last-delete","recent":0,"older":0,"allGroups":0,"headings":[],"visibleBooks":0}
+{"case":"templates","state":"after-reload","recent":0,"older":0,"allGroups":0,"headings":[],"visibleBooks":0}
+{"case":"songbooks","state":"before","recent":0,"older":0,"allGroups":2,"headings":[],"visibleBooks":2}
+{"case":"songbooks","state":"after-last-delete","recent":0,"older":0,"allGroups":1,"headings":[],"visibleBooks":1}
+{"case":"filtered","state":"filter-on","recent":1,"older":1,"allGroups":2,"headings":["Last 30 days","Earlier this year"],"visibleBooks":1,"bucketHidden":false}
+{"case":"filtered","state":"after-visible-delete","recent":1,"older":1,"allGroups":2,"headings":["Last 30 days","Earlier this year"],"visibleBooks":0,"bucketHidden":true}
+{"case":"filtered","state":"filter-cleared","recent":1,"older":1,"allGroups":2,"headings":["Last 30 days","Earlier this year"],"visibleBooks":2,"bucketHidden":false}

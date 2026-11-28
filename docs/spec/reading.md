@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-28
-**slices**: `254-entity-versioning`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `254-entity-versioning`, `255-use-template-progress-persist`, `257-modal-scroll-containment`, `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2094,8 +2094,115 @@ CSS or JavaScript behaviour changes. (spec 246)
 - WHEN a reading section's rail tile is clicked while that section is on stage
 - THEN the panel toggles without a fetch
 
+### R64 — A group leaves when its last row is deleted
 
-### R64 — A service moves when anything it displays changes
+Every deletable grouped sidebar SHALL retire its own `<section class="group">` when the last `.book` row
+is removed in place: the Tata Ibadah date buckets, the `Templates` group and the unheaded songbook groups
+all follow this one rule. While a filter hides every surviving row of a group, the section SHALL be
+hidden instead of removed, so clearing the filter restores it. A fresh render SHALL NOT emit an empty
+date bucket or an empty `Templates` group; the other renderers already skip empty groups. (spec 252)
+
+#### Scenario: the last service of a date bucket
+- WHEN both services in `Last 30 days` are deleted through their row delete buttons
+- THEN the `last-30-days` section and its heading are absent, and the other buckets remain
+
+#### Scenario: the last template
+- WHEN the last template is deleted in template mode and the page reloads
+- THEN no `Templates` group is rendered on screen or after the reload
+
+#### Scenario: the last ordinary songbook
+- WHEN the last ordinary songbook is deleted
+- THEN only the hymn section remains, with no leftover separator
+
+#### Scenario: a filtered group
+- WHEN the only visible row of a bucket is deleted while the sidebar filter is on
+- THEN the bucket is hidden until the filter is cleared
+
+### R65 — A template's Use template progress survives a close
+
+The Use template modal SHALL keep work in the browser session, keyed by template id so two templates
+never share it. Every settled slot, choice pick, step, name and date change SHALL be written
+immediately; a reload or any close therefore keeps it. Reopening that template's Use template SHALL
+restore the settled rows, step, name and date automatically, ignoring slot ids that no longer exist.
+Closing a modal with saved work by Cancel, backdrop or Escape SHALL first show a confirmation saying
+the progress is saved in this browser session and can be resumed later, with **Stay** keeping the
+modal open and **Leave** closing it without discarding anything. A clean modal SHALL close silently.
+A successful Create SHALL clear that template's saved progress; a failed one SHALL keep it. Saving,
+restoring and abandoning SHALL leave the template byte-identical, as R36 requires. (spec 253)
+
+#### Scenario: work kept per template
+- WHEN a slot is settled in one template and another template's **Use template** is opened
+- THEN the second template starts with no settled rows, and the first one resumes when reopened
+
+#### Scenario: a dirty close says so
+- WHEN Cancel, the backdrop or Escape is used with saved progress
+- THEN a confirmation says the progress is saved in this browser session and can be resumed later
+
+#### Scenario: resume after a reload
+- WHEN the page is reloaded and the same template's **Use template** is opened
+- THEN the settled rows, step, name and date are back as they were
+
+#### Scenario: Create consumes the progress
+- WHEN **Create** succeeds
+- THEN that template's saved progress is cleared and its next open starts empty
+
+### R66 — An open modal keeps the scroll to itself
+
+While any native dialog is open, the document SHALL NOT scroll from wheel input over the dialog —
+including when the dialog's own view has no range and when the wheel lands on its chrome. Each modal
+scrollport — editor content and date popover, picker options, media library panel, Preview body,
+Transfers and service-media lists, Generate body and chooser list — SHALL keep its own scrolling and
+SHALL NOT chain to a parent scrollport at its end. This SHALL NOT change any inner range, layout,
+focus behaviour or opening offset; closing the last dialog SHALL restore document scrolling at the
+offset it had when the dialog opened, with no measured layout shift. (spec 257)
+
+#### Scenario: the end of a view
+- WHEN the wheel passes the end of the editor content or the Preview body
+- THEN that view stays at its maximum and the document keeps its opening offset
+
+#### Scenario: nothing to scroll
+- WHEN the wheel lands over a modal with no scrollable range, or over its header
+- THEN neither the document nor the modal behind the pointer scrolls
+
+#### Scenario: nested picker
+- WHEN the picker options reach their end inside an editor
+- THEN the options stop there and the editor content behind them stays at zero
+
+#### Scenario: the dialog closes
+- WHEN the last open dialog is closed
+- THEN the document scrolls normally again from the same offset, with no layout shift
+
+### R67 — A template's Use template progress persists for seven days
+
+The Use template modal SHALL keep a template's work in this browser's local storage, keyed by template
+id, as a versioned record carrying a `savedAt` timestamp. Every settled slot, choice pick, step, name
+and date change SHALL rewrite that timestamp, so the record lasts seven days (168 hours) from the last
+change; an older record SHALL be treated as absent and removed. Reopening the template SHALL restore a
+live record as R64 did, dropping slot ids that no longer exist, and a successful Create SHALL clear
+it. A template page with a live record SHALL mark its **Use template** button with a 7 × 7 px corner
+dot inset 4px from the button's top-right border box; the label and width SHALL not change, and the
+button's accessible name SHALL state that a draft is saved, so the mark is never colour-only. The
+leave confirmation SHALL say the progress is saved on this browser for seven days. Saving, restoring,
+expiring and abandoning SHALL leave the template byte-identical, as R36 requires. (spec 255)
+
+#### Scenario: a new browser session resumes the work
+- WHEN the browser is closed and reopened within seven days and the template's **Use template** is opened
+- THEN the settled rows, step, name and date return
+
+#### Scenario: the seven-day boundary
+- WHEN the record is older than 168 hours
+- THEN it is ignored and removed, and the template starts empty
+
+#### Scenario: the button marks a draft
+- WHEN a template has a live saved record
+- THEN its Use template button shows the corner dot and names “Use template, draft saved”
+
+#### Scenario: Create consumes the draft
+- WHEN **Create** succeeds
+- THEN the record is cleared and the button loses its mark
+
+
+### R68 — A service moves when anything it displays changes
 
 The owning `TataIbadah` SHALL carry an integer version that advances by one on every accepted change to
 the service or to anything it displays: its own fields, an entry or legacy item inside it created,
@@ -2110,7 +2217,7 @@ change SHALL keep its version.
 - WHEN a form is saved with identical values
 - THEN neither the form's row nor the service version changes
 
-### R65 — A referenced song or songbook cannot be deleted
+### R69 — A referenced song or songbook cannot be deleted
 
 A song SHALL NOT be soft-deleted when any of its live verses is named by a song-kind entry of an active
 Tata Ibadah, and a songbook SHALL NOT be soft-deleted when any of its songs is in that state. The server
@@ -2124,7 +2231,7 @@ refusal is authoritative; the UI is presentation only.
 - WHEN no service names a live verse of the song
 - THEN the existing delete behaviour proceeds
 
-### R66 — The delete refusal names distinct services
+### R70 — The delete refusal names distinct services
 
 The song and songbook delete confirmation dialogs SHALL open at `min(560px, calc(100vw - 32px))` and,
 when the count is non-zero, SHALL begin with the note `Used in <count> Tata Ibadah — delete unavailable`
