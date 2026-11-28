@@ -994,23 +994,35 @@
     liveBandSlot.style.bottom = (bandRect ? box.bottom - bandRect.top : 0) + 'px';
   }
 
-  /* Spec 242: the top half of the pin pair. The real header sticky-pins at the
-     top while its li is on screen; the list-level slot takes over once that whole
-     block is above the scrollport. At that boundary the clone stands exactly where
-     the real header was pinned — one visible header, never a second band. */
+  /* Spec 248: the top half of the pin pair. The real header sticky-pins at the
+     top while its li is on screen; the clone takes over as soon as the header's
+     own top would be clipped (the block's top crossing the scrollport), not only
+     once the whole block is above. It covers the departing header at that exact
+     point — one header, never a second band. */
+  var coveredRow = null;                 /* the real header the clone covers */
   function updateTopBand() {
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
     var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (coveredRow && coveredRow !== row) {
+      coveredRow.classList.remove('is-covered');
+      coveredRow = null;
+    }
     if (!row) { topBandSlot.hidden = true; return; }
     var box = runBody.getBoundingClientRect();
-    var show = liveEntry.getBoundingClientRect().bottom <= box.top + 0.5 &&
+    var show = liveEntry.getBoundingClientRect().top <= box.top + 0.5 &&
       row.getBoundingClientRect().top <= box.top + 0.5;
     topBandSlot.hidden = !show;
-    if (!show) return;
+    if (!show) {
+      if (coveredRow) { coveredRow.classList.remove('is-covered'); coveredRow = null; }
+      return;
+    }
+    row.classList.add('is-covered');
+    coveredRow = row;
     if (topBandSrcRow !== row) {
       var clone = row.cloneNode(true);
       clone.setAttribute('aria-current', 'false');
       clone.removeAttribute('aria-controls');
+      clone.classList.remove('is-covered');
       topBandSlot.replaceChildren(clone);
       topBandSrcRow = row;
     }
