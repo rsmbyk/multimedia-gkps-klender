@@ -10,7 +10,14 @@ The mark is decorative (`aria-hidden`, no pointer) and carries the trailing marg
 - `tests.e2e.test_dock_entry_kind_icons`: red before the writer, green after — the four-kind placement matrix, break rows, and the live row's retained mark.
 - Targeted regressions: spec 198's chevron matrix, spec 203's header wrap and spec 208's stuck header — green.
 - Live probe at 420×800, dark, 1×: mark 361–377px, chevron 387–402px, 10px gap, 0px off the row centre. Wrapped rows: 3-line media 76.7px, 2-line song + Bait 77px, 4-line media 96.3px; the long song's title column loses 26px with no new wrap.
-- Dock/browser matrix run at push: see the push report for the module counts and any machine-local reds.
+- Dock/browser matrix at push: 260 cases. The five projector failures reproduce identically on
+  unmodified develop; the errors were shared test-DB contention while another suite ran. A rerun of
+  the 45 affected cases on a fresh DB left 43 green, one known red that is red on develop too
+  (`test_opening_the_service_on_air_enters_following`), and one timing flake whose rAF step count
+  swings 8–10 on both base and slice against a `> 10` threshold
+  (`test_the_centring_decelerates_into_its_target`).
+- The Vercel check reports `Account is blocked`; that is an environment account issue, not a build
+  result from this branch.
 
 ## Records
 

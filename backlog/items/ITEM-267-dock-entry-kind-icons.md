@@ -1,6 +1,6 @@
 ---
 id: ITEM-267
-status: in progress
+status: in_review
 title: 'Each OBS dock entry header shows its kind'
 type: feat
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-11-28
 updated: 2026-11-28
 spec: '250-dock-entry-kind-icons'
 branch: feat/250-dock-entry-kind-icons
-pr:
-issue:
+pr: 641
+issue: 642
 closed_at:
 closed_reason:
 bump: patch
