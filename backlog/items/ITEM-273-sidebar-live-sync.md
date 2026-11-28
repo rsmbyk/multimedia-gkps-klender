@@ -1,6 +1,6 @@
 ---
 id: ITEM-273
-status: in review
+status: done
 title: 'Sidebars sync external changes without losing order or filter'
 type: feat
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/258-live-reading-freshness/spec.md
 branch: feat/258-live-reading-freshness
 pr: 661
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #661)
 bump:
 release_version:
 ---

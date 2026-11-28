@@ -50,13 +50,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
-| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-272](./items/ITEM-272-stale-page-invalidation.md) | Invalidate a stale service or song page and offer reload | A 10 s version poll closes dialogs, disables actions and shows a top-centre reload badge when the server is ahead | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | develop via [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
+| [ITEM-273](./items/ITEM-273-sidebar-live-sync.md) | Sidebars sync external changes without losing order or filter | A list-version poll updates changed rows and animates new rows into the current sort | feat | P1 | L | [258](../specs/258-live-reading-freshness/spec.md) | develop via [#661](https://github.com/rsmbyk/multimedia-gkps-klender/pull/661) | 2026-11-28 |
 | [ITEM-278](./items/ITEM-278-enter-delete-confirm.md) | Enter accepts a delete confirmation | One Enter press activates the destructive control of any open delete confirmation, wherever focus sits; non-destructive confirmations are untouched | feat | P1 | S | [256](../specs/256-enter-confirms-delete/spec.md) | develop via [#656](https://github.com/rsmbyk/multimedia-gkps-klender/pull/656) | 2026-11-29 |
 | [ITEM-271](./items/ITEM-271-entity-versioning.md) | Entity versions and safe concurrent edits | Stale writes are rejected; referenced verses, songs and songbooks cannot be deleted, and the notice counts distinct Tata Ibadah | feat | P0 | L | [254](../specs/254-entity-versioning/spec.md) | develop via [#659](https://github.com/rsmbyk/multimedia-gkps-klender/pull/659) | 2026-11-28 |
 | [ITEM-276](./items/ITEM-276-use-template-progress-persist.md) | Use template progress persists for seven days | Progress moves to localStorage with a sliding seven-day expiry, and the Use template button carries a corner dot while a draft exists | feat | P2 | M | [255](../specs/255-use-template-progress-persist/spec.md) | develop via [#658](https://github.com/rsmbyk/multimedia-gkps-klender/pull/658) | 2026-11-28 |
