@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-28
-**slices**: `254-entity-versioning`, `255-use-template-progress-persist`, `257-modal-scroll-containment`, `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `254-entity-versioning`, `256-enter-confirms-delete`, `255-use-template-progress-persist`, `257-modal-scroll-containment`, `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2201,8 +2201,30 @@ expiring and abandoning SHALL leave the template byte-identical, as R36 requires
 - WHEN **Create** succeeds
 - THEN the record is cleared and the button loses its mark
 
+### R68 — Enter accepts an open delete confirmation
 
-### R68 — A service moves when anything it displays changes
+When a destructive confirmation is open, pressing `Enter` SHALL activate that confirmation's
+destructive control regardless of which element holds focus — the sidebar record, stage entry, stage
+old row, verse and Media Library removal confirmations. A repeated keydown, a Shift/Ctrl/Alt/Meta
+chord, an already-default-prevented event, a hidden layer, a closed dialog and a disabled control
+SHALL NOT activate it. One press SHALL produce exactly one activation through the control's existing
+handler; non-destructive confirmations and Escape/Cancel/scrim dismissal SHALL keep their current
+behaviour. (spec 256)
+
+#### Scenario: focus away from the control
+- WHEN an open delete confirmation has focus on its body or Cancel button and Enter is pressed once
+- THEN exactly one delete request or removal click is produced and the confirmation closes where it did before
+
+#### Scenario: a guard refuses the key
+- WHEN the key repeats, carries a modifier, or the visible destructive control is disabled
+- THEN no activation occurs
+
+#### Scenario: a non-destructive confirmation
+- WHEN Enter is pressed in the copy, Use template, leave-with-changes or screen-mode confirmation
+- THEN that confirmation's Enter behaviour is unchanged
+
+
+### R69 — A service moves when anything it displays changes
 
 The owning `TataIbadah` SHALL carry an integer version that advances by one on every accepted change to
 the service or to anything it displays: its own fields, an entry or legacy item inside it created,
@@ -2217,7 +2239,7 @@ change SHALL keep its version.
 - WHEN a form is saved with identical values
 - THEN neither the form's row nor the service version changes
 
-### R69 — A referenced song or songbook cannot be deleted
+### R70 — A referenced song or songbook cannot be deleted
 
 A song SHALL NOT be soft-deleted when any of its live verses is named by a song-kind entry of an active
 Tata Ibadah, and a songbook SHALL NOT be soft-deleted when any of its songs is in that state. The server
@@ -2231,7 +2253,7 @@ refusal is authoritative; the UI is presentation only.
 - WHEN no service names a live verse of the song
 - THEN the existing delete behaviour proceeds
 
-### R70 — The delete refusal names distinct services
+### R71 — The delete refusal names distinct services
 
 The song and songbook delete confirmation dialogs SHALL open at `min(560px, calc(100vw - 32px))` and,
 when the count is non-zero, SHALL begin with the note `Used in <count> Tata Ibadah — delete unavailable`

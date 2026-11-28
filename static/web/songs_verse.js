@@ -265,7 +265,7 @@
               '<div class="editor__confirm"><p class="editor__confirm-title">Delete verse ' + number + '?</p>' +
               '<p class="editor__hint">It is removed from this song, and the verses after it are renumbered. Nothing else changes.</p>' +
               '<div class="editor__actions"><button type="button" class="editor__cancel" data-editor-close>Cancel</button>' +
-              '<button type="button" class="editor__danger" data-confirm-delete data-verse-row="' + del.dataset.verseRow + '">Delete</button></div></div>';
+              '<button type="button" class="editor__danger" data-confirm-delete data-enter-delete data-verse-row="' + del.dataset.verseRow + '">Delete</button></div></div>';
             content.querySelector('[data-editor-close]').addEventListener('click', function () { dialog.close(); content.innerHTML = ''; });
             content.querySelector('[data-confirm-delete]').addEventListener('click', function () {
               fetch('/editor/verse/' + del.dataset.verseRow + '/delete/', {method: 'POST', credentials: 'same-origin',
