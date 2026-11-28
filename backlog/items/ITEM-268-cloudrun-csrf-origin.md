@@ -1,6 +1,6 @@
 ---
 id: ITEM-268
-status: in-progress
+status: in-review
 title: 'Cloud Run writes pass CSRF'
 type: fix
 priority: P0
@@ -9,8 +9,8 @@ created: 2026-11-28
 updated: 2026-11-28
 spec: specs/251-cloudrun-csrf-origin/spec.md
 branch: fix/251-cloudrun-csrf-origin
-pr:
-issue:
+pr: 644
+issue: 643
 closed_at:
 closed_reason:
 bump: patch
