@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deleting the last item of a grouped sidebar no longer leaves its heading behind.** Service date buckets, the Templates group and the songbook groups now retire their whole section with the last row; under a filter the group hides until the filter is cleared, and a fresh render no longer emits an empty bucket or Templates group (ITEM-269, spec 252).
+
 ## [1.37.9] - 2026-11-28
 
 ### Added

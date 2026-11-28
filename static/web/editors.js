@@ -299,7 +299,22 @@
       neighbourLink = candidate.querySelector('a.book, a.songrow');
       candidate = neighbourLink ? null : candidate.nextElementSibling;
     }
+    var section = row.closest('section.group');
     row.parentNode.removeChild(row);
+    /* A bucket is a section, not just a heading. Retire it when its last row
+       goes; under a filter, hide it while every surviving row is filtered out
+       so clearing the filter can bring the group back (spec 252). */
+    if (section) {
+      var remaining = section.querySelectorAll('.book');
+      if (!remaining.length) {
+        section.parentNode.removeChild(section);
+      } else {
+        var visible = Array.prototype.some.call(remaining, function (link) {
+          return !link.closest('.is-hidden');
+        });
+        section.classList.toggle('is-hidden', !visible);
+      }
+    }
     return neighbourLink;
   }
   /* Reading what you are deleting? The stage's section, tile and song say so. */
