@@ -20,7 +20,7 @@ existed.
 - **Verification**: 25 test · 0 inspection · 0 manual
 - **Convergence**: Converged in 1 pass · accepted gaps: none
 - **Folded**: `docs/spec/reading.md` — R67 added (R66 was taken by spec 257)
-- **Board**: `ITEM-276` → In review
+- **Board**: `ITEM-276` → Done (develop via #658)
 - **Refs** #657
 
 69 E2E tests pass: the new module 16/16, spec 253's module 15/15 (its store assertions moved to
