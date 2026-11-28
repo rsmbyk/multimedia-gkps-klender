@@ -533,6 +533,22 @@ li:hover > .row-delete,
    steals width from the reading column. */
 .editor:not([open]) { display: none; }
 .editor::backdrop { background: var(--backdrop); }
+/* An open dialog is a layer over the reading page. A wheel that reaches the end of the
+   dialog's own scrollport — or lands on chrome with no scrollport — must not start
+   scrolling the page behind it. Contain each scrollport so a nested picker cannot
+   scroll the editor under it, and hold the document still while any dialog is open
+   (spec 257). */
+:root:has(dialog[open]) { overflow: hidden; }
+dialog[open],
+.editor__content,
+.editor__date-calendar,
+.editor__picker-options,
+.media-entry__panel--library,
+.preview__body,
+.media-transfers__list,
+.service-media__list,
+.generate__body,
+.choose__list { overscroll-behavior: contain; }
 /* The scroll belongs in here, not on the page behind: a dialog taller than the
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */

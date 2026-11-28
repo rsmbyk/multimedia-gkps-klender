@@ -37,6 +37,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-277](./items/ITEM-277-modal-scroll-containment.md) | An open modal keeps the scroll to itself | The wheel at a modal's end — or inside a view with no range — currently scrolls the page or the modal behind it | fix | P1 | S | [257](../specs/257-modal-scroll-containment/spec.md) | 2026-11-28 |
 
 ## In progress
 
