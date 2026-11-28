@@ -27,5 +27,5 @@
 - [x] T007 [Polish] `inspection` — `git diff --stat` confirms the code change is settings + tests + docs only (FR-003).
 - [x] T008 [Polish] Fold: add `docs/spec/deployment.md` with `R1` and `fold.md` naming the delta.
 - [x] T009 [Polish] First commit at Fold: spec pack, code, test, capability, card `ITEM-268` and its board row.
-- [ ] T010 [Polish] Delivery after a separate owner word: PR draft → ready, card `In review` with `pr:`, then pre-merge `VERSION` → `1.37.9`, changelog Fixed line and card `Done` in the same PR.
+- [x] T010 [Polish] Delivery after a separate owner word: PR draft → ready, card `In review` with `pr:`, then pre-merge `VERSION` → `1.37.9`, changelog Fixed line and card `Done` in the same PR.
 - [ ] T011 [Polish] `manual` — after deployment, re-run the live probe on both hosts: 404, not 403 (SC-002).
