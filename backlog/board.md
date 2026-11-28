@@ -37,7 +37,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-265](./items/ITEM-265-dock-top-pin-early.md) | The live entry header pins at the top as soon as it is clipped | The pinned copy now takes over at the header's own top edge instead of after the whole block clears; one header is painted with no takeover hop | fix | P2 | S | [248](../specs/248-dock-top-pin-early/spec.md) | 2026-11-28 |
 
 ## In progress
 
@@ -49,6 +48,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-265](./items/ITEM-265-dock-top-pin-early.md) | The live entry header pins at the top as soon as it is clipped | The pinned copy now takes over at the header's own top edge instead of after the whole block clears; one header is painted with no takeover hop | fix | P2 | S | [248](../specs/248-dock-top-pin-early/spec.md) | [#640](https://github.com/rsmbyk/multimedia-gkps-klender/pull/640) | 2026-11-28 |
 
 ## Done
 
