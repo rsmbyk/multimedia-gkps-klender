@@ -6,6 +6,8 @@ Verification: 9 test · 4 inspection · 1 manual. New E2E module 7/7 (two cases 
 
 Folded `dock/R19` as modified (19 requirements unchanged, scenarios 75 → 76). One carried-over Go To claim was found false on develop as well; it is kept as an explicit retraction in research D006.
 
-In review: ITEM-265 (anchor issue #639). `bump: patch`; VERSION and changelog land in the pre-merge delivery commit.
+Done: ITEM-265 (anchor issue #639), closed in the pre-merge delivery commit with `bump: patch`; VERSION 1.37.8 and the changelog line land in that commit, release_version stays empty until release.
+
+Push-step `tests.e2e`: 971 tests, 34 failures / 52 errors. The dock-follow error and sampled text-wrap, media-bucket and tatib failures reproduce identically on unmodified develop at c72b5ee3; the four dock modules touched or adjacent to this slice pass 32/32 after integrating develop. Vercel's deployment check is failing for its own account-billing reason, not a build result.
 
 Refs #639

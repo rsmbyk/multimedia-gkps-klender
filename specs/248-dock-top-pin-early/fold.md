@@ -17,7 +17,8 @@
 - **Declared no behaviour change**: no — visible behaviour changed at the owner's request; the
   boundary is earlier and the native header is covered while the clone owns the edge.
 - **Before → after**: 19 requirements → 19 requirements; 75 scenarios → 76 scenarios; R19's ID is
-  preserved.
+  preserved. After integrating develop (spec 250) the capability file carries 20 requirements and
+  79 scenarios; R20 was added by that sibling slice and is left intact.
 
 ## Evidence
 

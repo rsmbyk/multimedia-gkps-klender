@@ -1,6 +1,6 @@
 ---
 id: ITEM-265
-status: in-review
+status: done
 title: 'The live entry header pins at the top as soon as it is clipped'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/248-dock-top-pin-early/spec.md
 branch: feat/248-dock-top-pin-early
 pr: 640
 issue: 639
-closed_at:
-closed_reason:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #640)
 bump: patch
 release_version:
 ---

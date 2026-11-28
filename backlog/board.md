@@ -48,12 +48,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-265](./items/ITEM-265-dock-top-pin-early.md) | The live entry header pins at the top as soon as it is clipped | The pinned copy now takes over at the header's own top edge instead of after the whole block clears; one header is painted with no takeover hop | fix | P2 | S | [248](../specs/248-dock-top-pin-early/spec.md) | [#640](https://github.com/rsmbyk/multimedia-gkps-klender/pull/640) | 2026-11-28 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-265](./items/ITEM-265-dock-top-pin-early.md) | The live entry header pins at the top as soon as it is clipped | The pinned copy now takes over at the header's own top edge instead of after the whole block clears; one header is painted with no takeover hop | fix | P2 | S | [248](../specs/248-dock-top-pin-early/spec.md) | develop via [#640](https://github.com/rsmbyk/multimedia-gkps-klender/pull/640) | 2026-11-28 |
 | [ITEM-267](./items/ITEM-267-dock-entry-kind-icons.md) | Each OBS dock entry header shows its kind | Entry headers now carry the product's 16px kind mark immediately left of their chevron; breaks stay bare and the live header keeps its mark | feat | P2 | S | [250](../specs/250-dock-entry-kind-icons/spec.md) | develop via [#641](https://github.com/rsmbyk/multimedia-gkps-klender/pull/641) | 2026-11-28 |
 | [ITEM-266](./items/ITEM-266-goto-fullscreen-fit.md) | Go To detour words stay at the old size after fullscreen | The resize path fitted service screens only; the Go To detour now follows the stage on F11 and on a fullscreen signal before the resize | fix | P1 | S | [249](../specs/249-goto-fullscreen-fit/spec.md) | develop via [#638](https://github.com/rsmbyk/multimedia-gkps-klender/pull/638) | 2026-11-27 |
 | [ITEM-264](./items/ITEM-264-projector-fullscreen-fit.md) | Projector words stay at the windowed size after fullscreen | F key, mouse zone and F11 leave the fitted words small on the bigger stage; a fullscreen signal now re-fits the screen on the stage | fix | P1 | S | [247](../specs/247-projector-fullscreen-fit/spec.md) | develop via [#637](https://github.com/rsmbyk/multimedia-gkps-klender/pull/637) | 2026-11-27 |
