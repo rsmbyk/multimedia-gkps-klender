@@ -1,6 +1,6 @@
 ---
 id: ITEM-271
-status: in review
+status: done
 title: 'Entity versions and safe concurrent edits'
 type: feat
 priority: P0
@@ -11,8 +11,8 @@ spec: specs/254-entity-versioning/spec.md
 branch: feat/254-entity-versioning
 pr: 659
 issue: 652
-closed_at:
-closed_reason:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #659)
 bump: patch
 release_version:
 ---
