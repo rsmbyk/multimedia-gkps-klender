@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Use template progress is kept per template and resumed.** Settled slots, the step, the name and the date are written to the browser session as they change, restored when that template's Use template reopens, and cleared once a service is created. Closing a modal with saved work by Cancel, the backdrop or Escape now says the progress is saved and can be resumed later, with Stay and Leave; a clean modal still closes silently (ITEM-270, spec 253).
+- **Use template progress is kept per template and resumed for seven days.** Settled slots, the step, the name and the date are written to this browser's local storage as they change and restored when that template's Use template reopens; the record lasts seven days from the last change, and a template with a live draft marks its Use template button with a corner dot whose accessible name says a draft is saved. Closing a modal with saved work by Cancel, the backdrop or Escape now says the progress is saved for seven days, with Stay and Leave; a clean modal still closes silently, and Create clears the draft (ITEM-270, spec 253; ITEM-276, spec 255).
 
 ### Fixed
 
