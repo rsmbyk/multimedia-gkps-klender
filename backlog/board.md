@@ -42,6 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-268](./items/ITEM-268-cloudrun-csrf-origin.md) | Cloud Run writes pass CSRF | Django now reads the proxy's HTTPS header, so every add/edit/delete POST reaches its view instead of failing the CSRF origin check | fix | P0 | S | [251](../specs/251-cloudrun-csrf-origin/spec.md) | `fix/251-cloudrun-csrf-origin` | 2026-11-28 |
 
 
 ## In review

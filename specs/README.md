@@ -119,3 +119,4 @@ the templates are in [`_templates/`](./_templates/).
 | [224](224-empty-song-add-verse-row/spec.md) | An empty song paints one Add verse control | Accepted |
 | [226](226-verse-modal-header-rule/spec.md) | The verse modal header paints one rule | Accepted |
 | [231](231-add-verse-in-header/spec.md) | Add verse sits beside Project in the song header | Accepted |
+| [251](251-cloudrun-csrf-origin/spec.md) | Cloud Run writes pass CSRF | Accepted |
