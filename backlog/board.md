@@ -48,12 +48,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-278](./items/ITEM-278-enter-delete-confirm.md) | Enter accepts a delete confirmation | One Enter press activates the destructive control of any open delete confirmation, wherever focus sits; non-destructive confirmations are untouched | feat | P1 | S | [256](../specs/256-enter-confirms-delete/spec.md) | [#656](https://github.com/rsmbyk/multimedia-gkps-klender/pull/656) | 2026-11-29 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-278](./items/ITEM-278-enter-delete-confirm.md) | Enter accepts a delete confirmation | One Enter press activates the destructive control of any open delete confirmation, wherever focus sits; non-destructive confirmations are untouched | feat | P1 | S | [256](../specs/256-enter-confirms-delete/spec.md) | develop via [#656](https://github.com/rsmbyk/multimedia-gkps-klender/pull/656) | 2026-11-29 |
 | [ITEM-277](./items/ITEM-277-modal-scroll-containment.md) | An open modal keeps the scroll to itself | The wheel at a modal's end — or inside a view with no range — now stays in the modal instead of moving the page or the editor behind it | fix | P1 | S | [257](../specs/257-modal-scroll-containment/spec.md) | develop via [#654](https://github.com/rsmbyk/multimedia-gkps-klender/pull/654) | 2026-11-28 |
 | [ITEM-270](./items/ITEM-270-use-template-progress.md) | Use template progress survives a close | Settled slots are kept per template in browser session storage; a dirty close says the work is saved and can be resumed | feat | P2 | M | [253](../specs/253-use-template-progress/spec.md) | develop via [#651](https://github.com/rsmbyk/multimedia-gkps-klender/pull/651) | 2026-11-28 |
 | [ITEM-269](./items/ITEM-269-empty-date-group.md) | Empty date groups survive the last delete | A date bucket's heading stays after its last service is removed; the same client path also serves the Templates and songbook groups | fix | P1 | S | [252](../specs/252-empty-date-group/spec.md) | develop via [#649](https://github.com/rsmbyk/multimedia-gkps-klender/pull/649) | 2026-11-28 |
