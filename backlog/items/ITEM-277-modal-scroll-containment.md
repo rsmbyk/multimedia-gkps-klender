@@ -1,6 +1,6 @@
 ---
 id: ITEM-277
-status: in-review
+status: done
 title: 'An open modal keeps the scroll to itself'
 type: fix
 priority: P1
@@ -11,6 +11,8 @@ spec: specs/257-modal-scroll-containment/spec.md
 branch: fix/257-modal-scroll-containment
 pr: 654
 issue: 653
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #654)
 bump: patch
 release_version:
 ---

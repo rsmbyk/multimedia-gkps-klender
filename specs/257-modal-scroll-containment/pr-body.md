@@ -12,8 +12,8 @@ Seven Playwright behaviours fail by name on unmodified `1cd9f081` (7/7) and pass
 The final live A/B probes match every value frozen in the spec's `## UI/UX`. `reading/R66` was folded
 with four scenarios.
 
-Board: `ITEM-277` is **In review** on this PR and moves to Done before the merge. The `patch` bump
-and changelog line land in the pre-merge delivery commit.
+Board: `ITEM-277` is **Done** on this PR, merged into `develop` via this PR. The `patch` bump and
+changelog line landed in the pre-merge delivery commit.
 
 Verification split: 7 test · 6 inspection · 1 manual (the manual production check remains after
 deployment).
