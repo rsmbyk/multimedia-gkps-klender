@@ -41,7 +41,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-271](./items/ITEM-271-entity-versioning.md) | Entity versions and safe concurrent edits | Stale writes are rejected; referenced verses, songs and songbooks cannot be deleted, and the notice counts distinct Tata Ibadah | feat | P0 | L | [254](../specs/254-entity-versioning/spec.md) | 2026-11-28 |
 
 ## In progress
 
@@ -53,6 +52,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-271](./items/ITEM-271-entity-versioning.md) | Entity versions and safe concurrent edits | Stale writes are rejected; referenced verses, songs and songbooks cannot be deleted, and the notice counts distinct Tata Ibadah | feat | P0 | L | [254](../specs/254-entity-versioning/spec.md) | [#659](https://github.com/rsmbyk/multimedia-gkps-klender/pull/659) | 2026-11-28 |
 
 ## Done
 
