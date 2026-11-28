@@ -1,6 +1,6 @@
 ---
 id: ITEM-277
-status: ready
+status: in-review
 title: 'An open modal keeps the scroll to itself'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-28
 updated: 2026-11-28
 spec: specs/257-modal-scroll-containment/spec.md
 branch: fix/257-modal-scroll-containment
-pr:
+pr: 654
 issue: 653
 bump: patch
 release_version:
@@ -33,8 +33,9 @@ the layer the operator is looking at.
   `specs/257-modal-scroll-containment/research.md`.
 - Rules in `static/styles/design/components.css`: `:root:has(dialog[open]) { overflow: hidden }` and
   `overscroll-behavior: contain` on the named modal scrollports. No JS state is added.
-- Gate 1 accepted 2026-11-28; card promoted to `Ready`. Tracker anchor #653 was verified absent and
-  created with `board:item` before the first push; the PR says `Refs #653`, never `Closes`.
+- Gate 1 accepted 2026-11-28; card was promoted to `Ready`, then to `In review` on the push that
+  opened PR #654. Tracker anchor #653 was verified absent and created with `board:item`; the PR says
+  `Refs #653`, never `Closes`.
 
 ## Acceptance sketch
 
