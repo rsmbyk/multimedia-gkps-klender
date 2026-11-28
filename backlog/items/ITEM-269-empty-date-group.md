@@ -1,6 +1,6 @@
 ---
 id: ITEM-269
-status: in_review
+status: done
 title: 'Empty date groups survive the last delete'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/252-empty-date-group/spec.md
 branch: fix/252-empty-date-group
 pr: 649
 issue: 648
-closed_at:
-closed_reason:
+closed_at: 2026-11-28
+closed_reason: merged into develop (PR #649)
 bump: patch
 release_version:
 ---

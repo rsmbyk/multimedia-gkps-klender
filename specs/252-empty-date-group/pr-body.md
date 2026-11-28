@@ -7,5 +7,5 @@ Four E2E pins go red on unmodified develop and green here; 13 neighbouring E2E a
 tests are green. Live control/preview probes at ports 8776/8777 confirm the frozen UI/UX counts.
 
 Refs #648
-Card `ITEM-269` — In review
+Card `ITEM-269` — Done
 Spec `252` — Accepted; Converged and Folded into `reading/R64`.

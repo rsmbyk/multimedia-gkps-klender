@@ -18,8 +18,8 @@
   The new requirement carries four scenarios, matching the four cases in the accepted spec.
 - No requirement was modified, removed or renamed. No other capability was touched.
 - The number `252` and card `ITEM-269` were checked against `origin/develop` and all unmerged refs at
-  Specify and again at Fold; no retake was needed. `VERSION` stays `1.37.9` — the `patch` bump is applied
-  in the pre-merge delivery commit per VER-04.
+  Specify and again at Fold; no retake was needed. `VERSION` stayed `1.37.9` through Fold; the authorized
+  pre-merge delivery commit bumps it to `1.37.10`.
 - Earlier premature commit (`bd75845b`) was reset to base before gate 1; it exists only in the reflog as
   an undo trail. This slice's branch has zero commits before Fold.
 
