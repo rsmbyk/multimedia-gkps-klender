@@ -2138,7 +2138,13 @@
     var empty = screen.querySelector('.projector__empty');
     if (empty) empty.textContent = 'Nothing to show yet: this Tata Ibadah has no items.';
   }
-  window.addEventListener('resize', function () { render(true); });
+  window.addEventListener('resize', function () {
+    render(true);
+    /* render() fits service screens only, and fitNeighbours() deliberately skips a Go To
+       detour. A resize that changes the stage while the detour is showing would leave its
+       words at the old size, so fit whichever screen is actually on the stage as well. */
+    syncFullscreenFit();
+  });
   /* The fit is measured in the face that is on screen. The bundled display faces
      arrive a frame or two after first paint, and their metrics differ from the
      fallback's, so a screen fitted against the fallback can overflow the frame once

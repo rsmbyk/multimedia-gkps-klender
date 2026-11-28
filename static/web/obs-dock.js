@@ -170,6 +170,30 @@
 
   /* ---------- the runner's list --------------------------------------------- */
 
+  /* Spec 250: the dock's entry headers carry the product's own kind marks — the
+     same glyphs the contents rows draw (spec 214), on their own 24-unit grid.
+     The row already says the entry in words, so the mark is decorative only. */
+  var ENTRY_KIND_MARKS = {
+    passage: '<path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/>' +
+             '<path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/>',
+    song:    '<path d="M9 17.4V5.6l10.2-2v11.6"/>' +
+             '<circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
+    media:   '<rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="M10 9v6l5-3z"/>',
+    text:    '<path d="M3 4.5h14M3 8h14M3 11.5h9"/>'
+  };
+
+  function entryKindIcon(entry) {
+    var shape = ENTRY_KIND_MARKS[entry.type];
+    if (!shape) return null;                       /* a break is a hairline */
+    var icon = el('span', 'entryicon');
+    icon.dataset.kind = entry.type;
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ' +
+      'aria-hidden="true" focusable="false">' + shape + '</svg>';
+    return icon;
+  }
+
   function entryRowContent(entry, index) {
     var row = el('button', 'entryrow');
     row.type = 'button';
@@ -356,6 +380,8 @@
       item.dataset.index = String(index);
       item.appendChild(entryRowContent(entry, index));
       var inner = buildInner(entry, index);
+      var kindIcon = entryKindIcon(entry);
+      if (kindIcon) item.querySelector('.entryrow').appendChild(kindIcon);
       if (inner) {
         item.appendChild(inner);
         /* The header names its block (FR-008). An entry with no inner — a break,
