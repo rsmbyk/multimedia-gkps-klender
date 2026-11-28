@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Every entry header in the OBS dock now shows its kind beside the chevron.** A passage carries an open book, a song a note, media a play-frame, and text three rules — the marks the reading page already uses, seated immediately left of the chevron. A section break stays bare, a wrapped header keeps both centred, and the live header keeps its mark after the chevron hides (ITEM-267, spec 250).
+
 ### Fixed
 
 - **The projector's words now follow the stage when switching between full screen and windowed.** A fullscreen transition that grows or shrinks the stage re-fits the screen on the stage on the next frame, by the F key, a mouse zone or F11; the Go To detour is fitted too, and the cue, controls and existing resize answer are unchanged (ITEM-264, spec 247).

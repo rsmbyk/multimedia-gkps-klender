@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-25
-**slices**: `242-dock-top-pin`, `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-28
+**slices**: `250-dock-entry-kind-icons`, `242-dock-top-pin`, `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -557,3 +557,31 @@ current screen and return to following, writing no display state. (spec 242)
 - WHEN the operator clicks the pinned copy
 - THEN on every sampled frame the pin's visibility equals the block's geometry, the live row
   glides to the centre, the current screen stays on air and following returns
+
+
+### R20 — Each entry header names its kind beside the chevron
+
+Every non-break service entry header in the runner SHALL carry one 16px kind mark immediately
+left of its chevron — an open book for a passage, a flagged note for a song, a framed play mark
+for media, and three rules for text — drawn from the product's own contents-row glyphs on the
+same 24-unit grid. The mark SHALL be decorative (`aria-hidden`, no pointer, no accessible name),
+SHALL keep the chevron at the row's trailing edge and both 0 px off the centre of the whole row
+however far the header wraps, and SHALL travel with any pinned clone of the header. A section
+break is a hairline and carries neither mark nor chevron. On the live header, where the chevron
+is hidden, the mark SHALL remain at the trailing edge in the live ink. (spec 250)
+
+#### Scenario: a service covers every kind
+- GIVEN text, passage, song, media and break entries in one service
+- WHEN the runner list renders
+- THEN the first four headers each carry one mark of their own beside their chevron, and the
+  break carries none
+
+#### Scenario: a header takes several lines
+- GIVEN a long media filename or a song title with a Bait line that wraps the header
+- WHEN the row lays out
+- THEN the mark and the chevron are both centred on the whole row and keep their 10 px gap
+
+#### Scenario: the live header has no chevron
+- WHEN an entry is projected and its chevron is hidden
+- THEN its kind mark stays at the row's trailing edge in `--ink`, and both pinned copies carry
+  the same mark as their source header
