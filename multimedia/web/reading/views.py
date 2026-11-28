@@ -1271,10 +1271,12 @@ def _tatib_groups(mode, selected_service=None):
         # case- and diacritic-folded, with the '|' separator ignored.
         templates = sorted(services.filter(kind=tatib_models.TataIbadahKind.TEMPLATE),
                            key=lambda service: search_lib.normalize(service.name).replace('|', ''))
-        rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
-                 'kind': 'template', 'current': service.pk == selected_id}
-                for service in templates]
-        groups = [{'label': 'Templates', 'key': '', 'services': rows}]
+        groups = []
+        if templates:
+            rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
+                     'kind': 'template', 'current': service.pk == selected_id}
+                    for service in templates]
+            groups = [{'label': 'Templates', 'key': '', 'services': rows}]
     else:
         # The dated list reads as a schedule, not a calendar: the four age buckets of
         # spec 132, in their fixed order, each drawn only while it holds rows.

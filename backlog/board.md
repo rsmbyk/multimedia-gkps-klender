@@ -42,6 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-269](./items/ITEM-269-empty-date-group.md) | Empty date groups survive the last delete | A date bucket's heading stays after its last service is removed; the same client path also serves the Templates and songbook groups | fix | P1 | S | [252](../specs/252-empty-date-group/spec.md) | `fix/252-empty-date-group` | 2026-11-28 |
 
 
 ## In review
