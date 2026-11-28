@@ -1,16 +1,16 @@
 ---
 id: ITEM-278
-status: ready
+status: in review
 title: 'Enter accepts a delete confirmation'
 type: feat
 priority: P1
 effort: S
 created: 2026-11-28
-updated: 2026-11-28
+updated: 2026-11-29
 spec: specs/256-enter-confirms-delete/spec.md
 branch: feat/256-enter-confirms
 issue: 655
-pr:
+pr: 656
 closed_at:
 closed_reason:
 bump: patch
