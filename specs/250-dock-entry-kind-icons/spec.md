@@ -3,7 +3,7 @@
 **Slice**: `specs/250-dock-entry-kind-icons`
 **Branch**: `feat/250-dock-entry-kind-icons`
 **Created**: 2026-11-28
-**Status**: Draft
+**Status**: Accepted
 **Input**: the owner's request — "add the respective icons for each entry headers in dock. put it to the left of chevron icon on each row"
 
 ## Current behaviour (read, not assumed)
