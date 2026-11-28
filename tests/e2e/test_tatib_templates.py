@@ -681,9 +681,9 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertFalse(self.page.locator('#generateModal .choose-layer').is_visible())
         self.assertTrue(self.page.evaluate("() => document.getElementById('generateModal').open"))
 
-    def test_reopening_the_dialog_starts_from_nothing(self):
-        """A dialog dismissed and opened again must not carry the last pick: the chooser
-        kept its own pressed mark, so the option came back looking chosen.
+    def test_reopening_the_dialog_restores_the_last_pick(self):
+        """Spec 253 supersedes the old reset: work is kept in the browser session, so a
+        dismissed dialog opens with the choice settled and its own pressed mark back.
         """
         self.open_template()
         self.page.click('[data-generate-open]')
@@ -694,13 +694,15 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             'el => el.click()')
         self.page.wait_for_timeout(400)
         self.page.locator('[data-generate-close]').first.evaluate('el => el.click()')
+        expect(self.page.locator('[data-generate-leave]')).to_be_visible()
+        self.page.locator('[data-leave-accept]').click()
         self.page.wait_for_timeout(400)
         self.page.click('[data-generate-open]')
         self.page.wait_for_timeout(600)
         state = self.page.evaluate("""() => ({
           pressed: document.querySelectorAll('#generateModal [data-choose-pick][aria-pressed="true"]').length,
           set: document.querySelectorAll('#generateModal .g-row--slot[data-set="true"]').length})""")
-        self.assertEqual(state, {'pressed': 0, 'set': 0}, state)
+        self.assertEqual(state, {'pressed': 1, 'set': 1}, state)
 
     def test_the_backdrop_closes_the_dialog(self):
         """The overlay behind the dialog is a dismissal, like Cancel and Escape; a click

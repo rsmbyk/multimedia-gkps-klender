@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-28
-**slices**: `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `253-use-template-progress`, `252-empty-date-group`, `246-media-library-bible-rail`, `245-rail-fetch-feedback`, `244-picker-menu-scrollbar-edge`, `243-navigation-loading-feedback`, `241-tatib-reorder-kept`, `240-entry-modal-title`, `238-passage-search-pickers`, `237-sidebar-mark-centering`, `235-empty-song-verse-summary`, `236-song-modal-scrollbar`, `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -2116,3 +2116,31 @@ date bucket or an empty `Templates` group; the other renderers already skip empt
 #### Scenario: a filtered group
 - WHEN the only visible row of a bucket is deleted while the sidebar filter is on
 - THEN the bucket is hidden until the filter is cleared
+
+### R65 — A template's Use template progress survives a close
+
+The Use template modal SHALL keep work in the browser session, keyed by template id so two templates
+never share it. Every settled slot, choice pick, step, name and date change SHALL be written
+immediately; a reload or any close therefore keeps it. Reopening that template's Use template SHALL
+restore the settled rows, step, name and date automatically, ignoring slot ids that no longer exist.
+Closing a modal with saved work by Cancel, backdrop or Escape SHALL first show a confirmation saying
+the progress is saved in this browser session and can be resumed later, with **Stay** keeping the
+modal open and **Leave** closing it without discarding anything. A clean modal SHALL close silently.
+A successful Create SHALL clear that template's saved progress; a failed one SHALL keep it. Saving,
+restoring and abandoning SHALL leave the template byte-identical, as R36 requires. (spec 253)
+
+#### Scenario: work kept per template
+- WHEN a slot is settled in one template and another template's **Use template** is opened
+- THEN the second template starts with no settled rows, and the first one resumes when reopened
+
+#### Scenario: a dirty close says so
+- WHEN Cancel, the backdrop or Escape is used with saved progress
+- THEN a confirmation says the progress is saved in this browser session and can be resumed later
+
+#### Scenario: resume after a reload
+- WHEN the page is reloaded and the same template's **Use template** is opened
+- THEN the settled rows, step, name and date are back as they were
+
+#### Scenario: Create consumes the progress
+- WHEN **Create** succeeds
+- THEN that template's saved progress is cleared and its next open starts empty

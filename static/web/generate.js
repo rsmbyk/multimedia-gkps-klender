@@ -15,7 +15,7 @@
      opens the modal re-reads the document first. */
   var modal = null;
   var bodyOne, bodyTwo, steps, rows, nextButton, backButton, closeButton, createButton,
-      status, nameInput, dateInput, confirmLayer, summary;
+      status, nameInput, dateInput, confirmLayer, leaveLayer, summary;
   // the editor dialog is shell-level: it survives a stage swap, so it is read once
   var editorModal = document.getElementById('editorModal');
   var editorContent = document.getElementById('editorContent');
@@ -25,21 +25,41 @@
     if (modal.dataset.genBound) return;
     modal.dataset.genBound = 'true';
     modal.addEventListener('cancel', function (event) {
+      if (escapeHandled) {
+        /* the keydown path opened the leave layer; the browser's own cancel must not
+           then treat that layer as one to dismiss */
+        escapeHandled = false;
+        event.preventDefault();
+        return;
+      }
       if (openChooser) { event.preventDefault(); hideChooser(); }
       else if (!confirmLayer.hidden) { event.preventDefault(); confirmLayer.hidden = true; }
+      else if (leaveLayer && !leaveLayer.hidden) { event.preventDefault(); leaveLayer.hidden = true; }
+      else if (dirty()) { event.preventDefault(); attemptClose(); }
     });
     /* The backdrop is the dialog's own element: a click there, and not on any layer
        inside it, dismisses the dialog the way Cancel does. */
     modal.addEventListener('click', function (event) {
-      if (event.target === modal && !openChooser) close();
+      if (event.target === modal && !openChooser) attemptClose();
     });
     modal.addEventListener('click', function (event) {
-      if (event.target.closest('[data-generate-close]')) close();
-      if (event.target.closest('[data-generate-back]')) setStep(1);
-      if (event.target.closest('[data-generate-next]') && !nextButton.disabled) setStep(2);
+      if (event.target.closest('[data-generate-close]')) attemptClose();
+      if (event.target.closest('[data-generate-back]')) { setStep(1); save(); }
+      if (event.target.closest('[data-generate-next]') && !nextButton.disabled) { setStep(2); save(); }
       if (event.target.closest('[data-generate-cancel]')) confirmLayer.hidden = true;
+      if (event.target.closest('[data-leave-stay]') && leaveLayer) leaveLayer.hidden = true;
+      if (event.target.closest('[data-leave-accept]') && leaveLayer) {
+        leaveLayer.hidden = true;
+        close();
+      }
       var accept = event.target.closest('[data-generate-accept]');
       if (accept) submit(accept);
+    });
+    modal.addEventListener('input', function (event) {
+      if (event.target === nameInput) save();
+    });
+    modal.addEventListener('change', function (event) {
+      if (event.target === dateInput) save();
     });
     // the footer's Create opens the confirmation, not the request
     modal.addEventListener('click', function (event) {
@@ -56,6 +76,7 @@
     });
   modal.addEventListener('click', function (event) {
     if (event.target === confirmLayer) { confirmLayer.hidden = true; return; }
+    if (leaveLayer && event.target === leaveLayer) { leaveLayer.hidden = true; return; }
     if (openChooser && event.target === openChooser) { hideChooser(); return; }
 
     var row = event.target.closest('.g-row--slot');
@@ -86,6 +107,7 @@
       Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),
         function (button) { button.setAttribute('aria-pressed', String(button === pick)); });
       refresh();
+      save();
       hideChooser();
       return;
     }
@@ -112,6 +134,7 @@
       nameInput = modal.querySelector('[data-generate-name-input]');
       dateInput = modal.querySelector('[data-generate-date]');
       confirmLayer = modal.querySelector('[data-generate-confirm]');
+      leaveLayer = modal.querySelector('[data-generate-leave]');
       summary = modal.querySelector('[data-generate-summary]');
       editorModal = document.getElementById('editorModal');
       editorContent = document.getElementById('editorContent');
@@ -124,6 +147,48 @@
   var pendingSlot = null;         // the row whose kind form is open, if any
   var openChooser = null;
   var chooserOpener = null;
+  var escapeHandled = false;   // the keydown path already answered this Escape
+
+  /* ---------- progress kept for this template in the browser session ---------- */
+  /* One key per template: two templates never share work, and a Create clears only
+     the template it generated. Storage is best-effort -- a browser that refuses it
+     still gets a working modal, just without a resume. */
+  var STORAGE_PREFIX = 'gkps:generate:';
+
+  function storageKey() {
+    return modal && modal.dataset.generateTatib
+      ? STORAGE_PREFIX + modal.dataset.generateTatib : '';
+  }
+  function save() {
+    var key = storageKey();
+    if (!key) return;
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify({
+        v: 1,
+        step: Number(modal.dataset.step || 1),
+        settled: settled,
+        name: nameInput ? nameInput.value : '',
+        date: dateInput ? dateInput.value : ''
+      }));
+    } catch (error) { /* storage unavailable: the modal itself still works */ }
+  }
+  function saved() {
+    var key = storageKey();
+    if (!key) return null;
+    try {
+      var raw = window.sessionStorage.getItem(key);
+      if (!raw) return null;
+      var value = JSON.parse(raw);
+      if (!value || value.v !== 1 || !value.settled || typeof value.settled !== 'object') return null;
+      return value;
+    } catch (error) { return null; }
+  }
+  function clearSaved() {
+    try { window.sessionStorage.removeItem(storageKey()); } catch (error) {}
+  }
+  function dirty() {
+    return settledCount() > 0 || !!saved();
+  }
 
   /* The step badge centres its digit by the glyph's ink, not by the line box: a lining
      figure sits high in its line box and `1` carries a wide left bearing, and how far off
@@ -331,32 +396,57 @@
     createButton.hidden = step !== 2;
   }
 
-  function reset() {
-    settled = {};
-    setStep(1);
-    if (nameInput) nameInput.value = modal.dataset.generateName || '';
-    if (dateInput && !dateInput.value) dateInput.value = nearestSunday();
+  function syncDateLabel() {
     var label = modal.querySelector('[data-date-picker-label]');
-    if (label && dateInput && dateInput.value) {
-      /* the same wording the New Tata Ibadah modal's picker prints: '1 November 2026',
-         not a short month only this dialog would show */
-      var day = new Date(dateInput.value + 'T00:00:00');
-      label.textContent = window.gkpsDateLabel
-        ? window.gkpsDateLabel(day)
-        : day.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (!label || !dateInput || !dateInput.value) return;
+    /* the same wording the New Tata Ibadah modal's picker prints: '1 November 2026',
+       not a short month only this dialog would show */
+    var day = new Date(dateInput.value + 'T00:00:00');
+    label.textContent = window.gkpsDateLabel
+      ? window.gkpsDateLabel(day)
+      : day.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  /* A saved record re-applies to the dialog that is open now: slot ids that are no
+     longer in this template are dropped, so an edited template never paints a row
+     that does not exist or counts one that was removed. */
+  function reset(state) {
+    rows = Array.prototype.slice.call(modal.querySelectorAll('.g-row--slot'));
+    settled = {};
+    if (state) {
+      Object.keys(state.settled).forEach(function (id) {
+        if (rows.some(function (row) { return slotOf(row) === id; })) {
+          settled[id] = state.settled[id];
+        }
+      });
     }
+    setStep(state && Number(state.step) === 2 ? 2 : 1);
+    if (nameInput) nameInput.value = (state && state.name) || modal.dataset.generateName || '';
+    if (dateInput) dateInput.value = (state && state.date) || nearestSunday();
+    syncDateLabel();
     rows.forEach(function (row) { row.dataset.set = 'false'; });
-    /* the choosers keep their own marks: a dialog opened again starts from nothing, and
-       the last pick must not come back looking chosen */
+    /* the choosers keep their own marks: every row's picked option must match the
+       state just applied, so a fresh open starts them all at false */
     Array.prototype.forEach.call(modal.querySelectorAll('[data-choose-pick]'), function (button) {
       button.setAttribute('aria-pressed', 'false');
     });
+    if (state) {
+      Object.keys(settled).forEach(function (id) {
+        var chosen = settled[id].option;
+        if (!chosen) return;
+        var layer = modal.querySelector('[data-choose="' + id + '"]');
+        if (!layer) return;
+        Array.prototype.forEach.call(layer.querySelectorAll('[data-choose-pick]'), function (button) {
+          button.setAttribute('aria-pressed', String(Number(button.dataset.choosePick) === Number(chosen)));
+        });
+      });
+    }
     refresh();
   }
 
   function open() {
     if (!sync()) return;
-    reset();
+    reset(saved());
     modal.showModal();
     // the labels are measured against the badge, so only once the dialog has a box
     window.requestAnimationFrame(centreSteps);
@@ -367,8 +457,18 @@
   function close() {
     hideChooser();
     confirmLayer.hidden = true;
+    if (leaveLayer) leaveLayer.hidden = true;
     if (modal.open) modal.close();
     if (opener && document.contains(opener)) opener.focus();
+  }
+
+  /* Cancel, the backdrop and the cancel event all ask here before dismissal. The
+     record is already written, so Leave only closes; Stay keeps the dialog in place. */
+  function attemptClose() {
+    hideChooser();
+    if (confirmLayer) confirmLayer.hidden = true;
+    if (dirty() && leaveLayer) { leaveLayer.hidden = false; return; }
+    close();
   }
 
   /* ---------- a slot's kind form: fetched, validated, never saved ------------------ */
@@ -391,6 +491,7 @@
     };
     pendingSlot = null;
     refresh();
+    save();
   });
 
   // dismissed without resolving: the row stays unsettled. Deferred, because the editor
@@ -423,6 +524,20 @@
     event.preventDefault();
     opener = generateOpen;
     open();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape' || !modal || !modal.open) return;
+    if (openChooser) return;   // the chooser's own handler owns Escape
+    if (!confirmLayer.hidden || (leaveLayer && !leaveLayer.hidden)) return;
+    /* A modal dialog fires `cancel` on Escape only while focus is inside it. After a
+       slot form saves, focus can land on the body, and the dialog stays open with no
+       answer at all. Handle that case here; the flag stops the `cancel` event that
+       follows when focus is inside from dismissing the layer just opened. */
+    escapeHandled = true;
+    event.preventDefault();
+    attemptClose();
+    window.setTimeout(function () { escapeHandled = false; }, 0);
   });
 
   document.addEventListener('keydown', function (event) {
@@ -460,6 +575,7 @@
         confirmLayer.hidden = true;
         return;
       }
+      clearSaved();
       window.location.href = result.data.url;
     }).catch(function () {
       button.disabled = false;
