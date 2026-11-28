@@ -41,5 +41,5 @@ not concurrent. Every `Verified by: test` row gets a failing test before its imp
 
 ## Delivery (from the repo's declared parts)
 
-- [ ] T021 [DELIVERY] Fold `reading/R67` into `docs/spec/reading.md`, add the `CHANGELOG.md` line and apply the declared `patch`
+- [X] T021 [DELIVERY] Fold `reading/R67` into `docs/spec/reading.md`, add the `CHANGELOG.md` line and apply the declared `patch`
 - [ ] T022 [DELIVERY] Move `ITEM-276` to `In review` then `Done` in the same PR, with `Refs` to its anchor issue

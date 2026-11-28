@@ -1,6 +1,6 @@
 ---
 id: ITEM-276
-status: speccing
+status: in_review
 title: 'Use template progress persists for seven days'
 type: feat
 priority: P2
@@ -9,11 +9,11 @@ created: 2026-11-28
 updated: 2026-11-28
 spec: 255-use-template-progress-persist
 branch: feat/255-use-template-progress-persist
-pr:
-issue:
+pr: 658
+issue: 657
 closed_at:
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 

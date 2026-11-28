@@ -32,7 +32,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-276](./items/ITEM-276-use-template-progress-persist.md) | Use template progress persists for seven days | Progress moves to localStorage with a sliding seven-day expiry, and the Use template button carries a corner dot while a draft exists | feat | P2 | M | [255](../specs/255-use-template-progress-persist/spec.md) | 2026-11-28 |
 
 ## Ready
 
@@ -49,6 +48,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-276](./items/ITEM-276-use-template-progress-persist.md) | Use template progress persists for seven days | Progress moves to localStorage with a sliding seven-day expiry, and the Use template button carries a corner dot while a draft exists | feat | P2 | M | [255](../specs/255-use-template-progress-persist/spec.md) | [#658](https://github.com/rsmbyk/multimedia-gkps-klender/pull/658) | 2026-11-28 |
 
 ## Done
 
