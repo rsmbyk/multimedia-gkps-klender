@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-28
-**slices**: `250-dock-entry-kind-icons`, `242-dock-top-pin`, `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `248-dock-top-pin-early`, `250-dock-entry-kind-icons`, `242-dock-top-pin`, `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -532,32 +532,45 @@ centre control's act (R15) — and SHALL NOT write a different screen to the dis
 - THEN the pin lands in that paint with no stale frame (spec 208)
 
 
-### R19 — The live header stays pinned at the top when its block is above the view
+### R19 — The live header pins at the top as soon as it is clipped
 
-When the runner's live entry block is wholly above the scrollport, a faithful clone of its header
-(number, name, verse subtitle, chevron, selected face) SHALL stand in a list-level zero-height slot
-at the head of the list, flush at the top edge with a flat top (0 px) and the header's 9 px bottom
-radius. Before that boundary the native sticky header owns the edge; the two are never shown
-together. A header that loses liveness loses its pin in the same paint, and a go to's `.offstrip`
-is unchanged. The state SHALL be reconciled on every path that moves or resizes the list — scroll,
-sync, the first paint and every frame of a centring glide, morphs, landings and resize — and under
-reduced motion in the same paint. Clicking the pinned copy SHALL re-centre the live row, keep the
-current screen and return to following, writing no display state. (spec 242)
+When the runner's live entry header reaches the top edge — its block's top crossing the scrollport
+(`li.top <= box.top + 0.5`), while the block still straddles the fold — a faithful clone of its
+header (number, name, verse subtitle, chevron, selected face) SHALL stand in a list-level
+zero-height slot at the head of the list, flush at the top edge with a flat top (0 px) and the
+header's 9 px bottom radius. The clone SHALL take over from the native sticky header at that exact
+point: the source row is hidden with `visibility: hidden` while the clone owns the edge, so exactly
+one header is painted and no list geometry moves. The same clone SHALL hold once the whole block is
+above the fold. A header that loses liveness loses its pin in the same paint, and a go to's
+`.offstrip` is unchanged — a service pin during a Go To is pre-existing behaviour, not part of this
+requirement (research D006 of spec 248). The state SHALL be reconciled on every path that moves or
+resizes the list — scroll, sync, the first paint and every frame of a centring glide, morphs,
+landings and resize — and under reduced motion in the same paint. Clicking the pinned copy SHALL
+re-centre the live row, keep the current screen and return to following, writing no display state.
+(spec 242; boundary and one-header rule modified by spec 248)
 
-#### Scenario: the live block passes above the fold
+#### Scenario: the header reaches the fold
 - GIVEN a live entry deep in the service with its block on screen
+- WHEN the list scrolls until the header's own top reaches the scrollport edge, while its block still
+  reaches below
+- THEN one faithful copy of its header stands flush at the top edge with no takeover hop, and the
+  source header is hidden so only one is painted
+
+#### Scenario: the whole block clears the fold
+- GIVEN the pin already owns the edge
 - WHEN the list scrolls until the whole block is above the scrollport
-- THEN one faithful copy of its header stands flush at the top edge, flat top and round bottom
+- THEN the same clone stays at the edge, one header-height tall and at 0 px, unchanged by spec 242's
+  former takeover boundary
 
 #### Scenario: the real header takes the edge back
 - WHEN the block returns to the fold, a crossing changes liveness, or the operator scrolls by hand
-- THEN the pin is gone on that frame and the native sticky header alone is shown
+- THEN the pin is gone on that frame, the source header is visible again, and the native sticky
+  header alone is shown
 
 #### Scenario: the pin tracks the glide per frame
 - WHEN the operator clicks the pinned copy
-- THEN on every sampled frame the pin's visibility equals the block's geometry, the live row
-  glides to the centre, the current screen stays on air and following returns
-
+- THEN on every sampled frame the pin's visibility equals the block's geometry (the header-edge
+  boundary), the live row glides to the centre, the current screen stays on air and following returns
 
 ### R20 — Each entry header names its kind beside the chevron
 

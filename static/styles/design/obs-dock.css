@@ -752,7 +752,9 @@ body.obs-dock {
 
 /* Faithful header face: selected fill, flat top (the pinned edge), round bottom.
    Absolute inside the zero-height slot so the slot's visibility never changes the
-   list's flow — a shown slot would otherwise push the block back above the fold. */
+   list's flow — a shown slot would otherwise push the block back above the fold.
+   Spec 248: the clone sits at 0, where the measured sticky header holds during
+   the straddle, so the takeover covers it without a 4 px hop. */
 .topband-slot .entryrow {
   position: absolute;
   top: 0;
@@ -764,6 +766,10 @@ body.obs-dock {
 .topband-slot .entryrow:hover {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
+/* Spec 248: while the clone owns the edge the native header is not drawn twice.
+   Visibility (not display) keeps its sticky box in flow, so covering it moves
+   nothing on the takeover frame. */
+.entryrow.is-covered { visibility: hidden; }
 
 /* ---------- hover feedback on the states that own a fill -------------------- */
 
