@@ -10,7 +10,7 @@ updated: 2026-11-28
 spec: specs/257-modal-scroll-containment/spec.md
 branch: fix/257-modal-scroll-containment
 pr:
-issue:
+issue: 653
 bump: patch
 release_version:
 ---
@@ -33,8 +33,8 @@ the layer the operator is looking at.
   `specs/257-modal-scroll-containment/research.md`.
 - Rules in `static/styles/design/components.css`: `:root:has(dialog[open]) { overflow: hidden }` and
   `overscroll-behavior: contain` on the named modal scrollports. No JS state is added.
-- Gate 1 accepted 2026-11-28; card promoted to `Ready`. The tracker anchor is created with the
-  delivery word, before the first push, and the PR will say `Refs #<issue>`, never `Closes`.
+- Gate 1 accepted 2026-11-28; card promoted to `Ready`. Tracker anchor #653 was verified absent and
+  created with `board:item` before the first push; the PR says `Refs #653`, never `Closes`.
 
 ## Acceptance sketch
 

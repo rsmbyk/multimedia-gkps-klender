@@ -28,3 +28,5 @@ steps, not gaps in the plan.
 
 - 2026-11-28 — first Analyze after gate 1; five findings recorded, zero CRITICAL, gate 2 ready to
   present.
+- 2026-11-28 — delivery: A1 resolved; anchor #653 verified absent and created with `board:item`
+  before the first push.
