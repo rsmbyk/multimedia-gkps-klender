@@ -88,11 +88,11 @@ with CDP.
 
 ## Phase 6 — Delivery (owner's words only)
 
-- [ ] T017 Open card `ITEM-264` with `bump: patch`, add its board row and set the card's `spec:`;
+- [X] T017 Open card `ITEM-264` with `bump: patch`, add its board row and set the card's `spec:`;
       this is the pre-merge delivery commit alongside the version and changelog line.
-- [ ] T018 On `push`: push the branch, open the draft PR, then move `ITEM-264` to `In review` as
+- [X] T018 On `push`: push the branch, open the draft PR, then move `ITEM-264` to `In review` as
       its own commit with `status` and `pr:`; run the full browser suite and compare failures with
       the base when red.
-- [ ] T019 On `merge`: apply the version `1.37.5` and changelog line, close the card as `Done` with
+- [X] T019 On `merge`: apply the version `1.37.5` and changelog line, close the card as `Done` with
       `closed_at`, `closed_reason` and the board's `develop via [#N]` row in the pre-merge delivery
       commit, update the PR body in place, then squash-merge with that same body.
