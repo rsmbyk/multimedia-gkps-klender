@@ -37,6 +37,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-278](./items/ITEM-278-enter-delete-confirm.md) | Enter accepts a delete confirmation | One Enter press activates the destructive control of any open delete confirmation, wherever focus sits; non-destructive confirmations are untouched | feat | P1 | S | [256](../specs/256-enter-confirms-delete/spec.md) | 2026-11-28 |
 
 ## In progress
 

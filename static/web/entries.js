@@ -1242,7 +1242,7 @@
       + '<p class="editor__hint">The service order stays as it was otherwise; only this item goes.</p>'
       + '<div class="editor__actions">'
       + '<button type="button" class="editor__cancel" data-editor-close>Cancel</button>'
-      + '<button type="button" class="editor__danger" data-confirm-delete>Delete</button>'
+      + '<button type="button" class="editor__danger" data-confirm-delete data-enter-delete>Delete</button>'
       + '</div></div>';
     if (!modal.open) modal.showModal();
     markOrigin();

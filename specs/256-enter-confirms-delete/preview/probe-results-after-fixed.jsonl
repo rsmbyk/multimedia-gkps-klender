@@ -1,0 +1,4 @@
+{"surface":"entry-delete","tag":"after-fixed","requests":[{"method":"POST","url":"/editor/entry/9/delete/"}],"active_before":"BUTTON#","dialog_open":false,"confirm_visible":false,"rows_before":3,"rows_after":1}
+{"surface":"sidebar-delete","tag":"after-fixed","requests":[{"method":"POST","url":"/editor/tatib/9/delete/"}],"active_before":"BUTTON#","confirm_visible":false,"dialog_open":false}
+{"surface":"verse-delete","tag":"after-fixed","requests":[{"method":"POST","url":"/editor/verse/19/delete/"}],"active_before":"BODY#","confirm_visible":false,"dialog_open":false}
+{"surface":"media-remove","tag":"after-fixed","requests":[],"active_before":"BUTTON#","remove_clicks":1,"dialog_open":true}
