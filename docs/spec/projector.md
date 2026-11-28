@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-11-23
-**slices**: `229-cue-verse-counter`, `228-goto-cue-back-reset`, `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-27
+**slices**: `249-goto-fullscreen-fit`, `247-projector-fullscreen-fit`, `229-cue-verse-counter`, `228-goto-cue-back-reset`, `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -428,6 +428,19 @@ A single-screen body too long for any size SHALL have its rows dropped and its l
 halving, keeping the same rows and the same characters as a cut made one row and one character at a
 time. (spec 219)
 
+A fullscreen transition SHALL re-fit the screen on the stage on the next frame after the signal, so
+the words follow a stage that grows or shrinks even when the browser sends no `resize`: the page's
+own gesture is reported by `fullscreenchange`, and the browser's own fullscreen control by a change
+in `(display-mode: fullscreen)`. The Go To detour SHALL be fitted while it is on the stage, and the
+screens either side SHALL be fitted again in idle time. A signal that leaves the stage unchanged
+SHALL write no new size. (spec 247)
+
+A window resize that changes the stage while a Go To detour is on the stage SHALL fit the detour
+too: the detour is the screen on the stage, but the service-only `render()` path and the neighbour
+fit deliberately skip it, so the resize listener SHALL fit the stage's screen directly. Both the
+resize alone (F11) and a `fullscreenchange` delivered before the resize SHALL end on the same fit.
+(spec 249)
+
 #### Scenario: a screen arrives
 - WHEN the operator advances into a screen of words
 - THEN the screen was fitted ahead of time and the arrival costs one layout read (the stage's height)
@@ -447,6 +460,14 @@ time. (spec 219)
 #### Scenario: a single-screen body too long for any size
 - WHEN the whole body cannot fit at 2px
 - THEN the rows and characters kept are those a one-at-a-time cut would keep
+
+#### Scenario: a fullscreen transition
+- WHEN the stage grows or shrinks under the F key, a mouse zone or F11
+- THEN the screen on the stage is fitted to the new stage on the next frame, and returning to the old stage restores the old size
+
+#### Scenario: a Go To detour on a resize
+- WHEN the stage grows or shrinks while a Go To detour is on the stage
+- THEN the detour's own words are fitted to the new stage, whether the resize comes alone or after a fullscreen signal
 
 ### R15 — A move that arrives while another is still in flight cuts
 

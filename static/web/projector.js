@@ -1954,6 +1954,28 @@
   document.addEventListener('fullscreenchange', syncFullscreenCursor);
   document.addEventListener('fullscreenchange', syncVideoFullscreen);
   document.addEventListener('fullscreenchange', syncAudioFullscreen);
+  /* A fullscreen transition changes the stage the words are fitted to. Some browsers
+     report that change as a window resize, but the F key, the mouse zones and F11 all
+     leave the fit alone when they change the stage without one (spec 247), so the words
+     keep their windowed size and the taller stage is empty. Re-fit whichever screen is
+     on the stage on the next frame, when the new geometry is laid out. */
+  function syncFullscreenFit() {
+    window.requestAnimationFrame(function () {
+      var active = detour ? detourNode : screens()[current];
+      if (active) fit(active, true);
+      fitNeighbours();
+    });
+  }
+  document.addEventListener('fullscreenchange', syncFullscreenFit);
+  /* F11 puts the browser itself fullscreen: no fullscreenElement, no fullscreenchange,
+     and on a browser that does not send a resize the words would keep their old fit.
+     The display-mode query follows both the browser's own control and the Fullscreen
+     API on Chromium and Firefox. */
+  if (window.matchMedia) {
+    var fullscreenMode = window.matchMedia('(display-mode: fullscreen)');
+    if (fullscreenMode.addEventListener) fullscreenMode.addEventListener('change', syncFullscreenFit);
+    else if (fullscreenMode.addListener) fullscreenMode.addListener(syncFullscreenFit);
+  }
   syncFullscreenCursor();
   var escapeHoldTimer;
   document.addEventListener('keydown', function (event) {
@@ -2116,7 +2138,13 @@
     var empty = screen.querySelector('.projector__empty');
     if (empty) empty.textContent = 'Nothing to show yet: this Tata Ibadah has no items.';
   }
-  window.addEventListener('resize', function () { render(true); });
+  window.addEventListener('resize', function () {
+    render(true);
+    /* render() fits service screens only, and fitNeighbours() deliberately skips a Go To
+       detour. A resize that changes the stage while the detour is showing would leave its
+       words at the old size, so fit whichever screen is actually on the stage as well. */
+    syncFullscreenFit();
+  });
   /* The fit is measured in the face that is on screen. The bundled display faces
      arrive a frame or two after first paint, and their metrics differ from the
      fallback's, so a screen fitted against the fallback can overflow the frame once

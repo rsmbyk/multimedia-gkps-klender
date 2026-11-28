@@ -40,6 +40,7 @@ TOP_STATE = """() => {
   const c = clone && slot && !slot.hidden ? clone.getBoundingClientRect() : null;
   const botSlot = document.querySelector('.liveband-slot');
   return {
+    blockTop: l ? +(l.top - b.top).toFixed(2) : null,
     blockBottom: l ? +(l.bottom - b.top).toFixed(2) : null,
     headerTop: r ? +(r.top - b.top).toFixed(2) : null,
     headerHeight: r ? +(r.bottom - r.top).toFixed(2) : null,
@@ -48,6 +49,8 @@ TOP_STATE = """() => {
     bottom: c ? +(c.bottom - b.top).toFixed(2) : null,
     radiusTop: clone ? getComputedStyle(clone).borderTopLeftRadius : null,
     radiusBottom: clone ? getComputedStyle(clone).borderBottomLeftRadius : null,
+    headerVisibility: row ? getComputedStyle(row).visibility : null,
+    headerCovered: !!(row && row.classList.contains('is-covered')),
     copyExact: clone && row ? clone.textContent === row.textContent : null,
     label: clone ? clone.textContent.trim().replace(/\\s+/g, ' ') : null,
     bottomPinVisible: !!(botSlot && !botSlot.hidden),
@@ -65,7 +68,7 @@ SAMPLER = """() => {
     const slot = document.querySelector('.topband-slot');
     if (box && li && slot) {
       window.__tframes.push({
-        bb: li.getBoundingClientRect().bottom - box.getBoundingClientRect().top,
+        bt: li.getBoundingClientRect().top - box.getBoundingClientRect().top,
         v: !slot.hidden
       });
     }
@@ -160,6 +163,16 @@ class DockTopPinE2ETests(StaticLiveServerTestCase):
                       " b.scrollTop = b.scrollHeight; }")
         page.wait_for_timeout(350)
 
+    def _push_live_to_edge(self, page):
+        """Scroll until the live header's own top crosses the fold (block still straddles)."""
+        page.evaluate("""() => {
+          const box = document.getElementById('runBody');
+          const li = document.querySelector('.entryli[data-live="true"]');
+          box.scrollTop += li.getBoundingClientRect().top -
+                           box.getBoundingClientRect().top + 2;
+        }""")
+        page.wait_for_timeout(250)
+
     # ---------- the tests -----------------------------------------------------
 
     def test_the_top_pin_stands_when_the_live_block_is_above(self):
@@ -181,6 +194,54 @@ class DockTopPinE2ETests(StaticLiveServerTestCase):
                         f'one header-height, not a second band: {s}')
         self.assertFalse(s['bottomPinVisible'], f'the two pins never compete: {s}')
 
+    def test_the_top_pin_takes_over_when_the_header_is_clipped(self):
+        page = self._dock()
+        self._click(page, '.entryli[data-index="2"] .entryrow')
+        page.wait_for_timeout(350)
+        self._click(page, '.entryli[data-index="2"] .screenerow')
+        page.wait_for_timeout(400)
+        self.assertFalse(self._top(page)['visible'], 'no pin while the header is in view')
+        self._push_live_to_edge(page)
+        s = self._top(page)
+        self.assertLessEqual(s['blockTop'], 0.5, f'header has reached the fold: {s}')
+        self.assertGreater(s['blockBottom'], 0.5, f'the block still straddles the fold: {s}')
+        self.assertTrue(s['visible'], f'the pin must take over at the header edge: {s}')
+        self.assertAlmostEqual(s['top'], 0, delta=1, msg=f'flush at the edge: {s}')
+        self.assertAlmostEqual(s['headerTop'], 0, delta=1, msg=f'no takeover hop: {s}')
+        self.assertEqual(s['radiusTop'], '0px', f'flat top edge: {s}')
+        self.assertEqual(s['radiusBottom'], '9px', f'round bottom corners: {s}')
+        self.assertTrue(s['copyExact'], f'a faithful copy of the live header: {s}')
+        self.assertLess(abs((s['bottom'] - s['top']) - s['headerHeight']), 2,
+                        f'one header-height, not a second band: {s}')
+        self.assertFalse(s['bottomPinVisible'], f'the two pins never compete: {s}')
+
+    def test_only_one_header_is_painted_while_the_pin_owns_the_edge(self):
+        page = self._dock()
+        self._click(page, '.entryli[data-index="2"] .entryrow')
+        page.wait_for_timeout(350)
+        self._click(page, '.entryli[data-index="2"] .screenerow')
+        page.wait_for_timeout(400)
+        self._push_live_to_edge(page)
+        s = self._top(page)
+        self.assertTrue(s['visible'])
+        self.assertEqual(s['headerVisibility'], 'hidden', f'one painted header: {s}')
+        self.assertTrue(s['headerCovered'], f'the source is covered: {s}')
+        self.assertLess(abs(s['top'] - s['headerTop']), 0.6,
+                        f'clone covers the sticky header without a hop: {s}')
+        page.evaluate("() => { document.getElementById('runBody').scrollTop -= 12; }")
+        page.wait_for_timeout(250)
+        back = self._top(page)
+        self.assertGreater(back['blockTop'], 0.5, f'block back in view: {back}')
+        self.assertFalse(back['visible'], f'pin yielded: {back}')
+        self.assertEqual(back['headerVisibility'], 'visible', f'header restored: {back}')
+        self.assertFalse(back['headerCovered'], f'cover cleared: {back}')
+        page.evaluate("() => { const b = document.getElementById('runBody');"
+                      " b.scrollTop = b.scrollHeight; }")
+        page.wait_for_timeout(250)
+        s2 = self._top(page)
+        self.assertTrue(s2['visible'], f'pin still holds once fully above: {s2}')
+        self.assertEqual(s2['headerVisibility'], 'hidden', f'still one painted header: {s2}')
+
     def test_the_top_pin_tracks_the_block_per_frame(self):
         page = self._dock()
         self._push_live_above(page)
@@ -192,7 +253,7 @@ class DockTopPinE2ETests(StaticLiveServerTestCase):
         frames = page.evaluate('window.__tframes')
         self.assertTrue(any(f['v'] for f in frames), 'the glide starts with the pin up')
         self.assertTrue(any(not f['v'] for f in frames), 'the glide ends with the pin gone')
-        bad = [f for f in frames if f['v'] != (f['bb'] <= 0.5)]
+        bad = [f for f in frames if f['v'] != (f['bt'] <= 0.5)]
         self.assertFalse(bad, f'visibility must equal geometry every frame: {bad[:5]}')
 
     def test_the_real_header_takes_over_when_the_block_returns(self):

@@ -439,14 +439,34 @@ body.obs-dock {
    chevron carries no text, so it opts out with `align-self: center` — the owner's
    ask (2026-11-18), probed at 0 px off the row's centre. It lives inside the row,
    so the hover face tints it with everything else; the live row hides it and a
-   break or an empty header never got a node (FR-010). */
+   break or an empty header never got a node (FR-010). Spec 250 seats the kind
+   mark directly before it; the mark carries the auto margin that trails the pair. */
 .entrychev {
   display: inline-flex;
   align-items: center;
   flex: none;                        /* the chevron never squeezes the title */
-  margin-left: auto;                 /* trailing end of the header line */
   align-self: center;                /* D008: opt out of the row's baseline row */
 }
+
+/* Spec 250: the entry's kind mark, on the same 24-unit grid as the contents
+   rows' marks and at their 16px seat. It is decorative (the header already says
+   the entry in words), takes no pointer, and pushes the chevron pair to the
+   trailing edge — the one auto margin, so the two never drift apart. */
+.entryicon {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  align-self: center;
+  color: var(--head-ink);
+  pointer-events: none;
+}
+
+.entryicon svg { width: 100%; height: 100%; display: block; }
+
+.entryrow[aria-current="true"] .entryicon { color: var(--ink); }
 
 .entrychev svg {
   width: 15px;
@@ -732,7 +752,9 @@ body.obs-dock {
 
 /* Faithful header face: selected fill, flat top (the pinned edge), round bottom.
    Absolute inside the zero-height slot so the slot's visibility never changes the
-   list's flow — a shown slot would otherwise push the block back above the fold. */
+   list's flow — a shown slot would otherwise push the block back above the fold.
+   Spec 248: the clone sits at 0, where the measured sticky header holds during
+   the straddle, so the takeover covers it without a 4 px hop. */
 .topband-slot .entryrow {
   position: absolute;
   top: 0;
@@ -744,6 +766,10 @@ body.obs-dock {
 .topband-slot .entryrow:hover {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
+/* Spec 248: while the clone owns the edge the native header is not drawn twice.
+   Visibility (not display) keeps its sticky box in flow, so covering it moves
+   nothing on the takeover frame. */
+.entryrow.is-covered { visibility: hidden; }
 
 /* ---------- hover feedback on the states that own a fill -------------------- */
 

@@ -170,6 +170,30 @@
 
   /* ---------- the runner's list --------------------------------------------- */
 
+  /* Spec 250: the dock's entry headers carry the product's own kind marks — the
+     same glyphs the contents rows draw (spec 214), on their own 24-unit grid.
+     The row already says the entry in words, so the mark is decorative only. */
+  var ENTRY_KIND_MARKS = {
+    passage: '<path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/>' +
+             '<path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/>',
+    song:    '<path d="M9 17.4V5.6l10.2-2v11.6"/>' +
+             '<circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
+    media:   '<rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="M10 9v6l5-3z"/>',
+    text:    '<path d="M3 4.5h14M3 8h14M3 11.5h9"/>'
+  };
+
+  function entryKindIcon(entry) {
+    var shape = ENTRY_KIND_MARKS[entry.type];
+    if (!shape) return null;                       /* a break is a hairline */
+    var icon = el('span', 'entryicon');
+    icon.dataset.kind = entry.type;
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ' +
+      'aria-hidden="true" focusable="false">' + shape + '</svg>';
+    return icon;
+  }
+
   function entryRowContent(entry, index) {
     var row = el('button', 'entryrow');
     row.type = 'button';
@@ -356,6 +380,8 @@
       item.dataset.index = String(index);
       item.appendChild(entryRowContent(entry, index));
       var inner = buildInner(entry, index);
+      var kindIcon = entryKindIcon(entry);
+      if (kindIcon) item.querySelector('.entryrow').appendChild(kindIcon);
       if (inner) {
         item.appendChild(inner);
         /* The header names its block (FR-008). An entry with no inner — a break,
@@ -994,23 +1020,35 @@
     liveBandSlot.style.bottom = (bandRect ? box.bottom - bandRect.top : 0) + 'px';
   }
 
-  /* Spec 242: the top half of the pin pair. The real header sticky-pins at the
-     top while its li is on screen; the list-level slot takes over once that whole
-     block is above the scrollport. At that boundary the clone stands exactly where
-     the real header was pinned — one visible header, never a second band. */
+  /* Spec 248: the top half of the pin pair. The real header sticky-pins at the
+     top while its li is on screen; the clone takes over as soon as the header's
+     own top would be clipped (the block's top crossing the scrollport), not only
+     once the whole block is above. It covers the departing header at that exact
+     point — one header, never a second band. */
+  var coveredRow = null;                 /* the real header the clone covers */
   function updateTopBand() {
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
     var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (coveredRow && coveredRow !== row) {
+      coveredRow.classList.remove('is-covered');
+      coveredRow = null;
+    }
     if (!row) { topBandSlot.hidden = true; return; }
     var box = runBody.getBoundingClientRect();
-    var show = liveEntry.getBoundingClientRect().bottom <= box.top + 0.5 &&
+    var show = liveEntry.getBoundingClientRect().top <= box.top + 0.5 &&
       row.getBoundingClientRect().top <= box.top + 0.5;
     topBandSlot.hidden = !show;
-    if (!show) return;
+    if (!show) {
+      if (coveredRow) { coveredRow.classList.remove('is-covered'); coveredRow = null; }
+      return;
+    }
+    row.classList.add('is-covered');
+    coveredRow = row;
     if (topBandSrcRow !== row) {
       var clone = row.cloneNode(true);
       clone.setAttribute('aria-current', 'false');
       clone.removeAttribute('aria-controls');
+      clone.classList.remove('is-covered');
       topBandSlot.replaceChildren(clone);
       topBandSrcRow = row;
     }

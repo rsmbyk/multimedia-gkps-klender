@@ -32,6 +32,11 @@ DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='*', cast=Csv())
 
+# Cloud Run terminates TLS before the request reaches gunicorn. Trust the header it
+# sets so request.is_secure() agrees with the HTTPS Origin a browser sends; without
+# this every write is rejected by the CSRF origin check.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Maintenance mode: the site root serves a notice (HTTP 503). Toggle with the
 # MAINTENANCE_MODE env var.
 MAINTENANCE_MODE = config('MAINTENANCE_MODE', default=False, cast=bool)

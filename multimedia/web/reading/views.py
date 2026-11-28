@@ -498,6 +498,7 @@ def media_library(request):
     """The page shell; each computer supplies its own local file inventory."""
     return render(request, 'reading/media_library.html', {
         'read_state': 'on', 'nav_state': 'closed', 'ch_state': 'closed',
+        'section': 'media-library',
         'read_kind': 'media-library', 'read_name': 'Media Library',
         'page_title': 'Media Library — Multimedia GKPS Klender',
     })

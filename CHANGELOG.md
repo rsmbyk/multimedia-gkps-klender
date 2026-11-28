@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.9] - 2026-11-28
+
+### Added
+
+- **Every entry header in the OBS dock now shows its kind beside the chevron.** A passage carries an open book, a song a note, media a play-frame, and text three rules — the marks the reading page already uses, seated immediately left of the chevron. A section break stays bare, a wrapped header keeps both centred, and the live header keeps its mark after the chevron hides (ITEM-267, spec 250).
+
+### Fixed
+
+- **Add, edit and delete work again on the live sites.** Cloud Run terminates TLS before Django sees the request, so the CSRF origin check compared the browser's HTTPS Origin with an http:// host and rejected every write. Django now reads the proxy's forwarded protocol, and the local HTTP path is unchanged (ITEM-268, spec 251).
+- **The live entry header now pins at the top as soon as it is clipped, mirroring the bottom pin.** The pinned copy takes over when the header reaches the top edge instead of waiting for the whole entry block to pass; it sits where the sticky header was, with the source hidden so only one header is painted. Clicking it still returns to the live row without changing what is on air (ITEM-265, spec 248).
+- **The projector's words now follow the stage when switching between full screen and windowed.** A fullscreen transition that grows or shrinks the stage re-fits the screen on the stage on the next frame, by the F key, a mouse zone or F11; the Go To detour is fitted too, and the cue, controls and existing resize answer are unchanged (ITEM-264, spec 247).
+- **A Go To detour now follows the stage on a resize as well.** When the stage changes while a passage Go To is on screen — the browser's own F11, or a fullscreen signal that arrives before the viewport grows — the detour's words are re-fitted to the new stage instead of keeping the windowed size (ITEM-266, spec 249).
+- **Opening Alkitab from the rail while Media Library is on stage now fetches the books instead of showing "No books yet."** The library page carries its own section identity, so the first Alkitab click is a section change rather than a toggle over an empty sidebar; the Media Library tile and its pending state are unchanged (ITEM-263, spec 246).
+
 ## [1.37.3] - 2026-11-27
 
 ### Added

@@ -320,6 +320,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
     def _projector_url(self):
         return f'/projector?service={self.service.pk}'
 
+    def _long_projector_url(self):
+        # one long scripture screen: its fit is below the 200px cap, so a bigger
+        # stage has room to grow the words instead of hitting the ceiling.
+        return f'/projector?service={self.long_service.pk}'
+
     def _group_geometry(self, page):
         """The reading pane's own edges against the project group's (spec 141)."""
         return page.evaluate("""() => {
@@ -2403,3 +2408,250 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#offlineSavedSource').count(), 0)
         sources = page.eval_on_selector_all('script[src]', 'els => els.map(e => e.src)')
         self.assertFalse([src for src in sources if 'offline' in src])
+
+    # Spec 247: a fullscreen transition that changes the stage re-fits the words.
+    # The headless browser cannot make an OS-level fullscreen, so these cases change the
+    # stage box through the public DOM and dispatch the signals the real paths produce.
+    # The assertion reads the rendered size, never the fitter's cache directly as a target.
+
+    def _fullscreen_page(self, service=None):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        # Keep the MediaQueryList the page binds, so a test can dispatch its change event
+        # at the same object the browser would have signalled (a fresh matchMedia call may
+        # return a different object).
+        context.add_init_script("""(() => {
+          const original = window.matchMedia.bind(window);
+          window.matchMedia = (query) => {
+            const list = original(query);
+            if (query === '(display-mode: fullscreen)' && !window.__displayModeQuery)
+              window.__displayModeQuery = list;
+            return list;
+          };
+        })()""")
+        url = (self._long_projector_url() if service is None
+               else f'/projector?service={service.pk}')
+        page = context.new_page()
+        page.goto(self.live_server_url + url)
+        page.wait_for_load_state('networkidle')
+        page.wait_for_function(
+            "() => { const a = document.querySelector('.screen.is-active');"
+            " return a && a.querySelector('.screen__lines'); }")
+        page.wait_for_timeout(120)
+        return page
+
+    def _signal_fit(self, page, grow, media_only=False):
+        page.evaluate("""(args) => {
+          const host = document.querySelector('.projector__screen');
+          if (args.grow === true) host.style.setProperty('height', '1100px', 'important');
+          else if (args.grow === false) host.style.removeProperty('height');
+          if (!args.mediaOnly) document.dispatchEvent(new Event('fullscreenchange'));
+          (window.__displayModeQuery || matchMedia('(display-mode: fullscreen)'))
+            .dispatchEvent(new Event('change'));
+        }""", {"grow": grow, "mediaOnly": media_only})
+        page.wait_for_timeout(160)  # one frame is enough; bounded settle keeps the red an assertion
+
+    def _fit_reading(self, page):
+        return page.evaluate("""() => {
+          const active = document.querySelector('.screen.is-active');
+          const lines = active.querySelector('.screen__lines');
+          const head = active.querySelector('.screen__head');
+          const stage = document.getElementById('projectorScreens');
+          const others = [...document.querySelectorAll(
+            '#projectorScreens .screen:not(.is-active) .screen__lines')];
+          const next = others.find(el => parseFloat(getComputedStyle(el).fontSize) < 200) || others[0] || null;
+          const size = (el) => el ? parseFloat(getComputedStyle(el).fontSize) : null;
+          const screens = [...document.querySelectorAll(
+            '#projectorScreens .screen[data-screen]')].map((el, index) => ({
+              index: index, font: size(el.querySelector('.screen__lines')),
+              text: el.innerText.slice(0, 30)}));
+          return {font: size(lines), head: size(head), neighbour: size(next), screens: screens,
+                  stageHeight: stage.clientHeight, key: active.dataset.fitted,
+                  current: document.body.dataset.currentScreen,
+                  path: location.pathname + location.search, text: lines.innerText.slice(0, 48),
+                  fullscreenElement: Boolean(document.fullscreenElement)};
+        }""")
+
+    def test_fullscreen_signal_refits_the_words_without_a_resize(self):
+        """FR-001 / US1-AC1: new stage geometry plus the signal changes the rendered size."""
+        page = self._fullscreen_page()
+        before = self._fit_reading(page)
+        self._signal_fit(page, grow=True)
+        after = self._fit_reading(page)
+        self._signal_fit(page, grow=False)
+        restored = self._fit_reading(page)
+        page.close()
+        self.assertGreater(after['stageHeight'], before['stageHeight'])
+        self.assertGreater(after['font'], before['font'], (before, after))
+        self.assertAlmostEqual(after['head'], after['font'] / 1.61803398875, delta=0.01,
+                               msg=str(after))
+        self.assertNotEqual(after['key'], before['key'], (before, after))
+        self.assertEqual(restored['font'], before['font'], (before, restored))
+        self.assertEqual(restored['key'], before['key'], (before, restored))
+        for reading in (before, after, restored):
+            self.assertEqual(reading['current'], '0')
+            self.assertEqual(reading['path'], self._long_projector_url())
+            self.assertEqual(reading['text'], before['text'])
+
+    def test_a_second_fullscreen_signal_does_not_change_the_fit(self):
+        """FR-003 / US1-AC2: a repeated signal at the same stage is a no-op.
+
+        Characterisation guard: it is green on the unmodified base as well as the slice;
+        it protects the rule while the new trigger is added, so it has no honest red phase.
+        """
+        page = self._fullscreen_page()
+        self._signal_fit(page, grow=True)
+        first = self._fit_reading(page)
+        self._signal_fit(page, grow=True)
+        again = self._fit_reading(page)
+        page.close()
+        self.assertEqual(again['font'], first['font'], (first, again))
+        self.assertEqual(again['head'], first['head'], (first, again))
+        self.assertEqual(again['key'], first['key'], (first, again))
+
+    def test_fullscreen_signal_refits_the_neighbours(self):
+        """FR-004: the screen beside the active one is fitted in idle time after the signal."""
+        # Service 1 has two short text screens: screen 1 has room to grow, unlike the
+        # long service's empty trailing rest.
+        page = self._fullscreen_page(service=self.service)
+        before = self._fit_reading(page)
+        self.assertIsNotNone(before['neighbour'])
+        self._signal_fit(page, grow=True)
+        after = self._fit_reading(page)
+        page.close()
+        self.assertGreater(after['stageHeight'], before['stageHeight'])
+        self.assertGreater(after['neighbour'], before['neighbour'],
+                           (before['screens'], after['screens']))
+
+    def test_a_fullscreen_signal_with_an_unchanged_stage_does_not_resize_words(self):
+        """US1-AC4: the signal alone is not a reason to write a different size.
+
+        Characterisation guard: green on the unmodified base too; no honest red phase.
+        """
+        page = self._fullscreen_page()
+        before = self._fit_reading(page)
+        self._signal_fit(page, grow=False)
+        after = self._fit_reading(page)
+        page.close()
+        self.assertEqual(after['stageHeight'], before['stageHeight'])
+        self.assertEqual(after['font'], before['font'], (before, after))
+        self.assertEqual(after['key'], before['key'], (before, after))
+
+    def test_display_mode_signal_refits_for_browser_fullscreen(self):
+        """FR-002 / US2-AC2: F11 emits no fullscreenElement; the media query is the signal."""
+        page = self._fullscreen_page()
+        before = self._fit_reading(page)
+        self.assertFalse(before['fullscreenElement'])
+        self._signal_fit(page, grow=True, media_only=True)
+        after = self._fit_reading(page)
+        page.close()
+        self.assertGreater(after['font'], before['font'], (before, after))
+        self.assertFalse(after['fullscreenElement'])
+        self.assertEqual(after['path'], before['path'])
+
+    def test_resize_driven_fullscreen_still_settles_at_87_and_109(self):
+        """SC-003 / US2-AC1: a browser that does send resize keeps the existing answer."""
+        page = self._fullscreen_page()
+        windowed = self._fit_reading(page)
+        page.set_viewport_size({'width': 1920, 'height': 1080})
+        page.wait_for_timeout(220)
+        big = self._fit_reading(page)
+        page.set_viewport_size({'width': 1440, 'height': 900})
+        page.wait_for_timeout(220)
+        back = self._fit_reading(page)
+        page.close()
+        self.assertGreater(big['stageHeight'], windowed['stageHeight'])
+        self.assertGreater(big['font'], windowed['font'], (windowed, big))
+        self.assertEqual(back['font'], windowed['font'], (windowed, back))
+        self.assertEqual(back['key'], windowed['key'], (windowed, back))
+
+    # Spec 249: a Go To detour is a screen on the stage and must follow a stage resize.
+
+    def _open_long_goto(self, page):
+        wait_for_goto(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mzm 23')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        page.keyboard.press('Enter')
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').classList.contains('is-active')",
+            timeout=6000)
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def _detour_reading(self, page):
+        return page.evaluate("""() => {
+          const detour = document.querySelector('.projector-detour');
+          const lines = detour && detour.querySelector('.screen__lines');
+          const stage = document.getElementById('projectorScreens');
+          return {active: Boolean(detour && detour.classList.contains('is-active')),
+                  font: lines ? parseFloat(getComputedStyle(lines).fontSize) : null,
+                  key: detour && detour.dataset.fitted,
+                  stageHeight: stage.clientHeight,
+                  path: location.pathname + location.search};
+        }""")
+
+    def _grow_viewport(self, page, signal_first=False):
+        if signal_first:
+            page.evaluate("() => document.dispatchEvent(new Event('fullscreenchange'))")
+            page.wait_for_timeout(80)
+        cdp = page.context.new_cdp_session(page)
+        cdp.send("Emulation.setDeviceMetricsOverride",
+                 {"width": 1920, "height": 1080, "deviceScaleFactor": 1, "mobile": False})
+        page.wait_for_timeout(320)
+        return cdp
+
+    def _restore_viewport(self, page, cdp):
+        cdp.send("Emulation.setDeviceMetricsOverride",
+                 {"width": 1440, "height": 900, "deviceScaleFactor": 1, "mobile": False})
+        page.wait_for_timeout(320)
+
+    def test_a_goto_detour_refits_on_a_resize(self):
+        """FR-001 / FR-003 / US1-AC1, AC2: the detour follows the stage in both directions."""
+        page = self._page(self._long_projector_url())
+        self._open_long_goto(page)
+        page.wait_for_timeout(200)
+        before = self._detour_reading(page)
+        cdp = self._grow_viewport(page)
+        grown = self._detour_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._detour_reading(page)
+        page.close()
+        self.assertTrue(before['active'] and grown['active'] and back['active'])
+        self.assertGreater(grown['stageHeight'], before['stageHeight'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertNotEqual(grown['key'], before['key'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+        self.assertEqual(back['key'], before['key'], (before, back))
+        for reading in (before, grown, back):
+            self.assertEqual(reading['path'], self._long_projector_url())
+
+    def test_a_fullscreen_signal_before_resize_still_fits_the_detour(self):
+        """FR-002 / US1-AC3: an early fullscreen frame cannot freeze the detour's size."""
+        page = self._page(self._long_projector_url())
+        self._open_long_goto(page)
+        page.wait_for_timeout(200)
+        before = self._detour_reading(page)
+        cdp = self._grow_viewport(page, signal_first=True)
+        grown = self._detour_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._detour_reading(page)
+        page.close()
+        self.assertTrue(grown['active'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+
+    def test_a_resize_without_a_detour_keeps_service_screens(self):
+        """FR-004 / US1-AC4: the guard case is green on the base as well as the slice."""
+        page = self._fullscreen_page()
+        before = self._fit_reading(page)
+        cdp = self._grow_viewport(page)
+        grown = self._fit_reading(page)
+        self._restore_viewport(page, cdp)
+        back = self._fit_reading(page)
+        page.close()
+        self.assertGreater(grown['stageHeight'], before['stageHeight'])
+        self.assertGreater(grown['font'], before['font'], (before, grown))
+        self.assertEqual(back['font'], before['font'], (before, back))
+        self.assertEqual(back['key'], before['key'], (before, back))
+
+
