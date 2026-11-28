@@ -47,6 +47,7 @@ from multimedia.web.reading.formatting import format_verses
 from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
 from multimedia.web.reading import voices
+from multimedia.web.reading import versions as version_guard
 
 TESTAMENT_LABELS = {
     'old': {'tb': 'Perjanjian Lama', 'sim': 'Padan na Basaia'},
@@ -164,6 +165,7 @@ def _editor_fragment_context(kind, form, pk, target=None):
         'title': editors.form_title(kind, pk, target),
         'save_url': reverse('web-editor-save' if pk else 'web-editor-save-new', kwargs=kwargs),
         'target_id': pk or '',
+        'expected_version': form.instance.version if pk else '',
         'book_id': target.pk if kind == 'song' and not pk and target else '',
         'is_template': getattr(form, 'is_template', False),
         'hide_date_clear': getattr(form, 'hide_date_clear', False),
@@ -174,16 +176,9 @@ def _editor_fragment_context(kind, form, pk, target=None):
                       if kind == 'tatib' and pk else ''),
     }
     if kind == 'verse' and pk and target is not None:
-        verse = target
-        referenced = 0
-        song = getattr(verse, 'song', None)
-        if song is not None:
-            for entry in tatib_models.ServiceEntry.objects.filter(
-                    kind=tatib_models.ServiceEntryKind.SONG, song=song):
-                if verse.pk in (entry.verses or []):
-                    referenced += 1
-        ctx['verse_referenced'] = bool(referenced)
-        ctx['named_service_count'] = referenced
+        referenced = bool(version_guard.referencing_service_count(target))
+        ctx['verse_referenced'] = referenced
+        ctx['named_service_count'] = version_guard.referencing_service_count(target)
     return ctx
 
 
@@ -208,7 +203,21 @@ def editor_save(request, kind, pk=None):
     if not form.is_valid():
         return render(request, 'reading/_editor_form.html',
                       _editor_fragment_context(kind, form, pk, target), status=400)
-    saved = editors.save_form(kind, form, target)
+    wanted = version_guard.expected(request)
+    try:
+        with transaction.atomic():
+            current = None
+            if pk is not None:
+                current = version_guard.locked(type(form.instance), pk, wanted)
+                form.instance.version = current.version
+            changed = pk is None or version_guard.form_changed(form, current)
+            if changed:
+                form.instance.version += 1
+            saved = editors.save_form(kind, form, target)
+            if changed and kind == 'song':
+                version_guard.bump_referencing_services(saved)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     data = {'ok': True, 'id': saved.pk, 'kind': kind, 'created': pk is None}
     if kind == 'tatib':
         data['record_kind'] = int(saved.kind)
@@ -257,13 +266,17 @@ def editor_delete_confirm(request, kind, pk):
     record = _deletable_record(kind, pk)
     if record is None:
         raise Http404('Not deletable.')
-    return render(request, 'reading/_editor_delete_confirm.html', {
+    context = {
         'kind': kind,
         'noun': DELETE_NOUNS[kind],
         'record_name': _delete_record_name(record),
         'target_id': record.pk,
+        'expected_version': record.version,
         'delete_url': reverse('web-editor-delete', args=[kind, record.pk]),
-    })
+    }
+    if kind in ('song', 'songbook'):
+        context['reference_count'] = version_guard.referencing_service_count(record)
+    return render(request, 'reading/_editor_delete_confirm.html', context)
 
 
 def editor_delete(request, kind, pk):
@@ -277,11 +290,24 @@ def editor_delete(request, kind, pk):
     record = _deletable_record(kind, pk)
     if record is None:
         raise Http404('Not deletable.')
-    if kind in ('tatib', 'template'):
-        record.is_active = False
-        record.save(update_fields=['is_active'])
-    else:
-        record.delete()
+    try:
+        with transaction.atomic():
+            record = version_guard.locked(
+                type(record), record.pk, version_guard.expected(request))
+            if kind in ('song', 'songbook'):
+                count = version_guard.referencing_service_count(record)
+                if count:
+                    return JsonResponse({
+                        'error': 'delete unavailable',
+                        'message': f'Used in {count} Tata Ibadah — delete unavailable',
+                        'count': count}, status=400)
+            if kind in ('tatib', 'template'):
+                record.is_active = False
+                record.save(update_fields=['is_active'])
+            else:
+                record.delete()
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'id': record.pk, 'kind': kind})
 
 
@@ -295,6 +321,7 @@ def old_item_form(request, pk):
     kind = legacy_items.kind_name(item)
     return render(request, 'reading/_old_item_form.html', {
         'form': form,
+        'item': item,
         'kind': kind,
         'title': 'Edit note' if kind == 'end_of_section' else 'Edit text',
         'save_url': reverse('web-old-item-save', args=[item.pk]),
@@ -311,13 +338,29 @@ def old_item_save(request, pk):
     kind = legacy_items.kind_name(item)
     context = {
         'form': form,
+        'item': item,
         'kind': kind,
         'title': 'Edit note' if kind == 'end_of_section' else 'Edit text',
         'save_url': reverse('web-old-item-save', args=[item.pk]),
     }
     if not form.is_valid():
         return render(request, 'reading/_old_item_form.html', context, status=400)
-    saved = form.save()
+    try:
+        with transaction.atomic():
+            current = version_guard.locked(
+                type(item), pk, version_guard.expected(request))
+            parent = version_guard.locked(
+                tatib_models.TataIbadah, item.tatib_id,
+                version_guard.expected(request, 'expected_parent_version'))
+            form.instance.version = current.version
+            changed = version_guard.form_changed(form, current)
+            if changed:
+                form.instance.version += 1
+            saved = form.save()
+            if changed:
+                version_guard.bump_service(parent)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'id': saved.pk, 'kind': 'old-item'})
 
 
@@ -328,9 +371,18 @@ def old_item_delete(request, pk):
         return HttpResponseNotAllowed(['POST'])
     item = get_object_or_404(tatib_models.TataIbadahItem, pk=pk)
     service = item.tatib
-    with transaction.atomic():
-        item.delete()
-        _compact_service_order(service)
+    try:
+        with transaction.atomic():
+            current = version_guard.locked(
+                type(item), pk, version_guard.expected(request))
+            parent = version_guard.locked(
+                tatib_models.TataIbadah, service.pk,
+                version_guard.expected(request, 'expected_parent_version'))
+            current.delete()
+            _compact_service_order(service)
+            version_guard.bump_service(parent)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True})
 
 
@@ -659,47 +711,60 @@ def entry_save(request, pk=None):
                                 kwargs={'pk': pk} if pk else {})
                         + ('' if pk else f'?tatib={form.tatib.pk}'),
         }, status=400)
-    if entry is None:
-        after = request.POST.get('after', '')
+    wanted = version_guard.expected(request)
+    parent_wanted = version_guard.expected(request, 'expected_parent_version')
+    try:
         with transaction.atomic():
-            # Normalize legacy API reorderings before honoring a saved insertion point.
-            _compact_service_order(form.tatib)
-            marker = None
-            if after.startswith('e') and after[1:].isdigit():
-                marker = tatib_models.ServiceEntry.objects.filter(
-                    pk=int(after[1:]), tatib=form.tatib).first()
-            elif after.startswith('l') and after[1:].isdigit():
-                marker = tatib_models.TataIbadahItem.objects.filter(
-                    pk=int(after[1:]), tatib=form.tatib).first()
-            if after == 'start':
-                # Insert at the beginning: shift every row up one and take order 1.
-                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
-                    model.objects.filter(tatib=form.tatib).update(
-                        order_number=F('order_number') + 1)
-                form.instance.order_number = 1
-            elif parent is not None:
-                # An option sits under its choice, after the last one it already has.
-                anchor_row = parent.options.order_by('-order_number').first() or parent
-                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
-                    model.objects.filter(tatib=form.tatib,
-                                         order_number__gt=anchor_row.order_number).update(
-                                             order_number=F('order_number') + 1)
-                form.instance.parent = parent
-                form.instance.order_number = anchor_row.order_number + 1
-            elif marker is not None:
-                # Insert AFTER the clicked element, never before it, shifting both tables.
-                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
-                    model.objects.filter(tatib=form.tatib,
-                                         order_number__gt=marker.order_number).update(
-                                             order_number=F('order_number') + 1)
-                form.instance.order_number = marker.order_number + 1
+            if entry is not None:
+                current = version_guard.locked(type(entry), entry.pk, wanted)
+                form.instance.version = current.version
+            parent_service = version_guard.locked(tatib_models.TataIbadah, form.tatib.pk,
+                                                  parent_wanted)
+            form.tatib.version = parent_service.version
+            changed = entry is None or version_guard.form_changed(form, current if entry is not None else None)
+            if changed:
+                form.instance.version += 1
+            if entry is None:
+                after = request.POST.get('after', '')
+                # Normalize legacy API reorderings before honoring a saved insertion point.
+                _compact_service_order(form.tatib)
+                marker = None
+                if after.startswith('e') and after[1:].isdigit():
+                    marker = tatib_models.ServiceEntry.objects.filter(
+                        pk=int(after[1:]), tatib=form.tatib).first()
+                elif after.startswith('l') and after[1:].isdigit():
+                    marker = tatib_models.TataIbadahItem.objects.filter(
+                        pk=int(after[1:]), tatib=form.tatib).first()
+                if after == 'start':
+                    for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                        model.objects.filter(tatib=form.tatib).update(
+                            order_number=F('order_number') + 1)
+                    form.instance.order_number = 1
+                elif parent is not None:
+                    anchor_row = parent.options.order_by('-order_number').first() or parent
+                    for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                        model.objects.filter(tatib=form.tatib,
+                                             order_number__gt=anchor_row.order_number).update(
+                                                 order_number=F('order_number') + 1)
+                    form.instance.parent = parent
+                    form.instance.order_number = anchor_row.order_number + 1
+                elif marker is not None:
+                    for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                        model.objects.filter(tatib=form.tatib,
+                                             order_number__gt=marker.order_number).update(
+                                                 order_number=F('order_number') + 1)
+                    form.instance.order_number = marker.order_number + 1
+                else:
+                    form.instance.order_number = entry_forms.next_order_number(form.tatib)
+                form.instance.kind = entry_forms.KINDS[kind]  # the URL decides, not the post
+                saved = form.save()
             else:
-                form.instance.order_number = entry_forms.next_order_number(form.tatib)
-            form.instance.kind = entry_forms.KINDS[kind]  # the URL decides, not the post
-            saved = form.save()
-    else:
-        form.instance.kind = entry_forms.KINDS[kind]
-        saved = form.save()
+                form.instance.kind = entry_forms.KINDS[kind]
+                saved = form.save()
+            if changed:
+                version_guard.bump_service(form.tatib)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True, 'id': saved.pk, 'kind': 'entry'})
 
 
@@ -718,6 +783,10 @@ def entry_screen_breaks(request, pk):
     with transaction.atomic():
         entry = get_object_or_404(tatib_models.ServiceEntry.objects.select_for_update(), pk=pk,
                                   kind=tatib_models.ServiceEntryKind.TEXT)
+        try:
+            version_guard.guard(entry, payload.get('expected_version'))
+        except version_guard.VersionConflict as exc:
+            return version_guard.conflict_response(exc)
         if (payload.get('text_signature') != _text_signature(entry.text)
                 or payload.get('screen_state_signature') != _screen_state_signature(entry)):
             return JsonResponse({'error': 'The text or screen mode changed. Reopen Preview.'},
@@ -732,11 +801,17 @@ def entry_screen_breaks(request, pk):
             return JsonResponse({'error': 'Breaks must fall between written lines.'}, status=400)
         if mode != entry.default_screen_mode and breaks is not None:
             return JsonResponse({'error': 'Changing default mode clears custom breaks.'}, status=400)
+        changed = (entry.default_screen_mode != mode or entry.screen_breaks != breaks)
         entry.default_screen_mode = mode
         entry.screen_breaks = breaks
         entry.screen_breaks_reset = False
+        if changed:
+            entry.version += 1
         entry.full_clean()
-        entry.save(update_fields=['default_screen_mode', 'screen_breaks', 'screen_breaks_reset'])
+        entry.save(update_fields=['default_screen_mode', 'screen_breaks',
+                                  'screen_breaks_reset', 'version'])
+        if changed:
+            version_guard.bump_service(entry.tatib)
         return JsonResponse({'ok': True, 'breaks': breaks, 'default_screen_mode': mode,
                              'screen_state_signature': _screen_state_signature(entry)})
 
@@ -748,9 +823,17 @@ def entry_delete(request, pk):
         return HttpResponseNotAllowed(['POST'])
     entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
     service = entry.tatib
-    with transaction.atomic():
-        entry.delete()
-        _compact_service_order(service)
+    try:
+        with transaction.atomic():
+            current = version_guard.locked(type(entry), pk, version_guard.expected(request))
+            parent = version_guard.locked(
+                tatib_models.TataIbadah, service.pk,
+                version_guard.expected(request, 'expected_parent_version'))
+            current.delete()
+            _compact_service_order(service)
+            version_guard.bump_service(parent)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({'ok': True})
 
 
@@ -877,6 +960,11 @@ def tatib_generate(request, service_id):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     template = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    try:
+        template = version_guard.locked(type(template), template.pk,
+                                        version_guard.expected(request))
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     if template.kind != tatib_models.TataIbadahKind.TEMPLATE:
         return JsonResponse({'error': 'Only a template generates a Tata Ibadah.'}, status=400)
     try:
@@ -994,6 +1082,11 @@ def tatib_copy_as_template(request, service_id):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     source = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    try:
+        source = version_guard.locked(type(source), source.pk,
+                                      version_guard.expected(request))
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     name, refusal = _copy_name_from(request, source)
     if refusal:
         return JsonResponse({'ok': False, 'error': refusal}, status=400)
@@ -1067,15 +1160,26 @@ def entry_reorder(request):
         seen.add(entry.pk)
         moved.append(entry)
 
-    with transaction.atomic():
-        _compact_service_order(service)
-        current_entries = list(service.service_entries.order_by('order_number', 'pk'))
-        positions = [entry.order_number for entry in current_entries]
-        order = _order_with_slot_blocks(moved, current_entries, seen)
-        for entry, position in zip(order, positions):
-            entry.order_number = position
-        if order:
-            tatib_models.ServiceEntry.objects.bulk_update(order, ['order_number'])
+    try:
+        with transaction.atomic():
+            locked_service = version_guard.locked(
+                tatib_models.TataIbadah, service.pk,
+                version_guard.expected(request, 'expected_parent_version'))
+            before = [entry.pk for entry in service.service_entries.order_by('order_number', 'pk')]
+            _compact_service_order(service)
+            current_entries = list(service.service_entries.order_by('order_number', 'pk'))
+            positions = [entry.order_number for entry in current_entries]
+            order = _order_with_slot_blocks(moved, current_entries, seen)
+            for entry, position in zip(order, positions):
+                entry.order_number = position
+            if order:
+                tatib_models.ServiceEntry.objects.bulk_update(order, ['order_number'])
+            if before != [entry.pk for entry in current_entries]:
+                for entry in moved:
+                    version_guard.bump(entry)
+                version_guard.bump_service(locked_service)
+    except version_guard.VersionConflict as exc:
+        return version_guard.conflict_response(exc)
     return JsonResponse({
         'ok': True,
         'entries': [{'entry': entry.pk, 'order_number': entry.order_number}

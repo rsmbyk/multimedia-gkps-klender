@@ -13,6 +13,7 @@ class TataIbadahKind(models.IntegerChoices):
 
 
 class TataIbadah(models.Model):
+    version = models.PositiveIntegerField(default=1, editable=False)
     name = models.CharField(max_length=64)
     kind = models.SmallIntegerField(choices=TataIbadahKind.choices,
                                     default=TataIbadahKind.SERVICE)
@@ -68,6 +69,7 @@ class TataIbadahItemType(models.IntegerChoices):
 
 
 class TataIbadahItem(models.Model):
+    version = models.PositiveIntegerField(default=1, editable=False)
     tatib = models.ForeignKey(TataIbadah, models.PROTECT)
     item_type = models.IntegerField(choices=TataIbadahItemType.choices)
     title = models.CharField(max_length=64, blank=True)
@@ -164,6 +166,7 @@ class ServiceEntry(models.Model):
     Bodies separate their blocks with a blank line -- the display side turns a body
     into lines, and the blank line is the operator's pause.
     """
+    version = models.PositiveIntegerField(default=1, editable=False)
 
     tatib = models.ForeignKey(TataIbadah, models.PROTECT, related_name='service_entries')
     kind = models.IntegerField(choices=ServiceEntryKind.choices)

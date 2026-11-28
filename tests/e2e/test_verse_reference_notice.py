@@ -225,3 +225,50 @@ class VerseReferenceNoticeFragmentTests(Fixtures, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Used in <b>3</b> Tata Ibadah', html=False)
         self.assertContains(response, '— delete unavailable', html=False)
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class DeleteConfirmationNoticeE2ETests(Fixtures, StaticLiveServerTestCase):
+    """Spec 254 FR-012: the shared note fits the confirmation on one line."""
+
+    def setUp(self):
+        super().setUp()
+        self.make_fixtures()
+        self.playwright = sync_playwright().start()
+        try:
+            self.browser = self.playwright.chromium.launch()
+        except Exception as error:  # pragma: no cover
+            self.playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
+    def tearDown(self):
+        self.browser.close()
+        self.playwright.stop()
+        super().tearDown()
+
+    def test_song_delete_confirmation_shows_a_one_line_notice(self):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900},
+                                     device_scale_factor=1)
+        page.goto(self.live_server_url + reverse('web-song', args=[self.song.pk]))
+        page.wait_for_selector('[data-editor-delete="song"]')
+        page.eval_on_selector(
+            f'[data-editor-delete="song"][data-editor-id="{self.song.pk}"]',
+            'el => el.click()')
+        page.wait_for_selector('#editorModal[open] [data-editor-delete-form]')
+        page.wait_for_timeout(200)
+        state = page.evaluate("""() => {
+          const d = document.querySelector('#editorModal');
+          const note = d.querySelector('.editor__refnote');
+          const del = d.querySelector('.editor__danger');
+          const b = el => { const r = el.getBoundingClientRect();
+            return {w: Math.round(r.width), h: Math.round(r.height)}; };
+          return {dialog: b(d), note: {text: note.textContent.replace(/\\s+/g, ' ').trim(),
+            box: b(note)}, disabled: del.disabled, describedBy: del.getAttribute('aria-describedby')};
+        }""")
+        self.assertEqual(state['dialog']['w'], 560)
+        self.assertEqual(state['note']['text'],
+                         'Used in 1 Tata Ibadah — delete unavailable')
+        self.assertEqual(state['note']['box']['h'], 18)
+        self.assertTrue(state['disabled'])
+        self.assertEqual(state['describedBy'], 'deleteReferenceNote')
+        page.close()

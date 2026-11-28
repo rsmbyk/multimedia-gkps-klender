@@ -532,6 +532,9 @@ li:hover > .row-delete,
    has to say it again for itself -- otherwise it lays out inside the page and
    steals width from the reading column. */
 .editor:not([open]) { display: none; }
+/* Spec 254: the delete confirmation carries a one-line reference note beside its
+   two actions; 560px is the measured minimum for both song and songbook wording. */
+.editor:has([data-editor-delete-form]) { width: min(560px, calc(100vw - 32px)); }
 .editor::backdrop { background: var(--backdrop); }
 /* The scroll belongs in here, not on the page behind: a dialog taller than the
    viewport scrolls the document it sits over, which is the scrollbar everybody

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.37.13] - 2026-11-28
+
+### Added
+- Entity versions on services, legacy items, entries, songs, songbooks and verses; stale writes are refused with a 409 carrying the current version.
+- A shared delete refusal for referenced verses, songs and songbooks, counting distinct Tata Ibadah including templates.
+
+### Changed
+- The delete confirmation is 560px wide so its reference note stays on one line.
+
 ## [1.37.9] - 2026-11-28
 
 ### Added

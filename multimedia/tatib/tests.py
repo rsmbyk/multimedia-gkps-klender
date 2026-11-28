@@ -447,12 +447,14 @@ class LegacyBookmarkConversionTests(TransactionTestCase):
 
     def setUp(self):
         super().setUp()
-        self.migrate(self.migrate_from)
+        old_apps = self.migrate(self.migrate_from)
         # The bookmark and song models are untouched by this slice, so they come from the
-        # registry; the state this test asserts on is the one the migration leaves behind.
+        # registry; the tatib rows must come from the historical state, which has no
+        # version column yet (spec 254).
         Song = apps.get_model('songs', 'Song')
         Book = apps.get_model('songs', 'Book')
-        TataIbadah = apps.get_model('tatib', 'TataIbadah')
+        TataIbadah = old_apps.get_model('tatib', 'TataIbadah')
+        ServiceEntry = old_apps.get_model('tatib', 'ServiceEntry')
         Bookmark = apps.get_model('bookmarks', 'SongBookmark')
         Item = apps.get_model('bookmarks', 'SongBookmarkItem')
 
@@ -487,7 +489,7 @@ class LegacyBookmarkConversionTests(TransactionTestCase):
         built = TataIbadah.objects.create(name='Built by hand', kind=0,
                                           date=date(2026, 3, 29))
         self.built_service_id = built.pk
-        built_entry = apps.get_model('tatib', 'ServiceEntry').objects.create(
+        built_entry = ServiceEntry.objects.create(
             tatib_id=built.pk, kind=0, order_number=1, title='Their own opening')
         self.built_entry_id = built_entry.pk
         hand = Bookmark.objects.create(name='Built by hand', date=date(2026, 3, 29))
@@ -569,7 +571,7 @@ class LegacyBookmarkConversionTests(TransactionTestCase):
 
         conversion = importlib.import_module(
             'multimedia.tatib.migrations.0013_legacy_bookmarks_to_services')
-        conversion.convert_bookmarks(apps, SimpleNamespace(connection=connection))
+        conversion.convert_bookmarks(self.apps, SimpleNamespace(connection=connection))
 
         self.assertEqual((TataIbadah.objects.count(), ServiceEntry.objects.count()),
                          (before[0] + 3, before[1] + 4))

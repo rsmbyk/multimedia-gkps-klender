@@ -8,6 +8,7 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
   </div>
   <form class="editor__form" method="post" action="{{ save_url }}"{% if kind == 'verse' %} data-editor-size="large"{% endif %}>
     {% csrf_token %}
+    {% if expected_version %}<input type="hidden" name="expected_version" value="{{ expected_version }}">{% endif %}
     {% if kind == 'tatib' and not target_id %}
     <div class="editor__screen-mode-wrap">
       <div class="screen-mode editor__screen-mode" role="group" aria-label="Tata Ibadah type"
